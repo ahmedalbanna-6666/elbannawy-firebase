@@ -1,0 +1,33 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "outDir": "./dist",
+    "rootDir": ".",
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "baseUrl": ".",
+    "paths": {
+      "zod": ["../node_modules/.pnpm/node_modules/zod"]
+    }
+  },
+  "include": [
+    "index.ts",
+    "repositories/**/*.ts",
+    "services/**/*.ts",
+    "domain/**/*.ts",
+    "shared/**/*.ts",
+    "vocabulary-import/**/*.ts",
+    "question-import/**/*.ts",
+    "activities/**/*.ts",
+    "engine/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "**/__tests__",
+    "**/__mocks__"
+  ]
+}

@@ -1,0 +1,181 @@
+{
+  "tables": [
+    [
+      [
+        "communicate with",
+        "يتواصل مع",
+        "sibling",
+        "اخ – اخت ( شقيق – شقيقه )",
+        "اخ – اخت ( شقيق – شقيقه )"
+      ],
+      [
+        "communication",
+        "تواصل",
+        "sit right",
+        "مرتب بشكل صحيح",
+        "مرتب بشكل صحيح"
+      ],
+      [
+        "miscommunication",
+        "سوء التواصل",
+        "respectful",
+        "محترم للآخرين",
+        "محترم للآخرين"
+      ],
+      [
+        "connection",
+        "اتصال / تواصل",
+        "conflict",
+        "conflict",
+        "صراع / نزاع"
+      ],
+      [
+        "relationship",
+        "علاقة / ارتباط / صلة",
+        "supportive",
+        "supportive",
+        "مساند / داعم"
+      ],
+      [
+        "misunderstand",
+        "يسيء فهم",
+        "resolve",
+        "resolve",
+        "يحل"
+      ],
+      [
+        "misunderstanding",
+        "سوء فهم / خلاف",
+        "texting",
+        "texting",
+        "المراسلة / إرسال الرسائل"
+      ]
+    ],
+    [
+      [
+        "text message",
+        "رسالة نصية",
+        "avoid",
+        "يتجنب"
+      ],
+      [
+        "care",
+        "يهتم / يرعى",
+        "upset",
+        "منزعج / حزين"
+      ],
+      [
+        "social media",
+        "وسائل التواصل الاجتماعي",
+        "meaningful",
+        "مفهوم / ذو معنى"
+      ],
+      [
+        "distance",
+        "بعد / مسافة",
+        "serious",
+        "جاد / خطير"
+      ],
+      [
+        "strengthen",
+        "يقوي / يدعم",
+        "loudly",
+        "بصوت مرتفع"
+      ],
+      [
+        "supported",
+        "مؤيد / معزز",
+        "ride",
+        "جولة / قيادة"
+      ],
+      [
+        "blend into",
+        "يندمج في",
+        "solution",
+        "حل"
+      ],
+      [
+        "stay in mind",
+        "يبقى عالقًا في الذهن",
+        "stand out",
+        "يتميز – يبرز"
+      ]
+    ],
+    [
+      [
+        "make time",
+        "يخصص وقت",
+        "have a look",
+        "يلقي نظرة"
+      ],
+      [
+        "take time to",
+        "يستغرق وقت لكي",
+        "tell the truth",
+        "يقول الصدق"
+      ],
+      [
+        "to sum up",
+        "خلاصة القول",
+        "tone of voice",
+        "نبرة الصوت"
+      ],
+      [
+        "flip through",
+        "يقلب الصفحات",
+        "express regret",
+        "يعبر عن الندم"
+      ]
+    ],
+    [
+      [
+        "Word",
+        "الكلمة",
+        "Synonym",
+        "المرادف",
+        "Antonym",
+        "المضاد"
+      ],
+      [
+        "care",
+        "يهتم",
+        "concern\nregard",
+        "اهتمام\nاعتبار",
+        "ignore",
+        "يتجاهل"
+      ],
+      [
+        "stay in touch",
+        "يظل على اتصال",
+        "keep in touch",
+        "يبقى على اتصال",
+        "lose touch with",
+        "يفقد التواصل"
+      ],
+      [
+        "conflict",
+        "خلاف\nصراع",
+        "disagreement\nargument",
+        "خلاف\nجدال",
+        "agreement\nharmony",
+        "توافق\nانسجام"
+      ],
+      [
+        "respectful",
+        "محترم للآخرين",
+        "polite",
+        "مهذب",
+        "disrespectful",
+        "غير محترم"
+      ],
+      [
+        "upset",
+        "قلق\nمنزعج",
+        "worried\ndisturbed",
+        "قلق\nمضطرب",
+        "relaxed\nhappy",
+        "مسترخي\nسعيد"
+      ]
+    ]
+  ]
+}

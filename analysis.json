@@ -1,0 +1,28 @@
+{
+  "rootCollections": [
+    "users", "loginEvents", "teacherAssignments",
+    "educationalSystems", "stages", "grades", "academicYears", "terms", "books", "units", "lessons",
+    "lessonVideos", "lessonDocuments", "timelineEvents", "activities", "answerKeys",
+    "vocabularySections", "vocabularyItems", "vocabularyRelations",
+    "homework", "homeworkQuestions", "quizzes", "quizQuestions", "assessments", "assessmentQuestions",
+    "stories", "storyChapters", "storyLessons", "storyFiles", "storyVocabulary",
+    "finalReviews", "finalReviewUnits", "finalReviewLessons", "finalReviewQuestions",
+    "lessonProgress", "videoProgress", "timelineEventProgress", "activityProgress", "vocabularyProgress",
+    "homeworkAttempts", "homeworkAnswers", "quizAttempts", "quizAnswers", "assessmentAttempts", "assessmentAnswers", "storyProgress", "finalReviewProgress", "mistakes", "mistakeReviews", "studentStats",
+    "gameCategories", "games", "gameAssignments", "gameAttempts",
+    "teacherAvailability", "teacherDateBlocks", "teacherLiveSettings", "liveSessions", "liveSessionSecrets", "liveBookings", "liveWaitlistEntries", "liveAttendance", "liveAnnouncements",
+    "xpAccounts", "xpTransactions", "xpLevels", "achievements", "userAchievements", "leaderboardSnapshots",
+    "wallets", "coinPackages", "coinTransactions", "contentEntitlements", "payments", "invoices", "coupons",
+    "referralProfiles", "referrals", "referralPolicies",
+    "notificationPreferences", "notificationTemplates", "notificationCampaigns", "notifications", "notificationDeliveries", "deviceTokens",
+    "conversations", "aiAssessments", "aiRecommendations", "aiUsageEvents", "knowledgeDocuments",
+    "reports", "reportExports", "scheduledReports", "teacherNotes", "analyticsEvents", "analyticsDailyMetrics",
+    "supportTickets", "systemSettings", "featureFlags", "auditLogs"
+  ],
+  "totalRootCollections": 89,
+  "mergedCollections": [],
+  "deletedChildCollections": [
+    "conversations/{conversationId}/messages/{messageId}",
+    "supportTickets/{ticketId}/messages/{messageId}"
+  ]
+}

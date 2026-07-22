@@ -1,0 +1,27 @@
+export { importQuestionsFromDocx, parseQuestionText } from './docx-importer.js';
+export type { ImportOptions } from './docx-importer.js';
+export type {
+  ImportResult,
+  ImportedActivity,
+  ActivityType,
+  ActivityContent,
+  ErrorCode,
+  ImportError,
+  McqContent,
+  McqCategory,
+  McqQuestion,
+  McqOption,
+  DragDropContent,
+  ReadingContent,
+  ReadingPart,
+  ReadingQuestion,
+  RewriteContent,
+  RewriteQuestion,
+  CorrectContent,
+  CorrectQuestion,
+  DialogueContent,
+  DialogueLine,
+  TrueFalseContent,
+  TrueFalseQuestion,
+  WritingContent,
+} from './types.js';

@@ -1,0 +1,290 @@
+{
+  "sections": [
+    {
+      "heading": "Key vocabularies",
+      "type": "vocabulary",
+      "items": [
+        {
+          "english": "communicate with",
+          "arabic": "يتواصل مع"
+        },
+        {
+          "english": "sibling",
+          "arabic": [
+            "اخ",
+            "اخت ( شقيق – شقيقه )"
+          ]
+        },
+        {
+          "english": "communication",
+          "arabic": "تواصل"
+        },
+        {
+          "english": "sit right",
+          "arabic": "مرتب بشكل صحيح"
+        },
+        {
+          "english": "miscommunication",
+          "arabic": "سوء التواصل"
+        },
+        {
+          "english": "respectful",
+          "arabic": "محترم للآخرين"
+        },
+        {
+          "english": "connection",
+          "arabic": [
+            "اتصال",
+            "تواصل"
+          ]
+        },
+        {
+          "english": "conflict",
+          "arabic": [
+            "صراع",
+            "نزاع"
+          ]
+        },
+        {
+          "english": "relationship",
+          "arabic": [
+            "علاقة",
+            "ارتباط",
+            "صلة"
+          ]
+        },
+        {
+          "english": "supportive",
+          "arabic": [
+            "مساند",
+            "داعم"
+          ]
+        },
+        {
+          "english": "misunderstand",
+          "arabic": "يسيء فهم"
+        },
+        {
+          "english": "resolve",
+          "arabic": "يحل"
+        },
+        {
+          "english": "misunderstanding",
+          "arabic": [
+            "سوء فهم",
+            "خلاف"
+          ]
+        },
+        {
+          "english": "texting",
+          "arabic": [
+            "المراسلة",
+            "إرسال الرسائل"
+          ]
+        }
+      ]
+    },
+    {
+      "heading": "Extra vocabularies",
+      "type": "vocabulary",
+      "items": [
+        {
+          "english": "text message",
+          "arabic": "رسالة نصية"
+        },
+        {
+          "english": "avoid",
+          "arabic": "يتجنب"
+        },
+        {
+          "english": "care",
+          "arabic": [
+            "يهتم",
+            "يرعى"
+          ]
+        },
+        {
+          "english": "upset",
+          "arabic": [
+            "منزعج",
+            "حزين"
+          ]
+        },
+        {
+          "english": "social media",
+          "arabic": "وسائل التواصل الاجتماعي"
+        },
+        {
+          "english": "meaningful",
+          "arabic": [
+            "مفهوم",
+            "ذو معنى"
+          ]
+        },
+        {
+          "english": "distance",
+          "arabic": [
+            "بعد",
+            "مسافة"
+          ]
+        },
+        {
+          "english": "serious",
+          "arabic": [
+            "جاد",
+            "خطير"
+          ]
+        },
+        {
+          "english": "strengthen",
+          "arabic": [
+            "يقوي",
+            "يدعم"
+          ]
+        },
+        {
+          "english": "loudly",
+          "arabic": "بصوت مرتفع"
+        },
+        {
+          "english": "supported",
+          "arabic": [
+            "مؤيد",
+            "معزز"
+          ]
+        },
+        {
+          "english": "ride",
+          "arabic": [
+            "جولة",
+            "قيادة"
+          ]
+        },
+        {
+          "english": "blend into",
+          "arabic": "يندمج في"
+        },
+        {
+          "english": "solution",
+          "arabic": "حل"
+        },
+        {
+          "english": "stay in mind",
+          "arabic": "يبقى عالقًا في الذهن"
+        },
+        {
+          "english": "stand out",
+          "arabic": [
+            "يتميز",
+            "يبرز"
+          ]
+        }
+      ]
+    },
+    {
+      "heading": "Collocations, Prepositions & Expressions",
+      "type": "vocabulary",
+      "items": [
+        {
+          "english": "make time",
+          "arabic": "يخصص وقت"
+        },
+        {
+          "english": "have a look",
+          "arabic": "يلقي نظرة"
+        },
+        {
+          "english": "take time to",
+          "arabic": "يستغرق وقت لكي"
+        },
+        {
+          "english": "tell the truth",
+          "arabic": "يقول الصدق"
+        },
+        {
+          "english": "to sum up",
+          "arabic": "خلاصة القول"
+        },
+        {
+          "english": "tone of voice",
+          "arabic": "نبرة الصوت"
+        },
+        {
+          "english": "flip through",
+          "arabic": "يقلب الصفحات"
+        },
+        {
+          "english": "express regret",
+          "arabic": "يعبر عن الندم"
+        }
+      ]
+    },
+    {
+      "heading": "Synonym & Antonym",
+      "type": "synonym-antonym",
+      "items": [
+        {
+          "word": "care",
+          "arabic": "يهتم",
+          "synonyms": [
+            "concern",
+            "regard"
+          ],
+          "antonyms": [
+            "ignore"
+          ]
+        },
+        {
+          "word": "stay in touch",
+          "arabic": "يظل على اتصال",
+          "synonyms": [
+            "keep in touch"
+          ],
+          "antonyms": [
+            "lose touch with"
+          ]
+        },
+        {
+          "word": "conflict",
+          "arabic": [
+            "خلاف",
+            "صراع"
+          ],
+          "synonyms": [
+            "disagreement",
+            "argument"
+          ],
+          "antonyms": [
+            "agreement",
+            "harmony"
+          ]
+        },
+        {
+          "word": "respectful",
+          "arabic": "محترم للآخرين",
+          "synonyms": [
+            "polite"
+          ],
+          "antonyms": [
+            "disrespectful"
+          ]
+        },
+        {
+          "word": "upset",
+          "arabic": [
+            "قلق",
+            "منزعج"
+          ],
+          "synonyms": [
+            "worried",
+            "disturbed"
+          ],
+          "antonyms": [
+            "relaxed",
+            "happy"
+          ]
+        }
+      ]
+    }
+  ]
+}
