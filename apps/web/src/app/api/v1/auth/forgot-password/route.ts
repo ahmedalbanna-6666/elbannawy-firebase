@@ -1,37 +1,43 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAdminAuth, getAdminDb } from '@/lib/firebase/admin';
+import { getAdminAuth } from '@/lib/firebase/admin';
+import { UserService } from '@el-bannawy/lib';
+
+const userService = new UserService();
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
     const { mobile } = (await request.json()) as { mobile: string };
     if (!mobile) {
-      return NextResponse.json({ success: false, message: 'Mobile number is required' }, { status: 400 });
+      return NextResponse.json(
+        { success: false, error: { code: 'INVALID_INPUT', message: 'Mobile number is required' } },
+        { status: 400 },
+      );
     }
 
-    const adminDb = getAdminDb();
-    const usersSnapshot = await adminDb
-      .collection('users')
-      .where('mobileNumber', '==', mobile)
-      .limit(1)
-      .get();
+    const result = await userService.findUserByMobile(mobile);
 
-    if (usersSnapshot.empty) {
-      return NextResponse.json({ success: false, message: 'No account found with this mobile number' }, { status: 404 });
+    if (!result.ok || !result.value) {
+      return NextResponse.json(
+        { success: false, error: { code: 'NOT_FOUND', message: 'No account found with this mobile number' } },
+        { status: 404 },
+      );
     }
 
-    const userDoc = usersSnapshot.docs[0];
-    const email = userDoc.data().email as string | undefined;
+    const user = result.value;
+    const adminAuth = getAdminAuth();
+    const firebaseUser = await adminAuth.getUser(user.id);
+    const email = firebaseUser.email ?? `${user.mobileNumber}@el-bannawy.app`;
 
-    if (email) {
-      const adminAuth = getAdminAuth();
-      await adminAuth.generatePasswordResetLink(email);
-    }
+    await adminAuth.generatePasswordResetLink(email);
 
     return NextResponse.json({
       success: true,
-      message: 'If an account exists with this mobile number, a verification code has been sent.',
+      message: 'If an account exists with this mobile number, a password reset link has been sent.',
     });
   } catch {
-    return NextResponse.json({ success: false, message: 'Internal server error' }, { status: 500 });
+    return NextResponse.json(
+      { success: false, error: { code: 'INTERNAL', message: 'Internal server error' } },
+      { status: 500 },
+    );
   }
 }

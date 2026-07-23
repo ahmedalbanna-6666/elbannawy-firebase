@@ -493,53 +493,136 @@ The platform is migrating from PostgreSQL/Prisma to Firebase/Firestore.
 
 ---
 
-## Phase 2: Repository Implementation
+## Phase 2: Repository Implementation — Production Migration
 
-🔄 IN PROGRESS
-
-### Completed Modules
+✅ COMPLETE & LOCKED BASELINE
 
 | Module | Domain | Status |
 |--------|--------|--------|
 | Repository Foundation | BaseRepository, FirestoreService, TransactionManager, QueryBuilder, FirestoreMapper, error classes, contracts | ✅ COMPLETE & LOCKED |
-| Users | User management + auth | ✅ COMPLETE & LOCKED |
+| Users | User management | ✅ COMPLETE & LOCKED |
+| Curriculum | EducationalSystem, Stage, Grade, AcademicYear, AcademicTerm, CurrentAcademicContext | ✅ COMPLETE & LOCKED |
+| Lessons | Lesson CRUD, publish/unpublish/restore/order/complete | ✅ COMPLETE & LOCKED |
+| Vocabulary | VocabularyItem, VocabularySection, VocabularyRelation, import | ✅ COMPLETE & LOCKED |
+| Activities | Activity, StudentAttempt, LessonProgress, execution engine | ✅ COMPLETE & LOCKED |
 
-### In Progress
+🔄 PRODUCTION MIGRATION STREAMS
 
-| Module | Domain | Status | Missing |
-|--------|--------|--------|---------|
-| Curriculum | EducationalSystem, Stage, Grade, AcademicYear, AcademicTerm, CurrentAcademicContext | 🔄 IN PROGRESS | Services, DTOs, API routes, barrel exports, tests, docs |
+The remaining NestJS endpoints are migrated in 8 sequential phases.
+Each phase must pass all verification gates before the next starts.
 
-### Remaining Modules
+### Phase P1 — Authentication
 
-| Module | Domain | Status |
-|--------|--------|--------|
-| Lesson Content | Lesson, Video, Timeline, Activity, Vocabulary | ⏳ |
-| Assessment | Homework, Quiz, Assessment | ⏳ |
-| Progress | LessonProgress, VideoProgress, Stats | ⏳ |
-| Story | Story, Chapter, StoryLesson | ⏳ |
-| Final Review | FinalReview, ReviewUnit, ReviewLesson | ⏳ |
-| Games | Game, GameCategory, GameAssignment | ⏳ |
-| Live Classes | LiveSession, Booking, Attendance | ⏳ |
-| Gamification | XP, Achievements, Leaderboard | ⏳ |
-| Commerce | Wallet, Payment, Invoice, Coupon | ⏳ |
-| Referral | ReferralProfile, Referral, Policy | ⏳ |
-| Notifications | Preferences, Campaigns, Templates | ⏳ |
-| AI | Conversations, Assessments, Recommendations | ⏳ |
-| Reports | Reports, Exports, Analytics | ⏳ |
-| Support | SupportTicket | ⏳ |
-| Administration | Settings, FeatureFlags, AuditLogs | ⏳ |
+**Goal:** Replace NestJS auth with Firebase Auth as single identity source of truth.
+No NestJS session/refresh-token architecture. Firebase Auth handles credentials,
+Firebase Custom Claims handle roles (`STUDENT`, `TEACHER`, `SECRETARY`, `SUPPORT`, `ADMINISTRATOR`).
+
+| Item | Detail |
+|------|--------|
+| **Endpoints to migrate** | login, register, logout, me, forgot-password, reset-password, refresh-token, sessions (list/delete), Google OAuth callback + complete-registration, Apple OAuth |
+| **Firestore collections** | `users` (exists), `loginEvents` (exists) |
+| **Repositories** | Extend `UserRepository` with session management. No `sessions` or `refreshTokens` collections — Firebase Auth is the session authority. |
+| **Key constraint** | Google/Apple callback URLs must be updated from `localhost:4000/api/v1/...` to Next.js route handlers. |
+| **Complexity** | L |
+| **Verification gates** | typecheck → lint → build → manual auth flow test → commit |
+
+### Phase P2 — Curriculum (remaining)
+
+**Goal:** Migrate remaining curriculum endpoints for continue-learning, stages, and progress.
+
+| Item | Detail |
+|------|--------|
+| **Endpoints to migrate** | GET /curriculum, GET /curriculum/continue-learning, GET /curriculum/stages, GET/PATCH /curriculum/progress/:lessonId, GET /academic-context |
+| **Firestore collections** | `lessonProgress` (exists), extend with progress aggregation |
+| **Repositories** | Extend `CurriculumRepository` with progress methods |
+| **Complexity** | M |
+| **Verification gates** | typecheck → lint → build → verify curriculum browse + progress → commit |
+
+### Phase P3 — Lessons (sub-resources)
+
+**Goal:** Migrate remaining lesson sub-resources (videos, documents, homework/quiz attachment metadata).
+
+| Item | Detail |
+|------|--------|
+| **Endpoints to migrate** | GET/POST/DELETE /lessons/:id/videos, GET/POST/DELETE /lessons/:id/document, PATCH /lessons/:id/document/downloadable, GET /lessons/:id/homework, GET /lessons/:id/quiz, POST/DELETE /lessons/:id/quiz/upload, POST/DELETE /lessons/:id/homework/upload |
+| **Firestore collections** | `lessonVideos` (exists), `lessonDocuments` (exists), use Firebase Storage for file uploads |
+| **Repositories** | `LessonVideoRepository`, `LessonDocumentRepository` |
+| **Complexity** | M |
+| **Verification gates** | typecheck → lint → build → verify lesson content display + file upload → commit |
+
+### Phase P4 — Videos & Interactive Content
+
+**Goal:** Migrate video playback, progress tracking, timeline events, and video questions.
+
+| Item | Detail |
+|------|--------|
+| **Endpoints to migrate** | GET /videos/:id, POST /videos/:id/complete, GET /videos/:id/resume, GET /videos/:id/timeline-events, POST /timeline-events/:eventId/complete, Video Events CRUD + dispatch + reorder, Video Questions CRUD + with-event + answer |
+| **Firestore collections** | `videos`, `videoProgress`, `videoEvents`, `videoQuestions`, `timelineEvents`, `timelineEventProgress` (all exist in docs) |
+| **Repositories** | `VideoRepository`, `VideoEventRepository`, `VideoQuestionRepository`, `TimelineEventRepository` |
+| **Complexity** | L |
+| **Verification gates** | typecheck → lint → build → verify video playback + progress + timeline events → commit |
+
+### Phase P5 — Homework
+
+**Goal:** Full homework lifecycle — create, save, start, submit, grade, review.
+
+| Item | Detail |
+|------|--------|
+| **Endpoints to migrate** | POST homework, PATCH/DELETE homework/:id, GET homework/:lessonId (analytics, questions, status), PATCH save, POST start, POST submit, GET result/history/review |
+| **Firestore collections** | `homeworks`, `homeworkQuestions`, `homeworkAttempts`, `homeworkAnswers`, `answerKeys` |
+| **Repositories** | `HomeworkRepository`, `HomeworkAttemptRepository` |
+| **Complexity** | XL (assessment engine, locking, auto-grading, retry logic) |
+| **Verification gates** | typecheck → lint → build → verify full homework flow (save→start→submit→result→review) → commit |
+
+### Phase P6 — Quizzes
+
+**Goal:** Full quiz lifecycle — create, save, start, submit, grade, review, unlock-status.
+
+| Item | Detail |
+|------|--------|
+| **Endpoints to migrate** | POST quizzes, PATCH/DELETE quizzes/:id, GET quizzes/:lessonId (analytics, questions, unlock-status), PATCH save, POST start, POST submit, GET result/history/review |
+| **Firestore collections** | `quizzes`, `quizQuestions`, `quizAttempts`, `quizAnswers`, `answerKeys`, `contentUnlocks` |
+| **Repositories** | `QuizRepository`, `QuizAttemptRepository` |
+| **Complexity** | XL (assessment engine, unlocking, completion policy) |
+| **Verification gates** | typecheck → lint → build → verify full quiz flow (save→start→submit→result→review) → commit |
+
+### Phase P7 — Progress & Home/Dashboard
+
+**Goal:** Aggregate student progress views and the dashboard landing page.
+
+| Item | Detail |
+|------|--------|
+| **Endpoints to migrate** | GET /home, GET /home/leaderboard, GET /activities/:id/progress, all remaining progress aggregation endpoints |
+| **Firestore collections** | `studentStats`, `leaderboardSnapshots`, `xpAccounts`, `xpTransactions`, `xpLevels`, `achievements`, `userAchievements` |
+| **Repositories** | `StudentStatsRepository`, `LeaderboardRepository`, `XpRepository`, `AchievementRepository` |
+| **Complexity** | L (aggregation strategy — pre-computed documents vs on-the-fly queries) |
+| **Verification gates** | typecheck → lint → build → verify dashboard + leaderboard → commit |
 
 ---
 
-## Phase 3: AI Integration & Optimization
+## Phase 3: Post-Migration Modules
+
+⏳ Not started — to be executed after Phase 2 completion.
+
+| Priority | Module | Rationale |
+|:--------:|--------|-----------|
+| Teacher | Competitions, Final Reviews, Stories (write), Live Classes (manage), Coins (manage), Support Tickets | Teacher workflow features |
+| Admin | Reports, Payments, Admin students/tools, Coins packages | Admin operations |
+| Optional | Document Import, Execution endpoint, Academic Context, Delegated Permissions | Utility / cleanup |
+| AI | Conversation storage only (not AI service) | Per approved plan — pgvector stays independent |
+
+---
+
+## Phase 4: NestJS Decommission
 
 ⏳ Not started
 
-- AI integration with Firestore source
-- Performance optimization
-- Monitoring setup
-- Production cut-over
+- Confirm all endpoints migrated
+- Remove `apps/backend/` directory
+- Remove `database/prisma/` directory
+- Remove NestJS dependencies from package.json
+- Update deployment configuration
+- Final documentation sweep
 
 ---
 
@@ -549,11 +632,15 @@ Architecture
 
 ████████████████████ 100%
 
-Repository Implementation
+Repository Implementation (Baseline)
 
-██████████████░░░░░░ 30%
+████████████████████ 100%
 
-AI Integration
+Production Migration
+
+██░░░░░░░░░░░░░░░░░░ 10%
+
+NestJS Decommission
 
 ░░░░░░░░░░░░░░░░░░░░ 0%
 

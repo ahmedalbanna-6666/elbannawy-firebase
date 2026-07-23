@@ -1,39 +1,45 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { getAdminAuth } from '@/lib/firebase/admin';
-import { UserService, UserApplicationService, CreateUserInputSchema } from '@el-bannawy/lib';
+import { UserService, CreateUserInputSchema } from '@el-bannawy/lib';
 
 const userService = new UserService();
-const applicationService = new UserApplicationService(userService);
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
+    const authHeader = request.headers.get('Authorization');
+    if (!authHeader?.startsWith('Bearer ')) {
+      return NextResponse.json(
+        { success: false, error: { code: 'UNAUTHORIZED', message: 'Unauthorized' } },
+        { status: 401 },
+      );
+    }
+
+    const token = authHeader.slice(7);
+    const adminAuth = getAdminAuth();
+    const decoded = await adminAuth.verifyIdToken(token);
+
     const body = (await request.json()) as Record<string, unknown>;
 
-    if (!body.mobile || !body.password || !body.fullName) {
+    if (!body.fullName || !body.mobile) {
       return NextResponse.json(
-        { success: false, error: { code: 'INVALID_INPUT', message: 'Missing required fields: mobile, password, fullName' } },
+        { success: false, error: { code: 'INVALID_INPUT', message: 'Missing required fields: fullName, mobile' } },
         { status: 400 },
       );
     }
 
-    const email = (body.email as string) ?? `${String(body.mobile)}@el-bannawy.app`;
-
-    const adminAuth = getAdminAuth();
-
-    const userRecord = await adminAuth.createUser({
-      email,
-      password: body.password as string,
-      displayName: body.fullName as string,
-    });
-
-    await adminAuth.setCustomUserClaims(userRecord.uid, { role: 'student' });
+    const existing = await userService.getUserById(decoded.uid);
+    if (existing.ok) {
+      return NextResponse.json(
+        { success: true, data: { uid: decoded.uid } },
+      );
+    }
 
     const normalizedMobile = String(body.mobile).startsWith('+')
       ? String(body.mobile)
       : `+2${String(body.mobile)}`;
 
     const createInput = {
-      id: userRecord.uid,
+      id: decoded.uid,
       role: 'student' as const,
       fullName: body.fullName as string,
       mobileNumber: normalizedMobile,
@@ -50,7 +56,6 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     const parsed = CreateUserInputSchema.safeParse(createInput);
     if (!parsed.success) {
-      await adminAuth.deleteUser(userRecord.uid);
       return NextResponse.json(
         { success: false, error: { code: 'INVALID_INPUT', message: parsed.error.message } },
         { status: 400 },
@@ -60,7 +65,6 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const result = await userService.createUser(parsed.data);
 
     if (!result.ok) {
-      await adminAuth.deleteUser(userRecord.uid);
       return NextResponse.json(
         { success: false, error: result.error },
         { status: 500 },
@@ -68,11 +72,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     }
 
     return NextResponse.json(
-      { success: true, data: { uid: userRecord.uid } },
+      { success: true, data: { uid: decoded.uid } },
       { status: 201 },
     );
   } catch (error: unknown) {
-    const msg = error instanceof Error ? error.message : 'Registration failed';
+    const msg = error instanceof Error ? error.message : 'OAuth registration failed';
     return NextResponse.json(
       { success: false, error: { code: 'INTERNAL', message: msg } },
       { status: 400 },

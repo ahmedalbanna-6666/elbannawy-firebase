@@ -1,10 +1,13 @@
 "use client";
 
 import { createContext, useContext, useEffect, useRef, type ReactNode, useCallback } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   signInWithEmailAndPassword,
+  signInWithPopup,
+  GoogleAuthProvider,
+  OAuthProvider,
   signOut as firebaseSignOut,
   onAuthStateChanged,
   type User as FirebaseUser,
@@ -26,6 +29,8 @@ interface AuthContextValue {
   } | null;
   login: (emailOrMobile: string, password: string, rememberMe?: boolean) => Promise<void>;
   register: (payload: RegisterPayload) => Promise<void>;
+  signInWithGoogle: () => Promise<void>;
+  signInWithApple: () => Promise<void>;
   oauthRegister: (payload: OAuthRegisterPayload) => Promise<void>;
   logout: () => Promise<void>;
 }
@@ -76,7 +81,6 @@ export function AuthProvider({ children }: { children: ReactNode }): ReactNode {
   } = useAuthStore();
 
   const queryClient = useQueryClient();
-  const searchParams = useSearchParams();
   const initRef = useRef(false);
 
   const fetchUser = useCallback(async (fbUser: FirebaseUser): Promise<void> => {
@@ -129,24 +133,6 @@ export function AuthProvider({ children }: { children: ReactNode }): ReactNode {
     return (): void => { unsubscribe(); };
   }, [setFirebaseUser, fetchUser, user]);
 
-  const oauthProcessed = useRef(false);
-
-  useEffect(() => {
-    if (oauthProcessed.current) return;
-    oauthProcessed.current = true;
-
-    const urlToken = searchParams.get("token");
-    const urlRefreshToken = searchParams.get("refreshToken");
-    const urlExpiresIn = searchParams.get("expiresIn");
-
-    if (urlToken && urlRefreshToken) {
-      const expiresIn = Number(urlExpiresIn) || 3600;
-      document.cookie = `auth_token=${urlToken}; path=/; max-age=${String(expiresIn)}; SameSite=Lax`;
-      queryClient.removeQueries({ queryKey: ["profile"] });
-      queryClient.removeQueries({ queryKey: ["sidebar-profile"] });
-    }
-  }, [searchParams, queryClient]);
-
   const login = useCallback(
     async (emailOrMobile: string, password: string, _rememberMe = false): Promise<void> => {
       const email = toEmail(emailOrMobile);
@@ -176,9 +162,28 @@ export function AuthProvider({ children }: { children: ReactNode }): ReactNode {
     [fetchUser, queryClient],
   );
 
+  const signInWithGoogle = useCallback(async (): Promise<void> => {
+    const provider = new GoogleAuthProvider();
+    const result = await signInWithPopup(getClientAuth(), provider);
+    const token = await result.user.getIdToken();
+    document.cookie = 'auth_token=' + token + '; path=/; max-age=' + String(60 * 60 * 24 * 14) + '; SameSite=Lax';
+    await fetchUser(result.user);
+  }, [fetchUser]);
+
+  const signInWithApple = useCallback(async (): Promise<void> => {
+    const provider = new OAuthProvider('apple.com');
+    const result = await signInWithPopup(getClientAuth(), provider);
+    const token = await result.user.getIdToken();
+    document.cookie = 'auth_token=' + token + '; path=/; max-age=' + String(60 * 60 * 24 * 14) + '; SameSite=Lax';
+    await fetchUser(result.user);
+  }, [fetchUser]);
+
   const oauthRegister = useCallback(
     async (payload: OAuthRegisterPayload): Promise<void> => {
-      const response = await api.post<{ uid: string }>("/auth/register", { ...payload, email: payload.email });
+      const token = await getClientAuth().currentUser?.getIdToken();
+      const headers: Record<string, string> = {};
+      if (token) headers.Authorization = `Bearer ${token}`;
+      const response = await api.post<{ uid: string }>("/auth/complete-oauth-registration", payload, headers);
       if (!response.data?.uid) {
         throw new Error("OAuth registration failed");
       }
@@ -208,6 +213,8 @@ export function AuthProvider({ children }: { children: ReactNode }): ReactNode {
         user,
         login,
         register,
+        signInWithGoogle,
+        signInWithApple,
         oauthRegister,
         logout,
       }}

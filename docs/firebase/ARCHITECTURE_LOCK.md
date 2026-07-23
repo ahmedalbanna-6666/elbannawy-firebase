@@ -147,47 +147,55 @@ Migration: PostgreSQL → Firebase
 - ✅ Query Patterns Documented
 - ✅ Repository Implementation Ready
 
-## Phase 2 🔄 IN PROGRESS
+## Phase 2 ✅ COMPLETE & LOCKED BASELINE
 
-### Completed Modules
+### Baseline Modules
 
-- ✅ **Repository Foundation** (BaseRepository, FirestoreService, TransactionManager, QueryBuilder, FirestoreMapper, error classes, contracts) — COMPLETE & LOCKED
-- ✅ **Users Module** (domain + Firestore repository + service + API + 5 test suites) — COMPLETE & LOCKED
+| Module | Domain | Status |
+|--------|--------|--------|
+| **Repository Foundation** | BaseRepository, FirestoreService, TransactionManager, QueryBuilder, FirestoreMapper, error classes, contracts | ✅ COMPLETE & LOCKED |
+| **Users** | User, LoginEvent — domain + Firestore repository + service + API + 5 test suites | ✅ COMPLETE & LOCKED |
+| **Curriculum** | EducationalSystem, Stage, Grade, AcademicYear, AcademicTerm, CurrentAcademicContext — repository + service + API | ✅ COMPLETE & LOCKED |
+| **Lessons** | Lesson — CRUD + publish/unpublish/restore/order/complete — repository + service + API | ✅ COMPLETE & LOCKED |
+| **Vocabulary** | VocabularyItem, VocabularySection, VocabularyRelation — repository + import service | ✅ COMPLETE & LOCKED |
+| **Activities** | Activity, StudentAttempt, LessonProgress, execution engine — repository + service + API | ✅ COMPLETE & LOCKED |
 
-### In Progress
+## Phase 2 (Production Migration) 🔄 IN PROGRESS
 
-| Module | Domain | Status | Missing |
-|--------|--------|--------|---------|
-| Curriculum | EducationalSystem, Stage, Grade, AcademicYear, AcademicTerm, CurrentAcademicContext | 🔄 IN PROGRESS | Services, DTOs, API routes, barrel exports, tests, docs |
+Sequential phases. Each must pass all verification gates before the next starts.
 
-### Remaining (in order)
+| Order | Phase | Module | Complexity | Collections Required |
+|:-----:|:-----:|--------|:----------:|---------------------|
+| 1 | P1 | **Authentication** — Firebase Auth as sole identity source. No NestJS sessions/refresh-tokens. | L | `users`, `loginEvents` (existing) |
+| 2 | P2 | **Curriculum remaining** — continue-learning, stages, progress | M | `lessonProgress` (existing) |
+| 3 | P3 | **Lesson sub-resources** — videos CRUD, document upload/download, homework/quiz metadata | M | `lessonVideos`, `lessonDocuments`, Firebase Storage |
+| 4 | P4 | **Videos & Interactive** — playback, progress, timeline events, video questions | L | `videoProgress`, `videoEvents`, `videoQuestions`, `timelineEvents`, `timelineEventProgress` |
+| 5 | P5 | **Homework** — full lifecycle (save→start→submit→grade→review) | XL | `homeworks`, `homeworkQuestions`, `homeworkAttempts`, `homeworkAnswers`, `answerKeys` |
+| 6 | P6 | **Quizzes** — full lifecycle (save→start→submit→grade→review→unlock) | XL | `quizzes`, `quizQuestions`, `quizAttempts`, `quizAnswers`, `answerKeys` |
+| 7 | P7 | **Progress & Home/Dashboard** — aggregated views, leaderboard, student stats | L | `studentStats`, `leaderboardSnapshots`, `xpAccounts`, `xpTransactions`, `xpLevels`, `achievements`, `userAchievements` |
 
-| Priority | Module | Status |
-|----------|--------|--------|
-| 1 | Lesson Content (Lesson, Video, Activity, Vocabulary) | ⏳ |
-| 2 | Assessment (Homework, Quiz, Assessment) | ⏳ |
-| 3 | Progress (LessonProgress, VideoProgress, Stats) | ⏳ |
-| 4 | Story (Story, Chapter, StoryLesson) | ⏳ |
-| 5 | Final Review | ⏳ |
-| 6 | Games | ⏳ |
-| 7 | Live Classes | ⏳ |
-| 8 | Gamification (XP, Achievements, Leaderboard) | ⏳ |
-| 9 | Commerce (Wallet, Payment, Invoice, Coupon) | ⏳ |
-| 10 | Referral | ⏳ |
-| 11 | Notifications | ⏳ |
-| 12 | AI | ⏳ |
-| 13 | Reports | ⏳ |
-| 14 | Support | ⏳ |
-| 15 | Administration | ⏳ |
+### Verification Gates (per phase)
 
-### Required Deliverables
+1. ✅ TypeScript typecheck passes
+2. ✅ ESLint passes
+3. ✅ Build succeeds
+4. ✅ Manual verification of migrated endpoints
+5. ✅ Commit with descriptive message
 
-- Test Data Seeds
-- Repository Implementations
-- Service Layer
-- Controller Layer (if applicable)
-- Integration Tests
-- End-to-End Tests
+### Post-Priority Modules (after P1-P7)
+
+| Priority | Module | Notes |
+|:--------:|--------|-------|
+| Teacher | Competitions, Final Reviews, Stories (write), Live Classes (manage), Coins (manage), Support Tickets | Teacher workflow |
+| Admin | Reports (XL complexity — aggregation strategy needed), Payments (XL — financial data integrity), Admin students/tools, Coins packages | Admin & operations |
+| Optional | Document Import, Execution endpoint, Academic Context, Delegated Permissions | Utility / cleanup |
+| AI | Conversation storage only — AI service (pgvector) stays independent | Per approved plan |
+
+### AI Architecture Note
+
+Per approved plan: The AI service layer (pgvector, LLM abstraction) remains an independent service.
+Only conversation history storage (`conversations`, `conversations/{id}/messages`) migrates to Firestore.
+This is consistent with ARCHITECTURE_LOCK.md "AI Architecture is independent service using pgvector."
 
 ## Phase 3 ⏳ Not started
 
@@ -269,14 +277,18 @@ No architectural changes may be introduced during implementation without updatin
 - Architecture fully documented in all required areas
 - Repository contracts stable and comprehensive
 
-## Phase 2 Implementation Status
+## Phase 2 Baseline Implementation Status
 
 | Module | Domain Entities | Repository | Service | API | Tests | Status |
 |--------|----------------|------------|---------|-----|-------|--------|
 | Repository Foundation | — (base infrastructure) | ✅ | ✅ | ✅ | ✅ | ✅ COMPLETE & LOCKED |
 | Users | User, LoginEvent | ✅ | ✅ | ✅ | ✅ 5 suites | ✅ COMPLETE & LOCKED |
-| Curriculum | EducationalSystem, Stage, Grade, AcademicYear, AcademicTerm | ✅ | ❌ | ❌ | ❌ | 🔄 IN PROGRESS |
-| Remaining 15 modules | — | ⏳ | ⏳ | ⏳ | ⏳ | ⏳ |
+| Curriculum | EducationalSystem, Stage, Grade, AcademicYear, AcademicTerm | ✅ | ✅ | ✅ | ⏳ | ✅ COMPLETE & LOCKED |
+| Lessons | Lesson | ✅ | ✅ | ✅ | ⏳ | ✅ COMPLETE & LOCKED |
+| Vocabulary | VocabularyItem, Section, Relation | ✅ | ✅ | Via Lessons | ⏳ | ✅ COMPLETE & LOCKED |
+| Activities | Activity, StudentAttempt, LessonProgress | ✅ | ✅ | ✅ | ⏳ | ✅ COMPLETE & LOCKED |
+
+## Phase 2 (Production Migration) — Pending
 
 ## Status: Architecture Frozen
 
