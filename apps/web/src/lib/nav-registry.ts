@@ -22,6 +22,7 @@ import {
   FileCheck,
   Smartphone,
   Shield,
+  ClipboardList,
   type LucideIcon,
 } from "lucide-react";
 
@@ -97,6 +98,30 @@ export const NAV_REGISTRY: readonly NavModule[] = [
     sidebar: true,
     dashboard: true,
     order: 40,
+    category: "content",
+  },
+  {
+    id: "teacher-homework",
+    title: "الواجبات",
+    description: "إدارة ومتابعة واجبات الطلاب",
+    icon: ClipboardList,
+    route: "/dashboard/teacher/homework",
+    permission: PERMISSIONS.HOMEWORK_MANAGE,
+    sidebar: true,
+    dashboard: true,
+    order: 35,
+    category: "content",
+  },
+  {
+    id: "teacher-quiz",
+    title: "الاختبارات",
+    description: "إدارة ومتابعة اختبارات الطلاب",
+    icon: GraduationCap,
+    route: "/dashboard/teacher/quiz",
+    permission: PERMISSIONS.QUIZZES_MANAGE,
+    sidebar: true,
+    dashboard: true,
+    order: 36,
     category: "content",
   },
   {
@@ -240,7 +265,7 @@ export const NAV_REGISTRY: readonly NavModule[] = [
     permission: PERMISSIONS.VOCABULARY_MANAGE,
     sidebar: true,
     dashboard: true,
-    order: 67,
+    order: 69,
     category: "management",
   },
   {
