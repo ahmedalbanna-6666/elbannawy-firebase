@@ -10,11 +10,19 @@ export async function POST(
   const { id } = await params;
   try {
     const body = (await request.json()) as { gradeIds?: string[]; academicYearId?: string };
-    const gradeIds = body.gradeIds ?? [];
+    const newGradeIds = body.gradeIds ?? [];
     const academicYearId = body.academicYearId ?? '';
 
+    const existingResult = await teacherRepo.listTeacherAssignments(id, { limit: 100 });
+    const existingIds = existingResult.ok
+      ? existingResult.value.items.map((a: { gradeId: string }) => a.gradeId)
+      : [];
+
+    const toAdd = newGradeIds.filter((gid: string) => !existingIds.includes(gid));
+    const toRemove = existingIds.filter((gid: string) => !newGradeIds.includes(gid));
+
     const results = [];
-    for (const gradeId of gradeIds) {
+    for (const gradeId of toAdd) {
       const assignmentId = `ta-${id}-${gradeId}`;
       const result = await teacherRepo.createAssignment({
         id: assignmentId,
@@ -28,7 +36,12 @@ export async function POST(
       if (result.ok) results.push(result.value);
     }
 
-    return NextResponse.json({ success: true, data: { id, gradeIds, assignments: results } });
+    for (const gradeId of toRemove) {
+      const assignmentId = `ta-${id}-${gradeId}`;
+      await teacherRepo.deactivateAssignment(assignmentId, `update-${id}`);
+    }
+
+    return NextResponse.json({ success: true, data: { id, gradeIds: newGradeIds, added: results.length, removed: toRemove.length } });
   } catch (error) {
     return NextResponse.json(
       {

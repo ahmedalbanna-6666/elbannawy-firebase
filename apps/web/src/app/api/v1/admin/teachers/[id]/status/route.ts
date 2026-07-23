@@ -14,7 +14,7 @@ export async function PATCH(
     if (!doc.exists) return NextResponse.json({ success: false, error: { code: 'NOT_FOUND', message: 'Teacher not found' } }, { status: 404 });
 
     const statusVal = (body.status ?? 'active').toLowerCase();
-    const updateData: Record<string, unknown> = { status: statusVal, updatedAt: new Date().toISOString() };
+    const updateData: Record<string, unknown> = { status: { status: statusVal }, updatedAt: new Date().toISOString() };
 
     if (statusVal === 'deleted') {
       updateData.deletedAt = new Date().toISOString();

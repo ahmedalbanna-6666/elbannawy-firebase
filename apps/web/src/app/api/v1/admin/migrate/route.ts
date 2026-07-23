@@ -19,7 +19,7 @@ export async function POST(_request: NextRequest): Promise<NextResponse> {
         }
 
         const claims = fbUser.customClaims ?? {};
-        const role = (claims as Record<string, string>).role ?? 'student';
+        const roleName = (claims as Record<string, string>).role ?? 'student';
         const now = new Date().toISOString();
 
         await db.collection('users').doc(fbUser.uid).set({
@@ -28,18 +28,19 @@ export async function POST(_request: NextRequest): Promise<NextResponse> {
           englishName: null,
           email: fbUser.email ?? null,
           mobileNumber: fbUser.phoneNumber ?? (fbUser.email?.replace('@el-bannawy.app', '') ?? null),
-          role,
-          status: 'active',
+          role: { role: roleName, grantedAt: now },
+          status: { status: 'active' },
           isActive: true,
           governorate: null,
           school: null,
+          schemaVersion: 1,
           createdAt: now,
           updatedAt: now,
           deletedAt: null,
         });
 
         results.created++;
-        results.details.push(`Created ${role}: ${fbUser.uid} (${fbUser.displayName ?? 'N/A'})`);
+        results.details.push(`Created ${roleName}: ${fbUser.uid} (${fbUser.displayName ?? 'N/A'})`);
       } catch {
         results.errors++;
       }

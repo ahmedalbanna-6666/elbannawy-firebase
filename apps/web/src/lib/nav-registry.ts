@@ -23,6 +23,7 @@ import {
   Smartphone,
   Shield,
   ClipboardList,
+  Wrench,
   type LucideIcon,
 } from "lucide-react";
 
@@ -221,6 +222,18 @@ export const NAV_REGISTRY: readonly NavModule[] = [
     category: "management",
   },
   {
+    id: "admin-setup",
+    title: "أدوات الإعداد",
+    description: "ترحيل البيانات وإعداد النظام",
+    icon: Wrench,
+    route: "/dashboard/admin/setup",
+    permission: PERMISSIONS.SETTINGS_MANAGE,
+    sidebar: true,
+    dashboard: false,
+    order: 75,
+    category: "settings",
+  },
+  {
     id: "settings",
     title: "الإعدادات",
     description: "تعديل الإعدادات والتفضيلات",
@@ -375,6 +388,18 @@ export const NAV_REGISTRY: readonly NavModule[] = [
     dashboard: false,
     order: 130,
     category: "student",
+  },
+  {
+    id: "support-management",
+    title: "إدارة الدعم الفني",
+    description: "إدارة تذاكر الدعم والرد على الاستفسارات",
+    icon: LifeBuoy,
+    route: "/dashboard/support",
+    permission: PERMISSIONS.SUPPORT_ANSWER,
+    sidebar: true,
+    dashboard: true,
+    order: 71,
+    category: "management",
   },
   {
     id: "shop",

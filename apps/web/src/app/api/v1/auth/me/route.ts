@@ -105,26 +105,30 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const user = result.value;
 
     const adminDb = getAdminDb();
-    let effectivePermissions: string[] = [];
+    let effectivePermissions: string[] | undefined;
     try {
       const permDoc = await adminDb.collection('userPermissions').doc(user.id).get();
       if (permDoc.exists) {
-        effectivePermissions = (permDoc.data() as { permissions?: string[] })?.permissions ?? [];
+        effectivePermissions = (permDoc.data() as { permissions?: string[] })?.permissions;
       }
     } catch {
       // permissions lookup failed silently
     }
 
+    const responseData: Record<string, unknown> = {
+      id: user.id,
+      fullName: user.fullName,
+      mobileNumber: user.mobileNumber,
+      role: normalizeRole(user.role),
+      status: 'active',
+    };
+    if (effectivePermissions) {
+      responseData.effectivePermissions = effectivePermissions;
+    }
+
     return NextResponse.json({
       success: true,
-      data: {
-        id: user.id,
-        fullName: user.fullName,
-        mobileNumber: user.mobileNumber,
-        role: normalizeRole(user.role),
-        status: 'active',
-        effectivePermissions,
-      },
+      data: responseData,
     });
   } catch {
     return NextResponse.json(

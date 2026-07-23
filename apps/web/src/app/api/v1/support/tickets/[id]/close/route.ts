@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { authenticateRequest } from '@/lib/firebase/auth-helper';
+import { userCanAnswerSupport } from '@/lib/firebase/permission-checker';
 import { SupportTicketRepository, UserService } from '@el-bannawy/lib';
 
 const supportRepo = new SupportTicketRepository();
@@ -23,7 +24,7 @@ export async function POST(
     }
 
     const caller = await userService.getUserById(decoded.uid);
-    const isSupport = caller.ok && (caller.value.role === 'support' || caller.value.role === 'administrator');
+    const isSupport = caller.ok ? await userCanAnswerSupport(decoded.uid, caller.value.role) : false;
     if (!isSupport && ticket.value.userId !== decoded.uid) {
       return NextResponse.json({ success: false, error: { code: 'FORBIDDEN', message: 'Not your ticket' } }, { status: 403 });
     }

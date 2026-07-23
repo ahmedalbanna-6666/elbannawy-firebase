@@ -17,10 +17,46 @@ export async function GET(
       db.collection('userPermissions').doc(id).get().catch(() => null),
     ]);
 
-    const gradeIds: string[] = gradesSnap?.empty === false
+    const gradeIdList: string[] = gradesSnap?.empty === false
       ? gradesSnap.docs.map((d) => (d.data() as { gradeId?: string }).gradeId).filter(Boolean) as string[]
       : [];
     const grantedPermissions: string[] = permissionsSnap?.exists ? (permissionsSnap.data() as { permissions?: string[] })?.permissions ?? [] : [];
+
+    const uRole = u.role as Record<string, unknown> | undefined;
+    const roleStr = typeof uRole === 'object' && uRole !== null
+      ? String(uRole.role ?? 'teacher')
+      : String(u.role ?? 'teacher');
+    const uStatus = u.status as Record<string, unknown> | undefined;
+    const statusStr = typeof uStatus === 'object' && uStatus !== null
+      ? String(uStatus.status ?? 'active')
+      : String(u.status ?? 'active');
+
+    const assignedGrades = await Promise.all(
+      gradeIdList.map(async (gid) => {
+        try {
+          const gDoc = await db.collection('grades').doc(gid).get();
+          if (!gDoc.exists) return null;
+          const g = gDoc.data() as Record<string, unknown>;
+          const stageId = g.stageId as string ?? '';
+          let stageName = '';
+          if (stageId) {
+            const sDoc = await db.collection('stages').doc(stageId).get().catch(() => null);
+            if (sDoc?.exists) {
+              stageName = (sDoc.data() as Record<string, unknown>)?.nameAr as string ?? (sDoc.data() as Record<string, unknown>)?.name as string ?? '';
+            }
+          }
+          const countSnap = await db.collection('users').where('gradeId', '==', gid).where('deletedAt', '==', null).count().get().catch(() => null);
+          return {
+            id: gid,
+            name: (g.nameAr as string) || (g.name as string) || gid,
+            stage: { id: stageId, name: stageName },
+            _count: { users: countSnap?.data().count ?? 0 },
+          };
+        } catch {
+          return null;
+        }
+      }),
+    );
 
     const teacher = {
       id,
@@ -28,16 +64,17 @@ export async function GET(
       englishName: (u.englishName as string) ?? null,
       email: (u.email as string) ?? null,
       mobileNumber: (u.mobileNumber as string) ?? null,
-      role: (u.role as string)?.toUpperCase() ?? 'TEACHER',
-      status: (u.status as string) ?? 'active',
+      role: roleStr.toUpperCase(),
+      status: statusStr,
       governorate: (u.governorate as string) ?? null,
       school: (u.school as string) ?? null,
       createdAt: (u.createdAt as string) ?? new Date().toISOString(),
       updatedAt: (u.updatedAt as string) ?? new Date().toISOString(),
       deletedAt: (u.deletedAt as string) ?? null,
       lastLogin: (u.lastLogin as string) ?? null,
-      assignedGrades: gradeIds,
+      assignedGrades: assignedGrades.filter(Boolean),
       grantedPermissions,
+      gradeIds: gradeIdList,
     };
 
     return NextResponse.json({ success: true, data: teacher });
@@ -61,7 +98,7 @@ export async function PATCH(
     if (body.mobileNumber !== undefined) updateData.mobileNumber = body.mobileNumber;
     if (body.governorate !== undefined) updateData.governorate = body.governorate;
     if (body.school !== undefined) updateData.school = body.school;
-    if (body.status !== undefined) updateData.status = body.status;
+    if (body.status !== undefined) updateData.status = { status: body.status as string };
     await db.collection('users').doc(id).update(updateData);
     const updated = await db.collection('users').doc(id).get();
     return NextResponse.json({ success: true, data: { id, ...updated.data() } });

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { authenticateRequest } from '@/lib/firebase/auth-helper';
+import { userCanAnswerSupport } from '@/lib/firebase/permission-checker';
 import { SupportTicketRepository, UserService } from '@el-bannawy/lib';
 
 const supportRepo = new SupportTicketRepository();
@@ -17,10 +18,12 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json({ success: false, error: { code: 'UNAUTHORIZED', message: 'User not found' } }, { status: 401 });
     }
 
+    const isSupport = await userCanAnswerSupport(decoded.uid, caller.value.role);
+
     const { searchParams } = new URL(request.url);
     const filter: Record<string, unknown> = {};
 
-    if (caller.value.role === 'student') {
+    if (!isSupport) {
       filter.userId = decoded.uid;
     }
     if (searchParams.get('status')) filter.status = searchParams.get('status');

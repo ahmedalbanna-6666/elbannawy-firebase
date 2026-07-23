@@ -50,6 +50,8 @@ interface Teacher {
   updatedAt: string;
   lastLogin: string | null;
   assignedGrades: AssignedGrade[];
+  _count?: { grades: number; students: number };
+  gradeIds?: string[];
 }
 
 interface TeacherDetail extends Teacher {
@@ -307,7 +309,8 @@ export default function TeachersPage(): ReactNode {
 
           <div className="flex flex-col gap-3">
             {teachers.map((t) => {
-              const totalStudents = t.assignedGrades.reduce((sum, g) => sum + (g._count?.users ?? 0), 0);
+              const totalStudents = t._count?.students ?? t.assignedGrades.reduce((sum, g) => sum + (g._count?.users ?? 0), 0);
+              const gradeCount = t._count?.grades ?? t.assignedGrades.length;
               const stageNames = [...new Set(t.assignedGrades.map((g) => g.stage?.name).filter(Boolean))];
               const lastLoginStr = t.lastLogin
                 ? new Date(t.lastLogin).toLocaleDateString("ar-EG", { day: "numeric", month: "short", year: "numeric" })
@@ -328,7 +331,7 @@ export default function TeachersPage(): ReactNode {
                           </div>
                           <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-neutral-500 mt-0.5">
                             <span>{t.mobileNumber ?? "—"}</span>
-                            <span>{t.assignedGrades.length} صفوف</span>
+                            <span>{gradeCount} صفوف</span>
                             <span>{totalStudents} طالب</span>
                             {stageNames.length > 0 && (
                               <span>{stageNames.join("، ")}</span>
