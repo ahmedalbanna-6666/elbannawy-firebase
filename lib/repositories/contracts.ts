@@ -1583,3 +1583,97 @@ export interface IQuizAnswerRepository {
   listByAttempt(attemptId: string): Promise<RepositoryResult<IQuizAnswer[]>>;
   deleteByAttempt(attemptId: string): Promise<RepositoryResult<void>>;
 }
+
+// ===== XP Contracts =====
+
+export interface IXpAccount {
+  readonly id: string;
+  readonly studentId: string;
+  readonly totalXp: number;
+  readonly level: number;
+  readonly updatedAt: string;
+  readonly projectionVersion: number;
+}
+
+export interface IXpTransaction {
+  readonly id: string;
+  readonly studentId: string;
+  readonly amount: number;
+  readonly sourceType: string;
+  readonly sourceId?: string;
+  readonly reason: string;
+  readonly occurredAt: string;
+  readonly idempotencyKey: string;
+  readonly reversalOf?: string;
+}
+
+export interface IXpLevel {
+  readonly id: string;
+  readonly level: number;
+  readonly minimumXp: number;
+  readonly title: string;
+  readonly active: boolean;
+}
+
+export interface IXpAccountRepository {
+  getByStudentId(studentId: string): Promise<RepositoryResult<IXpAccount | null>>;
+  upsert(studentId: string, totalXp: number, level: number): Promise<RepositoryResult<IXpAccount>>;
+  getLeaderboard(limit: number): Promise<RepositoryResult<IXpAccount[]>>;
+}
+
+export interface IXpTransactionRepository {
+  create(input: IXpTransaction): Promise<RepositoryResult<IXpTransaction>>;
+  listByStudent(studentId: string, limit?: number): Promise<RepositoryResult<IXpTransaction[]>>;
+}
+
+// ===== Achievement Contracts =====
+
+export interface IAchievement {
+  readonly id: string;
+  readonly code: string;
+  readonly title: string;
+  readonly description: string;
+  readonly iconPath?: string;
+  readonly criteria: Record<string, unknown>;
+  readonly active: boolean;
+  readonly createdAt: string;
+}
+
+export interface IUserAchievement {
+  readonly id: string;
+  readonly studentId: string;
+  readonly achievementId: string;
+  readonly earnedAt: string;
+  readonly sourceEventId?: string;
+}
+
+export interface IAchievementRepository {
+  listActive(): Promise<RepositoryResult<IAchievement[]>>;
+  getByCode(code: string): Promise<RepositoryResult<IAchievement | null>>;
+}
+
+export interface IUserAchievementRepository {
+  listByStudent(studentId: string): Promise<RepositoryResult<IUserAchievement[]>>;
+  award(input: IUserAchievement): Promise<RepositoryResult<IUserAchievement>>;
+}
+
+// ===== Student Stats Contracts =====
+
+export interface IStudentStats {
+  readonly id: string;
+  readonly studentId: string;
+  readonly completedLessons: number;
+  readonly completedUnits: number;
+  readonly averageQuizScore: number;
+  readonly homeworkCompletionRate: number;
+  readonly currentXp: number;
+  readonly currentCoins: number;
+  readonly streakDays: number;
+  readonly lastActiveAt: string;
+  readonly projectionVersion: number;
+}
+
+export interface IStudentStatsRepository {
+  getByStudentId(studentId: string): Promise<RepositoryResult<IStudentStats | null>>;
+  computeAndSave(studentId: string): Promise<RepositoryResult<IStudentStats>>;
+}

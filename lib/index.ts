@@ -22,6 +22,7 @@ export * from './vocabulary-import';
 export * from './services/vocabulary-import';
 export * from './services/homework';
 export { QuizService } from './services/quiz/quiz.service';
+export * from './services/gamification';
 export * from './services/question-import';
 export * from './question-import';
 
