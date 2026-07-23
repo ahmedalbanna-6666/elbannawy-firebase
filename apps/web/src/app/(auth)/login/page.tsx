@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { Suspense, useState, type ReactNode } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/providers/auth-provider";
@@ -10,7 +10,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { School, Phone, Lock, LogIn, Eye, EyeOff } from "lucide-react";
 
-export default function LoginPage(): ReactNode {
+function LoginForm(): ReactNode {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { login } = useAuth();
@@ -174,5 +174,19 @@ export default function LoginPage(): ReactNode {
         </form>
       </CardContent>
     </Card>
+  );
+}
+
+export default function LoginPage(): ReactNode {
+  return (
+    <Suspense fallback={
+      <Card variant="elevated" padding="lg">
+        <CardContent>
+          <div className="flex h-8 w-48 animate-pulse rounded bg-neutral-200 dark:bg-neutral-700" />
+        </CardContent>
+      </Card>
+    }>
+      <LoginForm />
+    </Suspense>
   );
 }
