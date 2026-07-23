@@ -20,6 +20,7 @@ export * from './activities';
 export * from './engine';
 export * from './vocabulary-import';
 export * from './services/vocabulary-import';
+export * from './services/homework';
 export * from './services/question-import';
 export * from './question-import';
 

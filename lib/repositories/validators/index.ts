@@ -90,6 +90,17 @@ export {
   CreateVideoProgressInputSchema,
   UpdateVideoProgressInputSchema,
 } from './video-progress.validator';
+
+export {
+  CreateHomeworkInputSchema,
+  UpdateHomeworkInputSchema,
+  CreateHomeworkQuestionInputSchema,
+  CreateHomeworkAttemptInputSchema,
+  UpdateHomeworkAttemptInputSchema,
+  CreateHomeworkAnswerInputSchema,
+  HomeworkAttemptStatusEnum,
+  QuestionTypeEnum,
+} from './homework.validator';
 export type {
   CreateVideoProgressInputType,
   UpdateVideoProgressInputType,

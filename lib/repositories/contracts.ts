@@ -699,6 +699,8 @@ export interface IActivityRepository {
 // ===== Student Attempt Contracts =====
 
 export type IAttemptStatus = 'in_progress' | 'submitted' | 'graded' | 'expired';
+
+export type IHomeworkAttemptStatus = 'not_started' | 'in_progress' | 'submitted' | 'graded';
 export type IGradingMethod = 'auto' | 'manual' | 'ai_assisted' | 'practice';
 
 export interface IStudentAttempt {
@@ -1125,6 +1127,173 @@ export interface ILessonDocumentRepository {
   getByLessonId(lessonId: string): Promise<RepositoryResult<ILessonDocument | null>>;
   update(lessonId: string, input: UpdateLessonDocumentInput, expectedVersion: number): Promise<RepositoryResult<ILessonDocument>>;
   delete(lessonId: string): Promise<RepositoryResult<void>>;
+}
+
+// ===== Homework Contracts =====
+
+export interface IHomework {
+  readonly id: string;
+  readonly lessonId: string;
+  readonly title: string;
+  readonly instructions?: string;
+  readonly passingScore: number;
+  readonly maxAttempts: number;
+  readonly unlimitedAttempts: boolean;
+  readonly published: boolean;
+  readonly allowRetry: boolean;
+  readonly showAnswers: boolean;
+  readonly xpReward: number;
+  readonly contentVersion: number;
+  readonly createdAt: string;
+  readonly updatedAt: string;
+  readonly schemaVersion: number;
+  readonly deletedAt?: string | null;
+}
+
+export interface CreateHomeworkInput {
+  readonly id: string;
+  readonly lessonId: string;
+  readonly title: string;
+  readonly instructions?: string;
+  readonly passingScore?: number;
+  readonly maxAttempts?: number;
+  readonly unlimitedAttempts?: boolean;
+  readonly published?: boolean;
+  readonly allowRetry?: boolean;
+  readonly showAnswers?: boolean;
+  readonly xpReward?: number;
+}
+
+export interface UpdateHomeworkInput {
+  readonly title?: string;
+  readonly instructions?: string;
+  readonly passingScore?: number;
+  readonly maxAttempts?: number;
+  readonly unlimitedAttempts?: boolean;
+  readonly published?: boolean;
+  readonly allowRetry?: boolean;
+  readonly showAnswers?: boolean;
+  readonly xpReward?: number;
+}
+
+export interface IHomeworkRepository {
+  create(input: CreateHomeworkInput): Promise<RepositoryResult<IHomework>>;
+  getById(id: string): Promise<RepositoryResult<IHomework | null>>;
+  getByLessonId(lessonId: string): Promise<RepositoryResult<IHomework | null>>;
+  update(id: string, input: UpdateHomeworkInput, expectedVersion: number): Promise<RepositoryResult<IHomework>>;
+  delete(id: string): Promise<RepositoryResult<void>>;
+  listByLessonIds(lessonIds: string[]): Promise<RepositoryResult<IHomework[]>>;
+}
+
+export type QuestionType = 'MULTIPLE_CHOICE' | 'TRUE_FALSE' | 'FILL_BLANK' | 'MATCHING';
+
+export interface IHomeworkQuestion {
+  readonly id: string;
+  readonly homeworkId: string;
+  readonly questionType: QuestionType;
+  readonly prompt: string;
+  readonly instructions?: string;
+  readonly explanation?: string;
+  readonly options: Record<string, string> | null;
+  readonly points: number;
+  readonly displayOrder: number;
+  readonly contentVersion: number;
+  readonly createdAt: string;
+  readonly updatedAt: string;
+  readonly schemaVersion: number;
+}
+
+export interface CreateHomeworkQuestionInput {
+  readonly id: string;
+  readonly homeworkId: string;
+  readonly questionType: QuestionType;
+  readonly prompt: string;
+  readonly instructions?: string;
+  readonly explanation?: string;
+  readonly options?: Record<string, string> | null;
+  readonly points?: number;
+  readonly displayOrder: number;
+}
+
+export interface IHomeworkQuestionRepository {
+  create(input: CreateHomeworkQuestionInput): Promise<RepositoryResult<IHomeworkQuestion>>;
+  listByHomework(homeworkId: string): Promise<RepositoryResult<IHomeworkQuestion[]>>;
+  getById(id: string): Promise<RepositoryResult<IHomeworkQuestion | null>>;
+  deleteByHomework(homeworkId: string): Promise<RepositoryResult<void>>;
+}
+
+export interface IHomeworkAttempt {
+  readonly id: string;
+  readonly studentId: string;
+  readonly homeworkId: string;
+  readonly attemptNumber: number;
+  readonly status: IHomeworkAttemptStatus;
+  readonly score?: number;
+  readonly passed?: boolean;
+  readonly startedAt: string;
+  readonly submittedAt?: string;
+  readonly gradedAt?: string;
+  readonly timeSpentSeconds?: number;
+  readonly contentVersion: number;
+  readonly createdAt: string;
+  readonly updatedAt: string;
+}
+
+export interface CreateHomeworkAttemptInput {
+  readonly id: string;
+  readonly studentId: string;
+  readonly homeworkId: string;
+  readonly attemptNumber: number;
+}
+
+export interface UpdateHomeworkAttemptInput {
+  readonly status?: IHomeworkAttemptStatus;
+  readonly score?: number;
+  readonly passed?: boolean;
+  readonly submittedAt?: string;
+  readonly gradedAt?: string;
+  readonly timeSpentSeconds?: number;
+}
+
+export interface IHomeworkAttemptRepository {
+  create(input: CreateHomeworkAttemptInput): Promise<RepositoryResult<IHomeworkAttempt>>;
+  getById(id: string): Promise<RepositoryResult<IHomeworkAttempt | null>>;
+  getActive(studentId: string, homeworkId: string): Promise<RepositoryResult<IHomeworkAttempt | null>>;
+  update(id: string, input: UpdateHomeworkAttemptInput): Promise<RepositoryResult<IHomeworkAttempt>>;
+  listByStudentAndHomework(studentId: string, homeworkId: string): Promise<RepositoryResult<IHomeworkAttempt[]>>;
+  countByStudentAndHomework(studentId: string, homeworkId: string): Promise<RepositoryResult<number>>;
+}
+
+export interface IHomeworkAnswer {
+  readonly id: string;
+  readonly attemptId: string;
+  readonly studentId: string;
+  readonly homeworkId: string;
+  readonly questionId: string;
+  readonly answer: Record<string, unknown>;
+  readonly isCorrect?: boolean;
+  readonly score?: number;
+  readonly feedback?: string;
+  readonly submittedAt: string;
+  readonly createdAt: string;
+}
+
+export interface CreateHomeworkAnswerInput {
+  readonly id: string;
+  readonly attemptId: string;
+  readonly studentId: string;
+  readonly homeworkId: string;
+  readonly questionId: string;
+  readonly answer: Record<string, unknown>;
+  readonly isCorrect?: boolean;
+  readonly score?: number;
+  readonly feedback?: string;
+}
+
+export interface IHomeworkAnswerRepository {
+  create(input: CreateHomeworkAnswerInput): Promise<RepositoryResult<IHomeworkAnswer>>;
+  listByAttempt(attemptId: string): Promise<RepositoryResult<IHomeworkAnswer[]>>;
+  deleteByAttempt(attemptId: string): Promise<RepositoryResult<void>>;
 }
 
 // ===== Video Progress Contracts =====

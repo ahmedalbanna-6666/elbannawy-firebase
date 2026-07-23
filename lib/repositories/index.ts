@@ -7,5 +7,6 @@ export * from './validators';
 export * from './user';
 export * from './activities';
 export * from './vocabulary';
+export * from './homework';
 
 export type { ICursor, ICursorBuilder } from './../shared/types/cursor.types';
