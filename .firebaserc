@@ -1,0 +1,10 @@
+{
+  "projects": {
+    "default": "elbannawy-platform-f0a73",
+    "dev": "elbannawy-platform-f0a73",
+    "staging": "elbannawy-platform-f0a73",
+    "prod": "elbannawy-platform-f0a73"
+  },
+  "targets": {},
+  "etags": {}
+}

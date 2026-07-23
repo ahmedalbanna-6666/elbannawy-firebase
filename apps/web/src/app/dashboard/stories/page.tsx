@@ -38,7 +38,7 @@ export default function StoriesPage(): ReactNode {
   if (isAdmin) return <AdminStoriesView />;
   if (isTeacher) return <TeacherStoriesView />;
   if (isStaff) return <StaffStoriesView />;
-  if (!KNOWN_ROLES.has(rawRole)) {
+  if (!KNOWN_ROLES.has(rawRole.toUpperCase())) {
     return (
       <EmptyState
         title="غير مدعوم"

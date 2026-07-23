@@ -1,5 +1,5 @@
-export { importQuestionsFromDocx, parseQuestionText } from './docx-importer.js';
-export type { ImportOptions } from './docx-importer.js';
+export { importQuestionsFromDocx, parseQuestionText } from './docx-importer';
+export type { ImportOptions } from './docx-importer';
 export type {
   ImportResult,
   ImportedActivity,
@@ -24,4 +24,4 @@ export type {
   TrueFalseContent,
   TrueFalseQuestion,
   WritingContent,
-} from './types.js';
+} from './types';

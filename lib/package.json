@@ -2,7 +2,7 @@
   "name": "@el-bannawy/lib",
   "version": "1.0.0",
   "private": true,
-  "type": "commonjs",
+  "type": "module",
   "description": "Core library containing repository infrastructure for El-bannawy Platform",
   "main": "./index.ts",
   "types": "./index.ts",

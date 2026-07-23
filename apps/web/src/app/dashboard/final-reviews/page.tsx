@@ -38,7 +38,7 @@ export default function FinalReviewsPage(): ReactNode {
   if (isAdmin) return <AdminFinalReviewsView />;
   if (isTeacher) return <TeacherFinalReviewsView />;
   if (isStaff) return <StaffFinalReviewsView />;
-  if (!KNOWN_ROLES.has(rawRole)) {
+  if (!KNOWN_ROLES.has(rawRole.toUpperCase())) {
     return (
       <EmptyState
         title="غير مدعوم"

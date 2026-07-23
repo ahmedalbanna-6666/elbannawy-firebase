@@ -6,7 +6,6 @@ import { useQuery, useMutation, useQueryClient, type UseQueryResult } from "@tan
 import { api } from "@/lib/api-client";
 import { useAuthStore } from "@/lib/auth-store";
 import { useAuth } from "@/providers/auth-provider";
-import { ROLE_LABELS } from "@el-bannawy/shared";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -194,7 +193,7 @@ export default function ProfilePage(): ReactNode {
           id: data.id,
           fullName: data.fullName,
           mobileNumber: data.mobileNumber,
-          role: data.role,
+          role: (data.role ?? "").toUpperCase(),
           status: data.status,
         });
       }
@@ -222,6 +221,19 @@ export default function ProfilePage(): ReactNode {
 
   if (!profile) return <ProfileSkeleton />;
   const p = profile;
+
+  function getRoleLabel(): string {
+    switch (p.role) {
+      case "STUDENT":
+        return p.roleProfile?.grade?.name ?? p.roleProfile?.stage?.name ?? "طالب";
+      case "TEACHER":
+        return "معلم";
+      case "ADMINISTRATOR":
+        return "مدير";
+      case "STAFF":
+        return "موظف";
+    }
+  }
 
   const firstName = p.fullName ? p.fullName.split(" ")[0] : "";
   const avatarUrl = p.avatarUrl ?? `https://ui-avatars.com/api/?name=${encodeURIComponent(firstName || "User")}&background=22D3EE&color=fff&bold=true&font-size=0.33&size=128`;
@@ -252,7 +264,7 @@ export default function ProfilePage(): ReactNode {
               <div>
                 <p className="text-lg font-extrabold text-neutral-50">{p.fullName}</p>
                 <p className="text-sm text-neutral-400">
-                  {ROLE_LABELS[p.role] ?? p.role}
+                  {getRoleLabel()}
                 </p>
               </div>
               <div className="flex flex-col gap-2">
@@ -416,9 +428,8 @@ export default function ProfilePage(): ReactNode {
             variant="danger"
             size="md"
             fullWidth
-            onClick={() => {
-              void logout();
-              router.push("/login");
+            onClick={async () => {
+              await logout();
             }}
           >
             <LogOut className="h-4 w-4" />

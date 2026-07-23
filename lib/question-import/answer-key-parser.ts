@@ -1,4 +1,4 @@
-import { MARKER_ANSWER_KEY } from './constants.js';
+import { MARKER_ANSWER_KEY } from './constants';
 
 export function parseAnswerKey(lines: string[]): Map<number, string> {
   const answers = new Map<number, string>();

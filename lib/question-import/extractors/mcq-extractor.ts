@@ -1,6 +1,6 @@
-import type { McqContent, McqQuestion, McqOption, McqCategory } from '../types.js';
-import { findAnswerKeyInText } from '../answer-key-parser.js';
-import { CATEGORY_HEADERS } from '../constants.js';
+import type { McqContent, McqQuestion, McqOption, McqCategory } from '../types';
+import { findAnswerKeyInText } from '../answer-key-parser';
+import { CATEGORY_HEADERS } from '../constants';
 
 function isCategoryHeader(line: string): boolean {
   return (CATEGORY_HEADERS as readonly string[]).some((h) => line.toLowerCase() === h.toLowerCase());

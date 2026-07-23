@@ -9,7 +9,7 @@ import type {
   ActivityContent,
   ImportError,
   ErrorCode,
-} from './types.js';
+} from './types';
 import {
   extractMcq,
   extractDragDrop,
@@ -19,13 +19,13 @@ import {
   extractDialogue,
   extractTrueFalse,
   extractWriting,
-} from './extractors/index.js';
+} from './extractors/index';
 import {
   MARKER_ANSWER_KEY,
   ACTIVITY_MARKER_PATTERN,
   MAX_FILE_SIZE_BYTES,
   ALLOWED_EXTENSIONS,
-} from './constants.js';
+} from './constants';
 
 const MARKERS: Record<string, ActivityType> = {
   '@@MCQ@@': 'MCQ',
@@ -176,7 +176,7 @@ function validateContentIntegrity(activities: ImportedActivity[]): ImportError[]
     const c = activity.content;
 
     if (activity.type === 'MCQ') {
-      const mcq = c as import('./types.js').McqContent;
+      const mcq = c as import('./types').McqContent;
       if (mcq.categories.length === 0 || mcq.categories.every((cat) => cat.questions.length === 0)) {
         result.push(error('MCQ_MISSING_OPTIONS', `MCQ #${activity.order}: no questions extracted`));
       }
@@ -198,28 +198,28 @@ function validateContentIntegrity(activities: ImportedActivity[]): ImportError[]
     }
 
     if (activity.type === 'DRAG_DROP') {
-      const dd = c as import('./types.js').DragDropContent;
+      const dd = c as import('./types').DragDropContent;
       if (dd.wordBank.length === 0) {
         result.push(error('DRAG_DROP_MISSING_WORD_BANK', `DRAG_DROP #${activity.order}: missing or empty word bank`));
       }
     }
 
     if (activity.type === 'READING') {
-      const rd = c as import('./types.js').ReadingContent;
+      const rd = c as import('./types').ReadingContent;
       if (rd.passage.trim().length === 0) {
         result.push(error('READING_EMPTY_PASSAGE', `READING #${activity.order}: passage is empty`));
       }
     }
 
     if (activity.type === 'DIALOGUE') {
-      const dl = c as import('./types.js').DialogueContent;
+      const dl = c as import('./types').DialogueContent;
       if (dl.lines.length === 0) {
         result.push(error('DIALOGUE_EMPTY', `DIALOGUE #${activity.order}: no dialogue lines extracted`));
       }
     }
 
     if (activity.type === 'TRUE_FALSE') {
-      const tf = c as import('./types.js').TrueFalseContent;
+      const tf = c as import('./types').TrueFalseContent;
       for (const q of tf.questions) {
         if (tf.answers[q.number] === undefined) {
           result.push(error('MISSING_ANSWER_ENTRY', `TRUE_FALSE #${activity.order}: missing answer for question ${q.number}`));
@@ -228,7 +228,7 @@ function validateContentIntegrity(activities: ImportedActivity[]): ImportError[]
     }
 
     if (activity.type === 'WRITING') {
-      const wr = c as import('./types.js').WritingContent;
+      const wr = c as import('./types').WritingContent;
       if (wr.topic.trim().length === 0) {
         result.push(error('WRITING_EMPTY_TOPIC', `WRITING #${activity.order}: topic is empty`));
       }

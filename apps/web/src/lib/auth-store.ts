@@ -16,8 +16,10 @@ interface AuthState {
   firebaseUser: FirebaseUser | null;
   user: AuthUser | null;
   isAuthenticated: boolean;
+  idToken: string | null;
   setFirebaseUser: (firebaseUser: FirebaseUser | null) => void;
   setUser: (user: AuthUser) => void;
+  setIdToken: (token: string | null) => void;
   logout: () => void;
 }
 
@@ -29,8 +31,9 @@ export function getAccessToken(): string | null {
 
 export function getFirebaseIdToken(): Promise<string | null> {
   const state = useAuthStore.getState();
-  if (!state.firebaseUser) return Promise.resolve(null);
-  return state.firebaseUser.getIdToken().catch(() => null);
+  if (state.firebaseUser) return state.firebaseUser.getIdToken().catch(() => null);
+  if (state.idToken) return Promise.resolve(state.idToken);
+  return Promise.resolve(null);
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -39,17 +42,22 @@ export const useAuthStore = create<AuthState>()(
       firebaseUser: null,
       user: null,
       isAuthenticated: false,
+      idToken: null,
       setFirebaseUser: (firebaseUser: FirebaseUser | null): void => {
         set({ firebaseUser, isAuthenticated: firebaseUser !== null });
       },
       setUser: (user: AuthUser): void => {
         set({ user });
       },
+      setIdToken: (token: string | null): void => {
+        set({ idToken: token, isAuthenticated: token !== null });
+      },
       logout: (): void => {
         set({
           firebaseUser: null,
           user: null,
           isAuthenticated: false,
+          idToken: null,
         });
       },
     }),

@@ -38,7 +38,7 @@ export default function UnitsPage(): ReactNode {
     return <StaffUnitsView />;
   }
 
-  if (!KNOWN_ROLES.has(rawRole)) {
+  if (!KNOWN_ROLES.has(rawRole.toUpperCase())) {
     return (
       <EmptyState
         title="غير مدعوم"

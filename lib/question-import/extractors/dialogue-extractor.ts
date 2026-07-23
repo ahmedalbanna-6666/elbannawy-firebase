@@ -1,5 +1,5 @@
-import type { DialogueContent, DialogueLine } from '../types.js';
-import { findAnswerKeyInText, extractBodyBeforeAnswerKey } from '../answer-key-parser.js';
+import type { DialogueContent, DialogueLine } from '../types';
+import { findAnswerKeyInText, extractBodyBeforeAnswerKey } from '../answer-key-parser';
 
 function isSpeakerLabel(line: string): boolean {
   return /^Student\s+[A-B]$/i.test(line.trim());

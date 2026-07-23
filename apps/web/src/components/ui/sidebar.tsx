@@ -47,7 +47,8 @@ export function Sidebar({ items, className, onClose, onProfileClick, profileGrad
 
   const fullName = user?.fullName ?? "";
   const firstName = fullName ? fullName.split(" ")[0] : "";
-  const gradeLabel = profileGrade ?? (user?.role ? ROLE_LABELS[user.role] ?? user.role : "Student");
+  const fallbackRole = (user?.role ?? "").toUpperCase();
+  const gradeLabel = profileGrade ?? (user?.role ? ROLE_LABELS[fallbackRole] ?? fallbackRole : "Student");
   const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(firstName || "User")}&background=22D3EE&color=fff&bold=true&font-size=0.33`;
 
   const handleItemClick = (item: SidebarItem): void => {

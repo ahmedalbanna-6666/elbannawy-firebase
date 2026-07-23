@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAdminAuth, getAdminDb } from '@/lib/firebase/admin';
+import { getAdminDb } from '@/lib/firebase/admin';
+import { authenticateRequest } from '@/lib/firebase/auth-helper';
 import { CurriculumService, CurriculumApplicationService, UnitRepository, LessonRepository } from '@el-bannawy/lib';
 
 const curriculumService = new CurriculumService();
@@ -9,10 +10,8 @@ const lessonRepo = new LessonRepository();
 
 async function handleCurriculumTree(request: NextRequest): Promise<NextResponse> {
   try {
-    const authHeader = request.headers.get('Authorization');
-    if (!authHeader?.startsWith('Bearer ')) return NextResponse.json({ success: false, error: { code: 'UNAUTHORIZED', message: 'Unauthorized' } }, { status: 401 });
-    const token = authHeader.slice(7);
-    const decoded = await getAdminAuth().verifyIdToken(token);
+    const decoded = await authenticateRequest(request);
+    if (!decoded) return NextResponse.json({ success: false, error: { code: 'UNAUTHORIZED', message: 'Unauthorized' } }, { status: 401 });
 
     const userDoc = await getAdminDb().collection('users').doc(decoded.uid).get();
     if (!userDoc.exists) return NextResponse.json({ success: true, data: [] });

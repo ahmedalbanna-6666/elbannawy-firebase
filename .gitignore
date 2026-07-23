@@ -49,3 +49,19 @@ Desktop.ini
 
 # pnpm store
 .pnpm-store/
+
+# Firebase emulator data export
+firebase-seed-data/
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
+
+.vercel
+.vercel-bak/
+.vercel-web/
+.vercelignore
+.env*
+
+# Firebase export
+auth-export.json
+stdin.txt

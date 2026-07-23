@@ -1,0 +1,208 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── User documents ──────────────────────────────────────────
+    match /users/{userId} {
+      allow read: if request.auth != null && request.auth.uid == userId;
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // ── Educational system (public read) ────────────────────────
+    match /educationalSystems/{doc} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && request.auth.token.isAdmin == true;
+    }
+
+    match /stages/{doc} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && request.auth.token.isAdmin == true;
+    }
+
+    match /grades/{doc} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && request.auth.token.isAdmin == true;
+    }
+
+    match /academicYears/{doc} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && request.auth.token.isAdmin == true;
+    }
+
+    match /terms/{doc} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && request.auth.token.isAdmin == true;
+    }
+
+    // ── Curriculum content (read for all authenticated) ─────────
+    match /books/{doc} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && request.auth.token.isAdmin == true;
+    }
+
+    match /units/{doc} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && request.auth.token.isAdmin == true;
+    }
+
+    match /lessons/{doc} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && request.auth.token.isAdmin == true;
+    }
+
+    match /lessonVideos/{doc} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && request.auth.token.isAdmin == true;
+    }
+
+    match /activities/{doc} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && request.auth.token.isAdmin == true;
+    }
+
+    match /answerKeys/{doc} {
+      allow read: if request.auth != null && request.auth.token.isTeacher == true;
+      allow write: if request.auth != null && request.auth.token.isAdmin == true;
+    }
+
+    // ── Student progress (owner only) ───────────────────────────
+    match /lessonProgress/{doc} {
+      allow read, write: if request.auth != null && request.auth.uid == resource.data.userId;
+    }
+
+    match /videoProgress/{doc} {
+      allow read, write: if request.auth != null && request.auth.uid == resource.data.userId;
+    }
+
+    match /activityProgress/{doc} {
+      allow read, write: if request.auth != null && request.auth.uid == resource.data.userId;
+    }
+
+    match /studentStats/{doc} {
+      allow read, write: if request.auth != null && request.auth.uid == resource.data.userId;
+    }
+
+    // ── Homework & Quiz attempts (owner read, teacher read) ────
+    match /homeworkAttempts/{doc} {
+      allow read: if request.auth != null && (
+        request.auth.uid == resource.data.userId ||
+        request.auth.token.isTeacher == true
+      );
+      allow write: if request.auth != null && request.auth.uid == resource.data.userId;
+    }
+
+    match /quizAttempts/{doc} {
+      allow read: if request.auth != null && (
+        request.auth.uid == resource.data.userId ||
+        request.auth.token.isTeacher == true
+      );
+      allow write: if request.auth != null && request.auth.uid == resource.data.userId;
+    }
+
+    // ── Gamification ────────────────────────────────────────────
+    match /xpAccounts/{doc} {
+      allow read: if request.auth != null && request.auth.uid == resource.data.userId;
+      allow write: if request.auth != null && request.auth.uid == resource.data.userId;
+    }
+
+    match /achievements/{doc} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && request.auth.token.isAdmin == true;
+    }
+
+    match /userAchievements/{doc} {
+      allow read: if request.auth != null && request.auth.uid == resource.data.userId;
+      allow write: if request.auth != null && request.auth.uid == resource.data.userId;
+    }
+
+    // ── Payments & Wallet ───────────────────────────────────────
+    match /wallets/{doc} {
+      allow read: if request.auth != null && request.auth.uid == resource.data.userId;
+      allow write: if request.auth != null && request.auth.uid == resource.data.userId;
+    }
+
+    match /payments/{doc} {
+      allow read: if request.auth != null && (
+        request.auth.uid == resource.data.userId ||
+        request.auth.token.isAdmin == true
+      );
+      allow write: if request.auth != null && request.auth.token.isAdmin == true;
+    }
+
+    match /invoices/{doc} {
+      allow read: if request.auth != null && request.auth.uid == resource.data.userId;
+      allow write: if request.auth != null && request.auth.token.isAdmin == true;
+    }
+
+    // ── Notifications ───────────────────────────────────────────
+    match /notificationPreferences/{doc} {
+      allow read, write: if request.auth != null && request.auth.uid == resource.data.userId;
+    }
+
+    match /notifications/{doc} {
+      allow read: if request.auth != null && request.auth.uid == resource.data.userId;
+      allow write: if request.auth != null && request.auth.token.isAdmin == true;
+    }
+
+    // ── AI ──────────────────────────────────────────────────────
+    match /conversations/{conversationId} {
+      allow read, write: if request.auth != null && request.auth.uid == resource.data.userId;
+      match /messages/{messageId} {
+        allow read, write: if request.auth != null && request.auth.uid == get(/databases/$(database)/documents/conversations/$(conversationId)).data.userId;
+      }
+    }
+
+    match /aiAssessments/{doc} {
+      allow read: if request.auth != null && request.auth.uid == resource.data.userId;
+      allow write: if request.auth != null && request.auth.uid == resource.data.userId;
+    }
+
+    // ── Support ─────────────────────────────────────────────────
+    match /supportTickets/{ticketId} {
+      allow read: if request.auth != null && (
+        request.auth.uid == resource.data.userId ||
+        request.auth.token.isAdmin == true
+      );
+      allow write: if request.auth != null && request.auth.uid == resource.data.userId;
+      match /messages/{messageId} {
+        allow read: if request.auth != null && (
+          request.auth.uid == get(/databases/$(database)/documents/supportTickets/$(ticketId)).data.userId ||
+          request.auth.token.isAdmin == true
+        );
+        allow write: if request.auth != null;
+      }
+    }
+
+    // ── Administration ──────────────────────────────────────────
+    match /systemSettings/{doc} {
+      allow read: if request.auth != null && request.auth.token.isAdmin == true;
+      allow write: if request.auth != null && request.auth.token.isAdmin == true;
+    }
+
+    match /featureFlags/{doc} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && request.auth.token.isAdmin == true;
+    }
+
+    match /auditLogs/{doc} {
+      allow read: if request.auth != null && request.auth.token.isAdmin == true;
+      allow write: if request.auth != null && request.auth.token.isAdmin == true;
+    }
+
+    // ── Referrals ───────────────────────────────────────────────
+    match /referralProfiles/{doc} {
+      allow read, write: if request.auth != null && request.auth.uid == resource.data.userId;
+    }
+
+    match /referralPolicies/{doc} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && request.auth.token.isAdmin == true;
+    }
+
+    // ── Default deny ────────────────────────────────────────────
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

@@ -1,6 +1,6 @@
-import type { ReadingContent, ReadingPart, ReadingQuestion, McqOption } from '../types.js';
-import { parseAnswerKey } from '../answer-key-parser.js';
-import { MARKER_ANSWER_KEY, ACTIVITY_MARKERS } from '../constants.js';
+import type { ReadingContent, ReadingPart, ReadingQuestion, McqOption } from '../types';
+import { parseAnswerKey } from '../answer-key-parser';
+import { MARKER_ANSWER_KEY, ACTIVITY_MARKERS } from '../constants';
 
 function extractAnswerKeyBlocks(rawText: string): Map<number, string>[] {
   const blocks: Map<number, string>[] = [];

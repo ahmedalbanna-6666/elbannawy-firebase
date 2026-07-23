@@ -1,6 +1,6 @@
-import type { DragDropContent } from '../types.js';
-import { findAnswerKeyInText } from '../answer-key-parser.js';
-import { MARKER_WORD_BANK, MARKER_END_WORD_BANK, MARKER_ANSWER_KEY } from '../constants.js';
+import type { DragDropContent } from '../types';
+import { findAnswerKeyInText } from '../answer-key-parser';
+import { MARKER_WORD_BANK, MARKER_END_WORD_BANK, MARKER_ANSWER_KEY } from '../constants';
 
 export function extractDragDrop(rawText: string): DragDropContent {
   const lines = rawText.split('\n').map((l) => l.trim());

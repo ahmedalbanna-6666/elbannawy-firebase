@@ -1,5 +1,5 @@
-import type { WritingContent } from '../types.js';
-import { MARKER_ANSWER_KEY } from '../constants.js';
+import type { WritingContent } from '../types';
+import { MARKER_ANSWER_KEY } from '../constants';
 
 function extractWordCount(instruction: string): number | null {
   const parenMatch = instruction.match(/\((\d+)\)\s*words/i);

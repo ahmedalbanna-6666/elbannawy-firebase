@@ -1,4 +1,4 @@
-import { initializeApp, applicationDefault, getApps } from 'firebase-admin/app';
+import { initializeApp, cert, getApps } from 'firebase-admin/app';
 import { getFirestore, Firestore, Timestamp } from 'firebase-admin/firestore';
 
 let firestoreInstance: Firestore | null = null;
@@ -28,9 +28,26 @@ export function getFirestoreInstance(): Firestore {
   }
 
   const apps = getApps();
-  const app = apps.length === 0
-    ? initializeApp({ credential: applicationDefault() })
-    : apps[0];
+  let app = apps.length > 0 ? apps[0] : null;
+  if (!app) {
+    const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
+    const privateKey = process.env.FIREBASE_PRIVATE_KEY;
+    const projectId = process.env.FIREBASE_PROJECT_ID;
+    if (clientEmail && privateKey && projectId) {
+      app = initializeApp({
+        credential: cert({
+          projectId,
+          clientEmail,
+          privateKey: privateKey.replace(/\\n/g, '\n'),
+        }),
+        projectId,
+      });
+    } else {
+      throw new Error(
+        'Firebase Admin SDK not configured. Set FIREBASE_CLIENT_EMAIL, FIREBASE_PRIVATE_KEY, and FIREBASE_PROJECT_ID.'
+      );
+    }
+  }
   const db = getFirestore(app as Parameters<typeof getFirestore>[0]);
   firestoreInstance = db;
   return db;

@@ -1,5 +1,5 @@
-﻿import type { RewriteContent, RewriteQuestion } from '../types.js';
-import { findAnswerKeyInText } from '../answer-key-parser.js';
+﻿import type { RewriteContent, RewriteQuestion } from '../types';
+import { findAnswerKeyInText } from '../answer-key-parser';
 
 function parseRewritePrompt(line: string): { prompt: string; indirectPhrase: string } | null {
   const trimmed = line.trim();

@@ -1,5 +1,5 @@
-import type { TrueFalseContent, TrueFalseQuestion } from '../types.js';
-import { findAnswerKeyInText } from '../answer-key-parser.js';
+import type { TrueFalseContent, TrueFalseQuestion } from '../types';
+import { findAnswerKeyInText } from '../answer-key-parser';
 
 function normalizeBooleanValue(value: string): boolean {
   const lower = value.trim().toLowerCase();

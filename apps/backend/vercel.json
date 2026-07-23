@@ -1,0 +1,17 @@
+{
+  "buildCommand": "pnpm --filter @el-bannawy/database generate && turbo build --filter=@el-bannawy/backend...",
+  "installCommand": "pnpm install --frozen-lockfile",
+  "framework": null,
+  "functions": {
+    "api/index.ts": {
+      "memory": 512,
+      "maxDuration": 30
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/api"
+    }
+  ]
+}

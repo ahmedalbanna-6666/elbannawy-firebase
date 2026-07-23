@@ -624,12 +624,23 @@ export class CurriculumRepository implements ICurriculumRepository {
 
   async getCurrentAcademicContext(): Promise<RepositoryResult<ICurrentAcademicContext>> {
     try {
+      const currentYearResult = await this.getCurrentAcademicYear();
+      if (!currentYearResult.ok) return currentYearResult as unknown as RepositoryResult<ICurrentAcademicContext>;
+
+      let academicTerm: IAcademicTerm | null = null;
+      if (currentYearResult.value) {
+        const currentTermResult = await this.getCurrentAcademicTerm(currentYearResult.value.id);
+        if (currentTermResult.ok) {
+          academicTerm = currentTermResult.value;
+        }
+      }
+
       const context: ICurrentAcademicContext = {
         educationalSystem: null,
         stage: null,
         grade: null,
-        academicYear: null,
-        academicTerm: null,
+        academicYear: currentYearResult.value,
+        academicTerm,
       };
       return { ok: true, value: context };
     } catch (error) {

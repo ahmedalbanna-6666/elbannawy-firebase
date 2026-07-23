@@ -1,5 +1,5 @@
-import type { CorrectContent, CorrectQuestion } from '../types.js';
-import { findAnswerKeyInText } from '../answer-key-parser.js';
+import type { CorrectContent, CorrectQuestion } from '../types';
+import { findAnswerKeyInText } from '../answer-key-parser';
 
 export function extractCorrect(rawText: string): CorrectContent {
   const lines = rawText.split('\n').map((l) => l.trim()).filter((l) => l.length > 0 && !l.startsWith('@@'));

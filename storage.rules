@@ -1,0 +1,49 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // ── User avatars ────────────────────────────────────────────
+    match /users/{userId}/avatar.{ext} {
+      allow read: if true;
+      allow write: if request.auth != null && request.auth.uid == userId
+                   && request.resource.size < 2 * 1024 * 1024
+                   && request.resource.contentType.matches('image/.*');
+    }
+
+    // ── Lesson content files (Word docs, PDFs, audio) ──────────
+    match /content/{lessonId}/{fileName} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && request.auth.token.isAdmin == true
+                   && request.resource.size < 50 * 1024 * 1024;
+    }
+
+    // ── Activity media ──────────────────────────────────────────
+    match /activities/{activityId}/{fileName} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && request.auth.token.isAdmin == true
+                   && request.resource.size < 50 * 1024 * 1024;
+    }
+
+    // ── Student homework submissions ────────────────────────────
+    match /submissions/{homeworkId}/{userId}/{fileName} {
+      allow read: if request.auth != null && (
+        request.auth.uid == userId ||
+        request.auth.token.isTeacher == true
+      );
+      allow write: if request.auth != null && request.auth.uid == userId
+                   && request.resource.size < 10 * 1024 * 1024;
+    }
+
+    // ── Report exports ──────────────────────────────────────────
+    match /exports/{reportId}/{fileName} {
+      allow read: if request.auth != null && request.auth.token.isTeacher == true;
+      allow write: if request.auth != null && request.auth.token.isAdmin == true;
+    }
+
+    // ── Default deny ────────────────────────────────────────────
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

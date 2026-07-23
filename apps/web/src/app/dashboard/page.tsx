@@ -43,7 +43,7 @@ export default function DashboardPage(): ReactNode {
     );
   }
 
-  if (!KNOWN_ROLES.has(rawRole)) {
+  if (!KNOWN_ROLES.has(rawRole.toUpperCase())) {
     return (
       <EmptyState
         title="دور غير مدعوم"

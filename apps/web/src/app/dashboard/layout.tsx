@@ -58,13 +58,13 @@ export default function DashboardLayout({ children }: DashboardLayoutProps): Rea
     staleTime: 120_000,
   });
 
-  const userRole = useAuthStore((s) => s.user?.role);
+  const userRole = (useAuthStore((s) => s.user?.role) ?? "").toUpperCase();
 
   const profileGrade = userRole === "STUDENT"
     ? (profile?.roleProfile?.grade?.name
       ?? profile?.roleProfile?.stage?.name
       ?? "طالب")
-    : (ROLE_LABELS[userRole ?? ""] ?? "طالب");
+    : (ROLE_LABELS[userRole] ?? "طالب");
 
   useEffect(() => {
     setMounted(true);
@@ -89,10 +89,9 @@ export default function DashboardLayout({ children }: DashboardLayoutProps): Rea
 
   const isTeacherOrStaff = userRole === "TEACHER" || userRole === "STAFF";
 
-  const handleLogout = useCallback((): void => {
-    void logout();
-    router.push("/login");
-  }, [logout, router]);
+  const handleLogout = useCallback(async (): Promise<void> => {
+    await logout();
+  }, [logout]);
 
   const { can } = usePermissions();
 

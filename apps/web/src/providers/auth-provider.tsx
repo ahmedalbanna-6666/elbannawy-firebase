@@ -4,7 +4,6 @@ import { createContext, useContext, useEffect, useRef, type ReactNode, useCallba
 import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import {
-  signInWithEmailAndPassword,
   signInWithPopup,
   GoogleAuthProvider,
   OAuthProvider,
@@ -77,6 +76,7 @@ export function AuthProvider({ children }: { children: ReactNode }): ReactNode {
     isAuthenticated,
     setFirebaseUser,
     setUser,
+    setIdToken,
     logout: clearStore,
   } = useAuthStore();
 
@@ -97,6 +97,7 @@ export function AuthProvider({ children }: { children: ReactNode }): ReactNode {
       if (response.data) {
         setUser({
           ...response.data,
+          role: (response.data.role ?? "").toUpperCase(),
           effectivePermissions: response.data.effectivePermissions as Permission[],
         });
       }
@@ -105,7 +106,7 @@ export function AuthProvider({ children }: { children: ReactNode }): ReactNode {
         id: fbUser.uid,
         fullName: fbUser.displayName ?? "User",
         mobileNumber: fbUser.email?.replace("@el-bannawy.app", "") ?? null,
-        role: "student",
+        role: "STUDENT",
         status: "active",
       });
     }
@@ -127,6 +128,7 @@ export function AuthProvider({ children }: { children: ReactNode }): ReactNode {
         }
       } else {
         document.cookie = "auth_token=; path=/; max-age=0";
+        fetch('/api/v1/auth/sign-out', { method: 'POST' }).catch(() => {});
       }
     });
 
@@ -136,15 +138,35 @@ export function AuthProvider({ children }: { children: ReactNode }): ReactNode {
   const login = useCallback(
     async (emailOrMobile: string, password: string, _rememberMe = false): Promise<void> => {
       const email = toEmail(emailOrMobile);
-      const result = await signInWithEmailAndPassword(getClientAuth(), email, password);
-      const token = await result.user.getIdToken();
-      const maxAge = 60 * 60 * 24 * 14;
-      document.cookie = 'auth_token=' + token + '; path=/; max-age=' + String(maxAge) + '; SameSite=Lax';
-      await fetchUser(result.user);
-      queryClient.removeQueries({ queryKey: ["profile"] });
-      queryClient.removeQueries({ queryKey: ["sidebar-profile"] });
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 15000);
+
+      try {
+        const res = await fetch('/api/v1/auth/sign-in', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password }),
+          signal: controller.signal,
+        });
+        const data = await res.json();
+        if (!res.ok || !data.token) throw new Error(data.error?.message || 'Login failed');
+        const maxAge = 60 * 60 * 24 * 14;
+        document.cookie = 'auth_token=' + data.token + '; path=/; max-age=' + String(maxAge) + '; SameSite=Lax';
+        setIdToken(data.token);
+        setUser({
+          id: data.user.id,
+          fullName: data.user.fullName,
+          mobileNumber: data.user.email?.replace('@el-bannawy.app', '') ?? null,
+          role: (data.user.role ?? "").toUpperCase(),
+          status: 'active',
+        });
+        queryClient.removeQueries({ queryKey: ["profile"] });
+        queryClient.removeQueries({ queryKey: ["sidebar-profile"] });
+      } finally {
+        clearTimeout(timeout);
+      }
     },
-    [fetchUser, queryClient],
+    [setUser, queryClient],
   );
 
   const register = useCallback(
@@ -154,12 +176,21 @@ export function AuthProvider({ children }: { children: ReactNode }): ReactNode {
         throw new Error("Registration failed");
       }
       const email = toEmail(payload.mobile);
-      const result = await signInWithEmailAndPassword(getClientAuth(), email, payload.password);
-      await fetchUser(result.user);
+      const res = await fetch('/api/v1/auth/sign-in', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password: payload.password }),
+      });
+      const data = await res.json();
+      if (data.token) {
+        setIdToken(data.token);
+        document.cookie = 'auth_token=' + data.token + '; path=/; max-age=' + String(60 * 60 * 24 * 14) + '; SameSite=Lax';
+        if (data.user) setUser({ ...data.user, role: (data.user.role ?? "").toUpperCase() });
+      }
       queryClient.removeQueries({ queryKey: ["profile"] });
       queryClient.removeQueries({ queryKey: ["sidebar-profile"] });
     },
-    [fetchUser, queryClient],
+    [setIdToken, setUser, queryClient],
   );
 
   const signInWithGoogle = useCallback(async (): Promise<void> => {
@@ -199,6 +230,11 @@ export function AuthProvider({ children }: { children: ReactNode }): ReactNode {
     } catch {
       // ignore errors on logout
     } finally {
+      try {
+        await fetch('/api/v1/auth/sign-out', { method: 'POST' });
+      } catch {
+        // ignore network errors on logout
+      }
       clearStore();
       document.cookie = "auth_token=; path=/; max-age=0";
       queryClient.clear();

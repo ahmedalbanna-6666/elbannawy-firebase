@@ -11,4 +11,7 @@ allowBuilds:
   sharp: true
   '@firebase/util': true
   protobufjs: true
-onlyBuiltDependencies: esbuild
+onlyBuiltDependencies:
+  - esbuild
+overrides:
+  jose: 4.15.9
