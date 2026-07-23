@@ -24,11 +24,13 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   const cursor = searchParams.get('cursor') ?? undefined;
   const isActiveParam = searchParams.get('isActive');
   const academicTermId = searchParams.get('academicTermId');
+  const gradeId = searchParams.get('gradeId');
   const search = searchParams.get('search');
 
   const filter: Record<string, unknown> = {};
   if (isActiveParam !== null) filter.isActive = isActiveParam === 'true';
   if (academicTermId) filter.academicTermId = academicTermId;
+  if (gradeId) filter.gradeId = gradeId;
   if (search) filter.search = search;
 
   const page: Record<string, unknown> = { limit };

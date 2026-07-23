@@ -24,6 +24,7 @@ export const UpdateUnitInputSchema = z.object({
 
 export const UnitFilterSchema = z.object({
   academicTermId: z.string().optional(),
+  gradeId: z.string().optional(),
   isActive: z.boolean().optional(),
   isPremium: z.boolean().optional(),
   published: z.boolean().optional(),

@@ -112,6 +112,7 @@ export class UnitRepository implements IUnitRepository {
       const query = new QueryBuilder<UnitFirestoreDoc>(this.transactionManager);
       query.withFilter('deletedAt', 'eq', null);
       if (filter.academicTermId) query.withFilter('academicTermId', 'eq', filter.academicTermId);
+      if (filter.gradeId) query.withFilter('gradeId', 'eq', filter.gradeId);
       if (filter.isActive !== undefined) query.withFilter('isActive', 'eq', filter.isActive);
       if (filter.isPremium !== undefined) query.withFilter('isPremium', 'eq', filter.isPremium);
       if (filter.published !== undefined) query.withFilter('published', 'eq', filter.published);

@@ -5,6 +5,8 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { api } from "@/lib/api-client";
 import { useAuthStore } from "@/lib/auth-store";
+import { usePermissions } from "@/lib/use-permissions";
+import { PERMISSIONS } from "@el-bannawy/shared";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -37,7 +39,19 @@ export function TeacherCompetitionsView(): ReactNode {
   const userId = useAuthStore((s) => s.user?.id);
   const router = useRouter();
   const queryClient = useQueryClient();
+  const { can } = usePermissions();
   const [formOpen, setFormOpen] = useState(false);
+  const canManage = can(PERMISSIONS.COMPETITION_MANAGE);
+
+  if (!canManage) {
+    return (
+      <EmptyState
+        icon={<Gamepad2 className="h-16 w-16" />}
+        title="لا توجد صلاحية"
+        description="ليس لديك صلاحية إدارة المسابقات. يرجى التواصل مع الإدارة."
+      />
+    );
+  }
 
   const { data, isLoading, isError, error, refetch } = useQuery({
     queryKey: ["teacher-competitions", userId],

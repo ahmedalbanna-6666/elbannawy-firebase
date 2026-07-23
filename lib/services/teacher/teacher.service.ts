@@ -32,25 +32,41 @@ export class TeacherService {
     }
 
     const gradeIds = assignments.map((a) => a.gradeId);
+
+    const gradeResults = await Promise.all(
+      gradeIds.map((gid) => this.curriculumRepo.getGradeById(gid)),
+    );
+
+    const stageIds = [
+      ...new Set(
+        gradeResults
+          .filter((r): r is { ok: true; value: { stageId: string } } & typeof r => r.ok && !!r.value.stageId)
+          .map((r) => r.value.stageId),
+      ),
+    ];
+
+    const stageResults = await Promise.all(
+      stageIds.map((sid) => this.curriculumRepo.getStageById(sid)),
+    );
+
+    const stageNameById = new Map<string, string>();
+    for (const sr of stageResults) {
+      if (!sr.ok) continue;
+      const stage = sr.value;
+      stageNameById.set(stage.id, stage.nameAr || stage.name);
+    }
+
     const grades: TeacherGradeInfo[] = [];
-
-    for (const gradeId of gradeIds) {
-      const gradeResult = await this.curriculumRepo.getGradeById(gradeId);
-      if (!gradeResult.ok) continue;
-
-      const grade = gradeResult.value;
-      let stageName = '';
-      if (grade.stageId) {
-        const stageResult = await this.curriculumRepo.getStageById(grade.stageId);
-        if (stageResult.ok) {
-          stageName = stageResult.value.nameAr || stageResult.value.name;
-        }
-      }
-
+    for (const gr of gradeResults) {
+      if (!gr.ok) continue;
+      const grade = gr.value;
       grades.push({
         id: grade.id,
         name: grade.nameAr || grade.name,
-        stage: { id: grade.stageId, name: stageName || grade.stageId },
+        stage: {
+          id: grade.stageId,
+          name: grade.stageId ? stageNameById.get(grade.stageId) || grade.stageId : '',
+        },
       });
     }
 

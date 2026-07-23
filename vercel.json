@@ -2,5 +2,6 @@
   "buildCommand": "turbo build --filter=@el-bannawy/web...",
   "installCommand": "pnpm install",
   "outputDirectory": "apps/web/.next",
-  "framework": "nextjs"
+  "framework": "nextjs",
+  "nodeVersion": "20.x"
 }

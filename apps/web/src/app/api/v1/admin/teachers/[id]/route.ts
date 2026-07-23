@@ -13,11 +13,13 @@ export async function GET(
 
     const u = doc.data() as Record<string, unknown>;
     const [gradesSnap, permissionsSnap] = await Promise.all([
-      db.collection('teacherAssignments').doc(`ta-${id}`).get().catch(() => null),
+      db.collection('teacherAssignments').where('teacherId', '==', id).where('deletedAt', '==', null).where('status', '==', 'active').get().catch(() => null),
       db.collection('userPermissions').doc(id).get().catch(() => null),
     ]);
 
-    const gradeIds: string[] = gradesSnap?.exists ? (gradesSnap.data() as { gradeIds?: string[] })?.gradeIds ?? [] : [];
+    const gradeIds: string[] = gradesSnap?.empty === false
+      ? gradesSnap.docs.map((d) => (d.data() as { gradeId?: string }).gradeId).filter(Boolean) as string[]
+      : [];
     const grantedPermissions: string[] = permissionsSnap?.exists ? (permissionsSnap.data() as { permissions?: string[] })?.permissions ?? [] : [];
 
     const teacher = {

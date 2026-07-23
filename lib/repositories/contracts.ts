@@ -456,6 +456,7 @@ export interface UpdateUnitInput {
 
 export interface UnitFilter {
   readonly academicTermId?: string;
+  readonly gradeId?: string;
   readonly isActive?: boolean;
   readonly isPremium?: boolean;
   readonly published?: boolean;

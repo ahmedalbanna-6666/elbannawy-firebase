@@ -93,9 +93,7 @@ export function TeacherFinalReviewsView(): ReactNode {
   const filterParams = useMemo(() => {
     const params = new URLSearchParams();
     if (academicContext.gradeId) params.set("gradeId", academicContext.gradeId);
-    if (academicContext.academicYearId) params.set("academicYearId", academicContext.academicYearId);
-    if (academicContext.termId) params.set("termId", academicContext.termId);
-    if (academicContext.educationalSystem) params.set("educationalSystem", academicContext.educationalSystem);
+    if (academicContext.termId) params.set("academicTermId", academicContext.termId);
     return params.toString();
   }, [academicContext]);
 
