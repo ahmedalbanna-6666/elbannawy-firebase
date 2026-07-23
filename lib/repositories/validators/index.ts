@@ -85,3 +85,27 @@ export {
   VocabularyRelationFilterSchema,
   VocabularyRelationTypeEnum,
 } from './vocabulary-relation.validator';
+
+export {
+  CreateLessonVideoInputSchema,
+  UpdateLessonVideoInputSchema,
+  LessonVideoFilterSchema,
+  LessonVideoIdSchema,
+  VideoProviderEnum,
+} from './lesson-video.validator';
+export type {
+  CreateLessonVideoInputType,
+  UpdateLessonVideoInputType,
+  LessonVideoFilterType,
+} from './lesson-video.validator';
+
+export {
+  CreateLessonDocumentInputSchema,
+  UpdateLessonDocumentInputSchema,
+  LessonDocumentIdSchema,
+  DocumentProcessingStatusEnum,
+} from './lesson-document.validator';
+export type {
+  CreateLessonDocumentInputType,
+  UpdateLessonDocumentInputType,
+} from './lesson-document.validator';

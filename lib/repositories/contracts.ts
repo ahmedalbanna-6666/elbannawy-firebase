@@ -1016,3 +1016,113 @@ export interface IVocabularyRelationRepository {
   deleteByLesson(lessonId: string): Promise<RepositoryResult<void>>;
   deleteBySection(sectionId: string): Promise<RepositoryResult<void>>;
 }
+
+// ===== Lesson Video Contracts =====
+
+export type VideoProvider = 'youtube' | 'vimeo' | 'other';
+
+export interface ILessonVideo {
+  readonly id: string;
+  readonly lessonId: string;
+  readonly title: string;
+  readonly provider: VideoProvider;
+  readonly providerVideoId: string;
+  readonly providerUrl: string;
+  readonly durationSeconds: number;
+  readonly thumbnailUrl?: string;
+  readonly displayOrder: number;
+  readonly enabled: boolean;
+  readonly interactiveTimelineEnabled: boolean;
+  readonly contentVersion: number;
+  readonly createdAt: string;
+  readonly updatedAt: string;
+  readonly schemaVersion: number;
+  readonly deletedAt?: string | null;
+}
+
+export interface CreateLessonVideoInput {
+  readonly id: string;
+  readonly lessonId: string;
+  readonly title: string;
+  readonly provider: VideoProvider;
+  readonly providerVideoId: string;
+  readonly providerUrl: string;
+  readonly durationSeconds: number;
+  readonly thumbnailUrl?: string;
+  readonly displayOrder: number;
+  readonly enabled?: boolean;
+  readonly interactiveTimelineEnabled?: boolean;
+}
+
+export interface UpdateLessonVideoInput {
+  readonly title?: string;
+  readonly provider?: VideoProvider;
+  readonly providerVideoId?: string;
+  readonly providerUrl?: string;
+  readonly durationSeconds?: number;
+  readonly thumbnailUrl?: string;
+  readonly displayOrder?: number;
+  readonly enabled?: boolean;
+  readonly interactiveTimelineEnabled?: boolean;
+}
+
+export interface LessonVideoFilter {
+  readonly lessonId?: string;
+  readonly enabled?: boolean;
+}
+
+export interface ILessonVideoRepository {
+  create(input: CreateLessonVideoInput): Promise<RepositoryResult<ILessonVideo>>;
+  getById(id: string): Promise<RepositoryResult<ILessonVideo | null>>;
+  update(id: string, input: UpdateLessonVideoInput, expectedVersion: number): Promise<RepositoryResult<ILessonVideo>>;
+  listByLesson(lessonId: string): Promise<RepositoryResult<ILessonVideo[]>>;
+  delete(id: string): Promise<RepositoryResult<void>>;
+}
+
+// ===== Lesson Document Contracts =====
+
+export type DocumentProcessingStatus = 'pending' | 'processing' | 'completed' | 'failed';
+
+export interface ILessonDocument {
+  readonly id: string;
+  readonly lessonId: string;
+  readonly storagePath: string;
+  readonly fileName: string;
+  readonly mimeType: string;
+  readonly fileSizeBytes: number;
+  readonly sha256: string;
+  readonly processingStatus: DocumentProcessingStatus;
+  readonly downloadable: boolean;
+  readonly extractedAt?: string;
+  readonly errorCode?: string;
+  readonly createdAt: string;
+  readonly updatedAt: string;
+  readonly schemaVersion: number;
+  readonly deletedAt?: string | null;
+}
+
+export interface CreateLessonDocumentInput {
+  readonly id: string;
+  readonly lessonId: string;
+  readonly storagePath: string;
+  readonly fileName: string;
+  readonly mimeType: string;
+  readonly fileSizeBytes: number;
+  readonly sha256: string;
+  readonly processingStatus?: DocumentProcessingStatus;
+  readonly downloadable?: boolean;
+}
+
+export interface UpdateLessonDocumentInput {
+  readonly processingStatus?: DocumentProcessingStatus;
+  readonly downloadable?: boolean;
+  readonly extractedAt?: string;
+  readonly errorCode?: string;
+}
+
+export interface ILessonDocumentRepository {
+  create(input: CreateLessonDocumentInput): Promise<RepositoryResult<ILessonDocument>>;
+  getByLessonId(lessonId: string): Promise<RepositoryResult<ILessonDocument | null>>;
+  update(lessonId: string, input: UpdateLessonDocumentInput, expectedVersion: number): Promise<RepositoryResult<ILessonDocument>>;
+  delete(lessonId: string): Promise<RepositoryResult<void>>;
+}
