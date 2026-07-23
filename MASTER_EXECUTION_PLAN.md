@@ -519,12 +519,13 @@ Firebase Custom Claims handle roles (`STUDENT`, `TEACHER`, `SECRETARY`, `SUPPORT
 
 | Item | Detail |
 |------|--------|
-| **Endpoints to migrate** | login, register, logout, me, forgot-password, reset-password, refresh-token, sessions (list/delete), Google OAuth callback + complete-registration, Apple OAuth |
+| **Endpoints to migrate** | login (client-side Firebase SDK), register, me, forgot-password, reset-password, logout (client-side Firebase SDK), refresh-token (Firebase auto-refresh), sessions (Firebase managed), Google OAuth (client-side signInWithPopup), Apple OAuth (client-side signInWithPopup), complete-oauth-registration |
 | **Firestore collections** | `users` (exists), `loginEvents` (exists) |
-| **Repositories** | Extend `UserRepository` with session management. No `sessions` or `refreshTokens` collections — Firebase Auth is the session authority. |
+| **Repositories** | `UserService` / `UserRepository` from `@el-bannawy/lib` — Firebase Auth is the session authority. No `sessions` or `refreshTokens` collections. Firebase custom claims for RBAC. |
 | **Key constraint** | Google/Apple callback URLs must be updated from `localhost:4000/api/v1/...` to Next.js route handlers. |
 | **Complexity** | L |
 | **Verification gates** | typecheck → lint → build → manual auth flow test → commit |
+| **Status** | ✅ COMPLETE (2026-07-23) |
 
 ### Phase P2 — Curriculum (remaining)
 
@@ -638,7 +639,7 @@ Repository Implementation (Baseline)
 
 Production Migration
 
-██░░░░░░░░░░░░░░░░░░ 10%
+██████░░░░░░░░░░░░░░ 22%
 
 NestJS Decommission
 
