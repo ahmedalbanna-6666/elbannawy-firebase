@@ -149,3 +149,13 @@ export type {
   CreateLessonDocumentInputType,
   UpdateLessonDocumentInputType,
 } from './lesson-document.validator';
+
+export {
+  CreateTeacherAssignmentInputSchema,
+  TeacherAssignmentFilterSchema,
+  TeacherAssignmentIdSchema,
+} from './teacher.validator';
+export type {
+  CreateTeacherAssignmentType,
+  TeacherAssignmentFilterType,
+} from './teacher.validator';

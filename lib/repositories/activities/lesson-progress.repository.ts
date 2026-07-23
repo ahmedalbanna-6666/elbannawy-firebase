@@ -11,7 +11,7 @@ import type {
 import { QueryBuilder } from '../query-builder';
 import { TransactionManager } from '../transactions/transaction-manager';
 
-const COLLECTION = 'lesson_progress';
+const COLLECTION = 'lessonProgress';
 
 function formatDoc(snap: FirebaseFirestore.DocumentSnapshot): LessonProgressFirestoreDoc | null {
   if (!snap.exists) return null;

@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { UserRepository } from '@el-bannawy/lib';
-
-const userRepo = new UserRepository();
+import { getAdminDb } from '@/lib/firebase/admin';
 
 export async function PATCH(
   request: NextRequest,
@@ -10,9 +8,15 @@ export async function PATCH(
   const { id } = await params;
   try {
     const body = await request.json() as { mobileNumber?: string };
-    const result = await userRepo.updateProfile(id, { mobileNumber: body.mobileNumber }, 0);
-    if (!result.ok) return NextResponse.json({ success: false, error: result.error }, { status: 400 });
-    return NextResponse.json({ success: true, data: result.value });
+    if (!body.mobileNumber) {
+      return NextResponse.json({ success: false, error: { code: 'INVALID_INPUT', message: 'mobileNumber is required' } }, { status: 400 });
+    }
+    const db = getAdminDb();
+    await db.collection('users').doc(id).update({
+      mobileNumber: body.mobileNumber,
+      updatedAt: new Date().toISOString(),
+    });
+    return NextResponse.json({ success: true, data: { id, mobileNumber: body.mobileNumber } });
   } catch {
     return NextResponse.json({ success: false, error: { code: 'INTERNAL', message: 'Failed to update phone' } }, { status: 500 });
   }

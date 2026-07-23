@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { getAdminAuth } from '@/lib/firebase/admin';
+import { getAdminAuth, getAdminDb } from '@/lib/firebase/admin';
 import { UserService } from '@el-bannawy/lib';
 
 const userService = new UserService();
@@ -104,6 +104,17 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
     const user = result.value;
 
+    const adminDb = getAdminDb();
+    let effectivePermissions: string[] = [];
+    try {
+      const permDoc = await adminDb.collection('userPermissions').doc(user.id).get();
+      if (permDoc.exists) {
+        effectivePermissions = (permDoc.data() as { permissions?: string[] })?.permissions ?? [];
+      }
+    } catch {
+      // permissions lookup failed silently
+    }
+
     return NextResponse.json({
       success: true,
       data: {
@@ -112,7 +123,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         mobileNumber: user.mobileNumber,
         role: normalizeRole(user.role),
         status: 'active',
-        effectivePermissions: [],
+        effectivePermissions,
       },
     });
   } catch {

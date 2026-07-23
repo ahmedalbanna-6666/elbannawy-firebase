@@ -15,7 +15,7 @@ import { QueryBuilder } from '../query-builder';
 import { TransactionManager } from '../transactions/transaction-manager';
 import { ICursor } from '../../shared/types/cursor.types';
 
-const COLLECTION = 'student_attempts';
+const COLLECTION = 'studentAttempts';
 
 function formatDoc(snap: FirebaseFirestore.DocumentSnapshot): StudentAttemptFirestoreDoc | null {
   if (!snap.exists) return null;

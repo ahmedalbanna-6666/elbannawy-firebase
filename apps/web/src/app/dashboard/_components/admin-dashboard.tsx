@@ -2,12 +2,24 @@
 
 import { useMemo, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
 import { usePermissions } from "@/lib/use-permissions";
 import { useAuthStore } from "@/lib/auth-store";
 import { getDashboardModules } from "@/lib/nav-registry";
+import { api } from "@/lib/api-client";
 import { Card } from "@/components/ui/card";
 import { CardEdge } from "@/components/ui/card-edge";
-import { ChevronLeft } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
+import { ChevronLeft, GraduationCap, UserCog, BookOpen, Layers, BookMarked, Calendar } from "lucide-react";
+
+interface DashboardStats {
+  studentsCount: number;
+  teachersCount: number;
+  systemsCount: number;
+  stagesCount: number;
+  gradesCount: number;
+  academicYearsCount: number;
+}
 
 function formatTodayArabic(): string {
   return new Date().toLocaleDateString("ar-EG", {
@@ -24,11 +36,29 @@ export function AdminDashboard(): ReactNode {
   const fullName = useAuthStore((s) => s.user?.fullName ?? "");
   const firstName = fullName.split(" ")[0];
 
+  const { data: stats, isLoading: statsLoading } = useQuery<DashboardStats>({
+    queryKey: ["admin-dashboard-stats"],
+    queryFn: async () => {
+      const res = await api.get<DashboardStats>("/admin/dashboard/stats");
+      return res.data ?? { studentsCount: 0, teachersCount: 0, systemsCount: 0, stagesCount: 0, gradesCount: 0, academicYearsCount: 0 };
+    },
+    refetchInterval: 60_000,
+  });
+
   const modules = getDashboardModules(can);
   const primaryModules = modules.filter((m) => m.category === "content");
   const moreModules = modules.filter((m) => m.category !== "content");
 
   const today = useMemo(() => formatTodayArabic(), []);
+
+  const statsCards = [
+    { label: "الطلاب", value: stats?.studentsCount ?? 0, icon: GraduationCap, color: "text-primary-500" },
+    { label: "المعلمون", value: stats?.teachersCount ?? 0, icon: UserCog, color: "text-blue-500" },
+    { label: "الأنظمة التعليمية", value: stats?.systemsCount ?? 0, icon: BookOpen, color: "text-green-500" },
+    { label: "المراحل", value: stats?.stagesCount ?? 0, icon: Layers, color: "text-purple-500" },
+    { label: "الصفوف", value: stats?.gradesCount ?? 0, icon: BookMarked, color: "text-amber-500" },
+    { label: "السنوات الدراسية", value: stats?.academicYearsCount ?? 0, icon: Calendar, color: "text-rose-500" },
+  ];
 
   return (
     <div className="flex flex-col gap-8">
@@ -43,6 +73,31 @@ export function AdminDashboard(): ReactNode {
           {today}
         </p>
       </div>
+
+      {/* Stats Cards */}
+      {statsLoading ? (
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-6">
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <Skeleton key={i} className="h-24 rounded-xl" />
+          ))}
+        </div>
+      ) : (
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-6">
+          {statsCards.map((stat) => (
+            <Card key={stat.label} variant="elevated" padding="none">
+              <div className="flex flex-col gap-2 px-4 py-3">
+                <div className="flex items-center gap-2">
+                  <stat.icon className={`h-4 w-4 ${stat.color}`} />
+                  <span className="text-xs text-neutral-500">{stat.label}</span>
+                </div>
+                <span className="text-2xl font-bold text-neutral-900 dark:text-neutral-100">
+                  {stat.value}
+                </span>
+              </div>
+            </Card>
+          ))}
+        </div>
+      )}
 
       {primaryModules.length > 0 && (
         <div>

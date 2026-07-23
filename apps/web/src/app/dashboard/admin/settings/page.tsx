@@ -19,6 +19,8 @@ import {
   BookOpen,
   Layers,
   CheckCircle2,
+  Wrench,
+  UserPlus,
 } from "lucide-react";
 
 interface SystemSettings {
@@ -249,6 +251,32 @@ export default function AdminSettingsPage(): ReactNode {
               </Button>
             </div>
           )}
+        </CardContent>
+      </Card>
+
+      {/* Maintenance Mode */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Wrench className="h-5 w-5 text-amber-500" />
+              <h2 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100">وضع الصيانة</h2>
+            </div>
+            <Button
+              variant={settings?.maintenanceMode ? "danger" : "secondary"}
+              size="sm"
+              onClick={() => { updateSettingsMutation.mutate({ maintenanceMode: !settings?.maintenanceMode }); }}
+            >
+              {settings?.maintenanceMode ? "مفعل" : "معطل"}
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-neutral-500">
+            {settings?.maintenanceMode
+              ? "المنصة في وضع الصيانة. لن يتمكن المستخدمون من الدخول."
+              : "المنصة تعمل بشكل طبيعي. المستخدمون يمكنهم الدخول."}
+          </p>
         </CardContent>
       </Card>
 

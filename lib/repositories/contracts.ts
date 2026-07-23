@@ -1677,3 +1677,762 @@ export interface IStudentStatsRepository {
   getByStudentId(studentId: string): Promise<RepositoryResult<IStudentStats | null>>;
   computeAndSave(studentId: string): Promise<RepositoryResult<IStudentStats>>;
 }
+
+// ===== Wallet / Coin Contracts =====
+
+export interface IWallet {
+  readonly id: string;
+  readonly studentId: string;
+  readonly balance: number;
+  readonly totalPurchased: number;
+  readonly totalEarned: number;
+  readonly totalSpent: number;
+  readonly pending: number;
+  readonly updatedAt: string;
+  readonly projectionVersion: number;
+}
+
+export interface ICoinTransaction {
+  readonly id: string;
+  readonly studentId: string;
+  readonly amount: number;
+  readonly transactionType: 'PURCHASE' | 'REWARD' | 'SPEND' | 'REFUND';
+  readonly sourceType: string;
+  readonly sourceId?: string;
+  readonly balanceAfter: number;
+  readonly occurredAt: string;
+  readonly idempotencyKey: string;
+  readonly reversalOf?: string;
+}
+
+export interface ICoinPackage {
+  readonly id: string;
+  readonly name: string;
+  readonly description?: string;
+  readonly coinAmount: number;
+  readonly priceMinorUnits: number;
+  readonly currency: string;
+  readonly active: boolean;
+  readonly displayOrder: number;
+  readonly createdAt: string;
+  readonly updatedAt: string;
+}
+
+export interface IContentEntitlement {
+  readonly id: string;
+  readonly studentId: string;
+  readonly contentType: string;
+  readonly contentId: string;
+  readonly sourceType: string;
+  readonly sourceId: string;
+  readonly paymentId?: string;
+  readonly active: boolean;
+  readonly activatedAt: string;
+  readonly expiresAt?: string;
+}
+
+export interface IWalletRepository {
+  getByStudentId(studentId: string): Promise<RepositoryResult<IWallet | null>>;
+  upsert(studentId: string, balance: number, totalPurchased: number, totalEarned: number, totalSpent: number, pending: number): Promise<RepositoryResult<IWallet>>;
+}
+
+export interface ICoinTransactionRepository {
+  create(input: ICoinTransaction): Promise<RepositoryResult<ICoinTransaction>>;
+  listByStudent(studentId: string, limit?: number): Promise<RepositoryResult<ICoinTransaction[]>>;
+}
+
+export interface ICoinPackageRepository {
+  create(input: ICoinPackage): Promise<RepositoryResult<ICoinPackage>>;
+  getById(id: string): Promise<RepositoryResult<ICoinPackage | null>>;
+  listActive(): Promise<RepositoryResult<ICoinPackage[]>>;
+  update(id: string, input: Partial<ICoinPackage>): Promise<RepositoryResult<ICoinPackage>>;
+  delete(id: string): Promise<RepositoryResult<void>>;
+}
+
+export interface IContentEntitlementRepository {
+  getByStudentAndContent(studentId: string, contentType: string, contentId: string): Promise<RepositoryResult<IContentEntitlement | null>>;
+  listByStudent(studentId: string): Promise<RepositoryResult<IContentEntitlement[]>>;
+  create(input: IContentEntitlement): Promise<RepositoryResult<IContentEntitlement>>;
+}
+
+// ===== Live Class Contracts =====
+
+export type LiveSessionStatus = 'DRAFT' | 'PUBLISHED' | 'SCHEDULED' | 'OPEN' | 'FULL' | 'LIVE' | 'COMPLETED' | 'CANCELLED' | 'ARCHIVED';
+export type LiveSessionType = 'PRIVATE' | 'GROUP';
+export type LiveBookingStatus = 'CONFIRMED' | 'CANCELLED' | 'RESCHEDULED';
+export type LiveAttendanceStatus = 'JOINED' | 'LATE' | 'LEFT_EARLY' | 'ABSENT' | 'COMPLETED';
+export type LiveSubscriptionStatus = 'ACTIVE' | 'EXPIRED' | 'CANCELLED' | 'SUSPENDED';
+export type LiveSubscriptionType = 'PRIVATE_MONTHLY' | 'GROUP_MONTHLY' | 'ONE_TIME_PRIVATE';
+export type MeetingProvider = 'EXTERNAL_URL' | 'ZOOM_SDK';
+
+export interface ILiveSession {
+  readonly id: string;
+  readonly title: string;
+  readonly teacherId: string;
+  readonly gradeId: string | null;
+  readonly availabilitySlotId: string | null;
+  readonly date: string;
+  readonly startTime: string;
+  readonly endTime: string;
+  readonly durationMinutes: number;
+  readonly maxStudents: number | null;
+  readonly availableSeats: number | null;
+  readonly status: LiveSessionStatus;
+  readonly type: LiveSessionType;
+  readonly meetingUrl: string | null;
+  readonly meetingPassword: string | null;
+  readonly meetingProvider: MeetingProvider;
+  readonly notes: string | null;
+  readonly publishedAt: string | null;
+  readonly scheduledAt: string | null;
+  readonly openedAt: string | null;
+  readonly liveAt: string | null;
+  readonly completedAt: string | null;
+  readonly cancelledAt: string | null;
+  readonly cancelReason: string | null;
+  readonly createdAt: string;
+  readonly updatedAt: string;
+  readonly schemaVersion: number;
+  readonly deletedAt?: string | null;
+}
+
+export interface ILiveBooking {
+  readonly id: string;
+  readonly sessionId: string;
+  readonly studentId: string;
+  readonly subscriptionId: string | null;
+  readonly status: LiveBookingStatus;
+  readonly cancelledAt: string | null;
+  readonly cancelReason: string | null;
+  readonly createdAt: string;
+  readonly updatedAt: string;
+}
+
+export interface ILiveSubscription {
+  readonly id: string;
+  readonly userId: string;
+  readonly type: LiveSubscriptionType;
+  readonly packageLabel: string;
+  readonly packageSessionCount: number;
+  readonly status: LiveSubscriptionStatus;
+  readonly teacherId: string | null;
+  readonly groupId: string | null;
+  readonly sessionsTotal: number;
+  readonly sessionsUsed: number;
+  readonly currentPeriodStart: string;
+  readonly currentPeriodEnd: string;
+  readonly nextBillingDate: string | null;
+  readonly autoRenew: boolean;
+  readonly price: number;
+  readonly cancelledAt: string | null;
+  readonly createdAt: string;
+  readonly updatedAt: string;
+}
+
+export interface ILiveAttendance {
+  readonly id: string;
+  readonly sessionId: string;
+  readonly studentId: string;
+  readonly status: LiveAttendanceStatus;
+  readonly joinedAt: string | null;
+  readonly leftAt: string | null;
+  readonly durationMinutes: number | null;
+  readonly markedBy: string;
+  readonly markedById: string | null;
+  readonly notes: string | null;
+  readonly createdAt: string;
+  readonly updatedAt: string;
+}
+
+export interface ITeacherAvailability {
+  readonly id: string;
+  readonly teacherId: string;
+  readonly dayOfWeek: number;
+  readonly startTime: string;
+  readonly endTime: string;
+  readonly gradeId: string | null;
+  readonly maxStudents: number;
+  readonly type: LiveSessionType;
+  readonly isRecurring: boolean;
+  readonly effectiveFrom: string | null;
+  readonly effectiveTo: string | null;
+  readonly createdAt: string;
+  readonly updatedAt: string;
+  readonly deletedAt: string | null;
+}
+
+export interface ITeacherDateBlock {
+  readonly id: string;
+  readonly teacherId: string;
+  readonly blockedDate: string;
+  readonly reason: string | null;
+  readonly createdAt: string;
+  readonly deletedAt: string | null;
+}
+
+export interface ITeacherLiveSettings {
+  readonly id: string;
+  readonly teacherId: string;
+  readonly defaultMeetingUrl: string | null;
+  readonly meetingPassword: string | null;
+  readonly meetingProvider: MeetingProvider;
+  readonly allowOverride: boolean;
+  readonly createdAt: string;
+  readonly updatedAt: string;
+}
+
+export interface ILiveAnnouncement {
+  readonly id: string;
+  readonly sessionId: string;
+  readonly senderId: string;
+  readonly message: string;
+  readonly type: string;
+  readonly pinned: boolean;
+  readonly createdAt: string;
+  readonly updatedAt: string;
+}
+
+export interface ILiveSessionFilter {
+  readonly teacherId?: string;
+  readonly gradeId?: string;
+  readonly status?: LiveSessionStatus;
+  readonly dateFrom?: string;
+  readonly dateTo?: string;
+}
+
+export interface ILiveBookingFilter {
+  readonly studentId?: string;
+  readonly sessionId?: string;
+  readonly status?: LiveBookingStatus;
+}
+
+export interface ILiveRepository {
+  createSession(input: Partial<ILiveSession>): Promise<RepositoryResult<ILiveSession>>;
+  getSessionById(id: string): Promise<RepositoryResult<ILiveSession | null>>;
+  updateSession(id: string, input: Partial<ILiveSession>): Promise<RepositoryResult<ILiveSession>>;
+  listSessions(filter: ILiveSessionFilter): Promise<RepositoryResult<ILiveSession[]>>;
+  deleteSession(id: string): Promise<RepositoryResult<void>>;
+  createBooking(input: ILiveBooking): Promise<RepositoryResult<ILiveBooking>>;
+  getBookingById(id: string): Promise<RepositoryResult<ILiveBooking | null>>;
+  listBookings(filter: ILiveBookingFilter): Promise<RepositoryResult<ILiveBooking[]>>;
+  cancelBooking(id: string, reason?: string): Promise<RepositoryResult<void>>;
+  getBookingsBySession(sessionId: string): Promise<RepositoryResult<ILiveBooking[]>>;
+  getTeacherAvailability(teacherId: string): Promise<RepositoryResult<ITeacherAvailability[]>>;
+  createAvailability(input: ITeacherAvailability): Promise<RepositoryResult<ITeacherAvailability>>;
+  updateAvailability(id: string, input: Partial<ITeacherAvailability>): Promise<RepositoryResult<ITeacherAvailability>>;
+  deleteAvailability(id: string): Promise<RepositoryResult<void>>;
+  listDateBlocks(teacherId: string): Promise<RepositoryResult<ITeacherDateBlock[]>>;
+  createDateBlock(input: ITeacherDateBlock): Promise<RepositoryResult<ITeacherDateBlock>>;
+  deleteDateBlock(id: string): Promise<RepositoryResult<void>>;
+  listAttendance(sessionId: string): Promise<RepositoryResult<ILiveAttendance[]>>;
+  recordAttendance(input: ILiveAttendance): Promise<RepositoryResult<ILiveAttendance>>;
+  listAnnouncements(sessionId: string): Promise<RepositoryResult<ILiveAnnouncement[]>>;
+  createAnnouncement(input: ILiveAnnouncement): Promise<RepositoryResult<ILiveAnnouncement>>;
+}
+
+// ===== Story Contracts =====
+
+export interface IStory {
+  readonly id: string;
+  readonly title: string;
+  readonly description?: string;
+  readonly coverImageUrl?: string;
+  readonly gradeId: string;
+  readonly stageId: string;
+  readonly educationalSystemId?: string;
+  readonly academicYearId: string;
+  readonly termId: string;
+  readonly displayOrder: number;
+  readonly published: boolean;
+  readonly contentVersion: number;
+  readonly createdAt: string;
+  readonly updatedAt: string;
+  readonly schemaVersion: number;
+  readonly deletedAt?: string | null;
+}
+
+export interface IStoryChapter {
+  readonly id: string;
+  readonly storyId: string;
+  readonly title: string;
+  readonly chapterNumber: number;
+  readonly displayOrder: number;
+  readonly published: boolean;
+  readonly contentVersion: number;
+  readonly createdAt: string;
+  readonly updatedAt: string;
+  readonly deletedAt?: string | null;
+}
+
+export interface IStoryLesson {
+  readonly id: string;
+  readonly storyId: string;
+  readonly chapterId: string;
+  readonly title: string;
+  readonly displayOrder: number;
+  readonly published: boolean;
+  readonly contentVersion: number;
+  readonly homeworkEnabled: boolean;
+  readonly quizRequired: boolean;
+  readonly createdAt: string;
+  readonly updatedAt: string;
+  readonly deletedAt?: string | null;
+}
+
+export interface IStoryProgress {
+  readonly id: string;
+  readonly studentId: string;
+  readonly storyId: string;
+  readonly chapterId?: string;
+  readonly storyLessonId?: string;
+  readonly status: 'not_started' | 'in_progress' | 'completed';
+  readonly progressPercent: number;
+  readonly completedAt?: string;
+  readonly lastActiveAt: string;
+  readonly contentVersion: number;
+  readonly createdAt: string;
+  readonly updatedAt: string;
+}
+
+export interface IStoryFilter {
+  readonly gradeId?: string;
+  readonly published?: boolean;
+}
+
+export interface IStoryRepository {
+  create(input: Partial<IStory>): Promise<RepositoryResult<IStory>>;
+  getById(id: string): Promise<RepositoryResult<IStory | null>>;
+  update(id: string, input: Partial<IStory>): Promise<RepositoryResult<IStory>>;
+  delete(id: string): Promise<RepositoryResult<void>>;
+  list(filter: IStoryFilter): Promise<RepositoryResult<IStory[]>>;
+  listByGrade(gradeId: string): Promise<RepositoryResult<IStory[]>>;
+  createChapter(input: Partial<IStoryChapter>): Promise<RepositoryResult<IStoryChapter>>;
+  getChapterById(id: string): Promise<RepositoryResult<IStoryChapter | null>>;
+  updateChapter(id: string, input: Partial<IStoryChapter>): Promise<RepositoryResult<IStoryChapter>>;
+  deleteChapter(id: string): Promise<RepositoryResult<void>>;
+  listChapters(storyId: string): Promise<RepositoryResult<IStoryChapter[]>>;
+  createLesson(input: Partial<IStoryLesson>): Promise<RepositoryResult<IStoryLesson>>;
+  getLessonById(id: string): Promise<RepositoryResult<IStoryLesson | null>>;
+  listLessons(chapterId: string): Promise<RepositoryResult<IStoryLesson[]>>;
+  getProgress(studentId: string, storyId: string): Promise<RepositoryResult<IStoryProgress | null>>;
+  upsertProgress(input: IStoryProgress): Promise<RepositoryResult<IStoryProgress>>;
+  listStudentProgress(studentId: string): Promise<RepositoryResult<IStoryProgress[]>>;
+}
+
+// ===== Final Review Contracts =====
+
+export interface IFinalReview {
+  readonly id: string;
+  readonly title: string;
+  readonly description?: string;
+  readonly coverImageUrl?: string;
+  readonly gradeId: string;
+  readonly stageId: string;
+  readonly academicYearId: string;
+  readonly opensAt: string;
+  readonly closesAt: string;
+  readonly enabled: boolean;
+  readonly published: boolean;
+  readonly createdBy: string;
+  readonly displayOrder: number;
+  readonly contentVersion: number;
+  readonly createdAt: string;
+  readonly updatedAt: string;
+  readonly schemaVersion: number;
+  readonly deletedAt?: string | null;
+}
+
+export interface IFinalReviewUnit {
+  readonly id: string;
+  readonly finalReviewId: string;
+  readonly unitId: string;
+  readonly title: string;
+  readonly displayOrder: number;
+  readonly published: boolean;
+  readonly createdAt: string;
+  readonly updatedAt: string;
+}
+
+export interface IFinalReviewLesson {
+  readonly id: string;
+  readonly finalReviewUnitId: string;
+  readonly title: string;
+  readonly summary: string;
+  readonly notesPath?: string;
+  readonly displayOrder: number;
+  readonly published: boolean;
+  readonly contentVersion: number;
+  readonly createdAt: string;
+  readonly updatedAt: string;
+}
+
+export interface IFinalReviewQuestion {
+  readonly id: string;
+  readonly finalReviewId: string;
+  readonly finalReviewUnitId: string;
+  readonly finalReviewLessonId?: string;
+  readonly questionType: 'MULTIPLE_CHOICE' | 'TRUE_FALSE' | 'FILL_BLANK' | 'MATCHING';
+  readonly prompt: string;
+  readonly options?: Record<string, string>;
+  readonly correctAnswer?: string;
+  readonly points: number;
+  readonly exam: boolean;
+  readonly displayOrder: number;
+  readonly contentVersion: number;
+  readonly createdAt: string;
+  readonly updatedAt: string;
+}
+
+export interface IFinalReviewAttempt {
+  readonly id: string;
+  readonly studentId: string;
+  readonly finalReviewId: string;
+  readonly attemptNumber: number;
+  readonly status: 'in_progress' | 'submitted' | 'graded';
+  readonly score?: number;
+  readonly maxScore: number;
+  readonly passed?: boolean;
+  readonly startedAt: string;
+  readonly submittedAt?: string;
+  readonly gradedAt?: string;
+  readonly timeSpentSeconds?: number;
+  readonly contentVersion: number;
+  readonly createdAt: string;
+  readonly updatedAt: string;
+}
+
+export interface IFinalReviewAnswer {
+  readonly id: string;
+  readonly attemptId: string;
+  readonly studentId: string;
+  readonly finalReviewId: string;
+  readonly questionId: string;
+  readonly answer: string;
+  readonly isCorrect?: boolean;
+  readonly score?: number;
+  readonly feedback?: string;
+  readonly submittedAt: string;
+  readonly createdAt: string;
+}
+
+export interface IFinalReviewProgress {
+  readonly id: string;
+  readonly studentId: string;
+  readonly finalReviewId: string;
+  readonly unitId?: string;
+  readonly lessonId?: string;
+  readonly progressPercent: number;
+  readonly readiness?: string;
+  readonly lastActiveAt: string;
+  readonly completedAt?: string;
+  readonly createdAt: string;
+  readonly updatedAt: string;
+}
+
+export interface IFinalReviewFilter {
+  readonly gradeId?: string;
+  readonly enabled?: boolean;
+  readonly published?: boolean;
+}
+
+export interface IFinalReviewRepository {
+  create(input: Partial<IFinalReview>): Promise<RepositoryResult<IFinalReview>>;
+  getById(id: string): Promise<RepositoryResult<IFinalReview | null>>;
+  update(id: string, input: Partial<IFinalReview>): Promise<RepositoryResult<IFinalReview>>;
+  delete(id: string): Promise<RepositoryResult<void>>;
+  list(filter: IFinalReviewFilter): Promise<RepositoryResult<IFinalReview[]>>;
+  listByGrade(gradeId: string): Promise<RepositoryResult<IFinalReview[]>>;
+  createUnit(input: Partial<IFinalReviewUnit>): Promise<RepositoryResult<IFinalReviewUnit>>;
+  getUnitById(id: string): Promise<RepositoryResult<IFinalReviewUnit | null>>;
+  updateUnit(id: string, input: Partial<IFinalReviewUnit>): Promise<RepositoryResult<IFinalReviewUnit>>;
+  deleteUnit(id: string): Promise<RepositoryResult<void>>;
+  listUnits(finalReviewId: string): Promise<RepositoryResult<IFinalReviewUnit[]>>;
+  createLesson(input: Partial<IFinalReviewLesson>): Promise<RepositoryResult<IFinalReviewLesson>>;
+  getLessonById(id: string): Promise<RepositoryResult<IFinalReviewLesson | null>>;
+  listLessons(unitId: string): Promise<RepositoryResult<IFinalReviewLesson[]>>;
+  createQuestion(input: Partial<IFinalReviewQuestion>): Promise<RepositoryResult<IFinalReviewQuestion>>;
+  listQuestions(finalReviewUnitId: string, exam?: boolean): Promise<RepositoryResult<IFinalReviewQuestion[]>>;
+  deleteQuestion(id: string): Promise<RepositoryResult<void>>;
+  createAttempt(input: IFinalReviewAttempt): Promise<RepositoryResult<IFinalReviewAttempt>>;
+  getAttempt(id: string): Promise<RepositoryResult<IFinalReviewAttempt | null>>;
+  updateAttempt(id: string, input: Partial<IFinalReviewAttempt>): Promise<RepositoryResult<IFinalReviewAttempt>>;
+  listAttempts(studentId: string, finalReviewId: string): Promise<RepositoryResult<IFinalReviewAttempt[]>>;
+  createAnswer(input: IFinalReviewAnswer): Promise<RepositoryResult<IFinalReviewAnswer>>;
+  listAnswers(attemptId: string): Promise<RepositoryResult<IFinalReviewAnswer[]>>;
+}
+
+// ===== Notification Contracts =====
+
+export interface INotification {
+  readonly id: string;
+  readonly userId: string;
+  readonly title: string;
+  readonly message: string;
+  readonly type: string;
+  readonly priority: 'LOW' | 'NORMAL' | 'HIGH' | 'URGENT';
+  readonly link?: string;
+  readonly campaignId?: string;
+  readonly read: boolean;
+  readonly readAt?: string;
+  readonly expiresAt?: string;
+  readonly createdAt: string;
+  readonly updatedAt: string;
+}
+
+export interface INotificationPreference {
+  readonly id: string;
+  readonly userId: string;
+  readonly lessonReminders: boolean;
+  readonly homeworkReminders: boolean;
+  readonly liveSessionReminders: boolean;
+  readonly achievementNotifications: boolean;
+  readonly motivationalMessages: boolean;
+  readonly studyTips: boolean;
+  readonly teacherAnnouncements: boolean;
+  readonly pushEnabled: boolean;
+  readonly emailEnabled: boolean;
+  readonly whatsappEnabled: boolean;
+  readonly createdAt: string;
+  readonly updatedAt: string;
+}
+
+export interface INotificationFilter {
+  readonly userId?: string;
+  readonly read?: boolean;
+  readonly type?: string;
+}
+
+export interface INotificationRepository {
+  create(input: INotification): Promise<RepositoryResult<INotification>>;
+  getById(id: string): Promise<RepositoryResult<INotification | null>>;
+  list(filter: INotificationFilter): Promise<RepositoryResult<INotification[]>>;
+  markRead(id: string): Promise<RepositoryResult<void>>;
+  markAllRead(userId: string): Promise<RepositoryResult<void>>;
+  delete(id: string): Promise<RepositoryResult<void>>;
+  getPreferences(userId: string): Promise<RepositoryResult<INotificationPreference | null>>;
+  upsertPreferences(input: INotificationPreference): Promise<RepositoryResult<INotificationPreference>>;
+}
+
+// ===== Report Contracts =====
+
+export interface IReport {
+  readonly id: string;
+  readonly studentId: string;
+  readonly periodType: 'WEEKLY' | 'MONTHLY' | 'TERM' | 'CUSTOM';
+  readonly periodStart: string;
+  readonly periodEnd: string;
+  readonly completedLessons: number;
+  readonly averageQuizScore: number;
+  readonly homeworkCompletionRate: number;
+  readonly attendanceRate: number;
+  readonly totalXpGained: number;
+  readonly totalCoinsGained: number;
+  readonly achievementsEarned: number;
+  readonly strengths: string[];
+  readonly weaknesses: string[];
+  readonly recommendations: string[];
+  readonly generatedAt: string;
+  readonly createdAt: string;
+}
+
+export interface IReportFilter {
+  readonly studentId?: string;
+  readonly periodType?: string;
+  readonly periodStart?: string;
+  readonly periodEnd?: string;
+}
+
+export interface IReportRepository {
+  getStudentReport(studentId: string, periodStart: string, periodEnd: string): Promise<RepositoryResult<IReport | null>>;
+  list(filter: IReportFilter): Promise<RepositoryResult<IReport[]>>;
+  generateReport(studentId: string, periodType: string, periodStart: string, periodEnd: string): Promise<RepositoryResult<IReport>>;
+}
+
+// ===== Payment Contracts =====
+
+export interface IPayment {
+  readonly id: string;
+  readonly studentId: string;
+  readonly productType: string;
+  readonly productId: string;
+  readonly paymentMethod: string;
+  readonly amountMinorUnits: number;
+  readonly currency: string;
+  readonly status: 'PENDING' | 'COMPLETED' | 'FAILED' | 'REFUNDED';
+  readonly gatewayTransactionId?: string;
+  readonly gatewayReference?: string;
+  readonly idempotencyKey: string;
+  readonly verifiedAt?: string;
+  readonly completedAt?: string;
+  readonly refundedAt?: string;
+  readonly createdAt: string;
+  readonly updatedAt: string;
+}
+
+export interface IInvoice {
+  readonly id: string;
+  readonly paymentId: string;
+  readonly studentId: string;
+  readonly invoiceNumber: string;
+  readonly amountMinorUnits: number;
+  readonly currency: string;
+  readonly storagePath?: string;
+  readonly issuedAt: string;
+  readonly createdAt: string;
+}
+
+export interface IPaymentRepository {
+  create(input: IPayment): Promise<RepositoryResult<IPayment>>;
+  getById(id: string): Promise<RepositoryResult<IPayment | null>>;
+  listByStudent(studentId: string): Promise<RepositoryResult<IPayment[]>>;
+  updateStatus(id: string, status: string, data?: Partial<IPayment>): Promise<RepositoryResult<IPayment>>;
+  createInvoice(input: IInvoice): Promise<RepositoryResult<IInvoice>>;
+  getInvoicesByStudent(studentId: string): Promise<RepositoryResult<IInvoice[]>>;
+}
+
+// ===== Competition Contracts =====
+
+export type CompetitionMode = 'QUIZ' | 'XP_SPRINT';
+export type CompetitionStatus = 'DRAFT' | 'OPEN' | 'CLOSED' | 'FINALIZED';
+
+export interface ICompetition {
+  readonly id: string;
+  readonly title: string;
+  readonly description?: string;
+  readonly mode: CompetitionMode;
+  readonly gradeId: string;
+  readonly academicYearId: string;
+  readonly termId: string;
+  readonly teacherId: string;
+  readonly status: CompetitionStatus;
+  readonly startsAt?: string;
+  readonly endsAt?: string;
+  readonly xpReward: number;
+  readonly coinReward: number;
+  readonly maxParticipants?: number;
+  readonly published: boolean;
+  readonly createdAt: string;
+  readonly updatedAt: string;
+  readonly schemaVersion: number;
+  readonly deletedAt?: string | null;
+}
+
+export interface ICompetitionParticipant {
+  readonly id: string;
+  readonly competitionId: string;
+  readonly studentId: string;
+  readonly score: number;
+  readonly rank?: number;
+  readonly status: 'INVITED' | 'ACCEPTED' | 'SUBMITTED' | 'DISQUALIFIED';
+  readonly invitedAt: string;
+  readonly acceptedAt?: string;
+  readonly submittedAt?: string;
+  readonly createdAt: string;
+  readonly updatedAt: string;
+}
+
+export interface ICompetitionQuestion {
+  readonly id: string;
+  readonly competitionId: string;
+  readonly questionType: string;
+  readonly prompt: string;
+  readonly options?: Record<string, string>;
+  readonly correctAnswer: string;
+  readonly points: number;
+  readonly displayOrder: number;
+  readonly createdAt: string;
+}
+
+export interface ICompetitionAttempt {
+  readonly id: string;
+  readonly competitionId: string;
+  readonly studentId: string;
+  readonly answers: Record<string, string>;
+  readonly score: number;
+  readonly maxScore: number;
+  readonly passed?: boolean;
+  readonly startedAt: string;
+  readonly submittedAt?: string;
+  readonly timeSpentSeconds?: number;
+  readonly createdAt: string;
+  readonly updatedAt: string;
+}
+
+export interface ICompetitionFilter {
+  readonly gradeId?: string;
+  readonly teacherId?: string;
+  readonly status?: CompetitionStatus;
+}
+
+export interface ICompetitionRepository {
+  create(input: Partial<ICompetition>): Promise<RepositoryResult<ICompetition>>;
+  getById(id: string): Promise<RepositoryResult<ICompetition | null>>;
+  update(id: string, input: Partial<ICompetition>): Promise<RepositoryResult<ICompetition>>;
+  delete(id: string): Promise<RepositoryResult<void>>;
+  list(filter: ICompetitionFilter): Promise<RepositoryResult<ICompetition[]>>;
+  createParticipant(input: ICompetitionParticipant): Promise<RepositoryResult<ICompetitionParticipant>>;
+  getParticipant(competitionId: string, studentId: string): Promise<RepositoryResult<ICompetitionParticipant | null>>;
+  listParticipants(competitionId: string): Promise<RepositoryResult<ICompetitionParticipant[]>>;
+  updateParticipant(id: string, input: Partial<ICompetitionParticipant>): Promise<RepositoryResult<ICompetitionParticipant>>;
+  createQuestion(input: ICompetitionQuestion): Promise<RepositoryResult<ICompetitionQuestion>>;
+  listQuestions(competitionId: string): Promise<RepositoryResult<ICompetitionQuestion[]>>;
+  createAttempt(input: ICompetitionAttempt): Promise<RepositoryResult<ICompetitionAttempt>>;
+  getAttempt(competitionId: string, studentId: string): Promise<RepositoryResult<ICompetitionAttempt | null>>;
+}
+
+// ===== Support / Ticket Contracts =====
+
+export interface ISupportTicket {
+  readonly id: string;
+  readonly userId: string;
+  readonly subject: string;
+  readonly description: string;
+  readonly category: string;
+  readonly priority: 'LOW' | 'NORMAL' | 'HIGH' | 'URGENT';
+  readonly status: 'OPEN' | 'IN_PROGRESS' | 'WAITING' | 'RESOLVED' | 'CLOSED';
+  readonly assignedTo?: string;
+  readonly resolvedAt?: string;
+  readonly closedAt?: string;
+  readonly createdAt: string;
+  readonly updatedAt: string;
+}
+
+export interface ISupportTicketMessage {
+  readonly id: string;
+  readonly ticketId: string;
+  readonly senderId: string;
+  readonly message: string;
+  readonly internal: boolean;
+  readonly attachments?: string[];
+  readonly createdAt: string;
+}
+
+export interface IGradeSupportContact {
+  readonly id: string;
+  readonly gradeId: string;
+  readonly phone: string | null;
+  readonly email: string | null;
+  readonly whatsapp: string | null;
+  readonly createdAt: string;
+  readonly updatedAt: string;
+}
+
+export interface ISupportTicketFilter {
+  readonly userId?: string;
+  readonly status?: string;
+  readonly assignedTo?: string;
+}
+
+export interface ISupportTicketRepository {
+  create(input: ISupportTicket): Promise<RepositoryResult<ISupportTicket>>;
+  getById(id: string): Promise<RepositoryResult<ISupportTicket | null>>;
+  update(id: string, input: Partial<ISupportTicket>): Promise<RepositoryResult<ISupportTicket>>;
+  list(filter: ISupportTicketFilter): Promise<RepositoryResult<ISupportTicket[]>>;
+  addMessage(input: ISupportTicketMessage): Promise<RepositoryResult<ISupportTicketMessage>>;
+  listMessages(ticketId: string): Promise<RepositoryResult<ISupportTicketMessage[]>>;
+  resolve(id: string): Promise<RepositoryResult<void>>;
+  close(id: string): Promise<RepositoryResult<void>>;
+  getGradeSupportContact(gradeId: string): Promise<RepositoryResult<IGradeSupportContact | null>>;
+  upsertGradeSupportContact(input: IGradeSupportContact): Promise<RepositoryResult<IGradeSupportContact>>;
+  listGradeSupportContacts(): Promise<RepositoryResult<IGradeSupportContact[]>>;
+}

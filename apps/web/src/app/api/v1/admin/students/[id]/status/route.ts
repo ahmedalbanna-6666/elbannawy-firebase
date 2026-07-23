@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { UserRepository } from '@el-bannawy/lib';
-
-const userRepo = new UserRepository();
+import { getAdminDb } from '@/lib/firebase/admin';
 
 export async function PATCH(
   request: NextRequest,
@@ -10,11 +8,26 @@ export async function PATCH(
   const { id } = await params;
   try {
     const body = await request.json() as { status?: string };
-    const requestId = 'status-' + id + '-' + String(Date.now());
-    if (body.status !== 'active') {
-      await userRepo.softDeleteUser(id, requestId);
+    const db = getAdminDb();
+    const docRef = db.collection('users').doc(id);
+    const doc = await docRef.get();
+    if (!doc.exists) return NextResponse.json({ success: false, error: { code: 'NOT_FOUND', message: 'Student not found' } }, { status: 404 });
+
+    const statusVal = (body.status ?? 'active').toLowerCase();
+    const updateData: Record<string, unknown> = { status: statusVal, updatedAt: new Date().toISOString() };
+
+    if (statusVal === 'deleted') {
+      updateData.deletedAt = new Date().toISOString();
+      updateData.isActive = false;
+    } else if (statusVal === 'active') {
+      updateData.deletedAt = null;
+      updateData.isActive = true;
+    } else {
+      updateData.isActive = false;
     }
-    return NextResponse.json({ success: true, data: { id, status: body.status } });
+
+    await docRef.update(updateData);
+    return NextResponse.json({ success: true, data: { id, status: statusVal } });
   } catch {
     return NextResponse.json({ success: false, error: { code: 'INTERNAL', message: 'Failed to update status' } }, { status: 500 });
   }

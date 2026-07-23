@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { UserRepository } from '@el-bannawy/lib';
-
-const userRepo = new UserRepository();
+import { getAdminDb } from '@/lib/firebase/admin';
 
 export async function GET(
   _request: NextRequest,
@@ -9,9 +7,38 @@ export async function GET(
 ): Promise<NextResponse> {
   const { id } = await params;
   try {
-    const result = await userRepo.getUserById(id);
-    if (!result.ok) return NextResponse.json({ success: false, error: result.error }, { status: 404 });
-    return NextResponse.json({ success: true, data: result.value });
+    const db = getAdminDb();
+    const doc = await db.collection('users').doc(id).get();
+    if (!doc.exists) return NextResponse.json({ success: false, error: { code: 'NOT_FOUND', message: 'Teacher not found' } }, { status: 404 });
+
+    const u = doc.data() as Record<string, unknown>;
+    const [gradesSnap, permissionsSnap] = await Promise.all([
+      db.collection('teacherAssignments').doc(`ta-${id}`).get().catch(() => null),
+      db.collection('userPermissions').doc(id).get().catch(() => null),
+    ]);
+
+    const gradeIds: string[] = gradesSnap?.exists ? (gradesSnap.data() as { gradeIds?: string[] })?.gradeIds ?? [] : [];
+    const grantedPermissions: string[] = permissionsSnap?.exists ? (permissionsSnap.data() as { permissions?: string[] })?.permissions ?? [] : [];
+
+    const teacher = {
+      id,
+      fullName: u.fullName as string ?? '',
+      englishName: (u.englishName as string) ?? null,
+      email: (u.email as string) ?? null,
+      mobileNumber: (u.mobileNumber as string) ?? null,
+      role: (u.role as string)?.toUpperCase() ?? 'TEACHER',
+      status: (u.status as string) ?? 'active',
+      governorate: (u.governorate as string) ?? null,
+      school: (u.school as string) ?? null,
+      createdAt: (u.createdAt as string) ?? new Date().toISOString(),
+      updatedAt: (u.updatedAt as string) ?? new Date().toISOString(),
+      deletedAt: (u.deletedAt as string) ?? null,
+      lastLogin: (u.lastLogin as string) ?? null,
+      assignedGrades: gradeIds,
+      grantedPermissions,
+    };
+
+    return NextResponse.json({ success: true, data: teacher });
   } catch {
     return NextResponse.json({ success: false, error: { code: 'INTERNAL', message: 'Failed to fetch teacher' } }, { status: 500 });
   }
@@ -24,9 +51,18 @@ export async function PATCH(
   const { id } = await params;
   try {
     const body = await request.json() as Record<string, unknown>;
-    const result = await userRepo.updateProfile(id, body, 0);
-    if (!result.ok) return NextResponse.json({ success: false, error: result.error }, { status: 400 });
-    return NextResponse.json({ success: true, data: result.value });
+    const db = getAdminDb();
+    const updateData: Record<string, unknown> = { updatedAt: new Date().toISOString() };
+    if (body.fullName !== undefined) updateData.fullName = body.fullName;
+    if (body.englishName !== undefined) updateData.englishName = body.englishName;
+    if (body.email !== undefined) updateData.email = body.email;
+    if (body.mobileNumber !== undefined) updateData.mobileNumber = body.mobileNumber;
+    if (body.governorate !== undefined) updateData.governorate = body.governorate;
+    if (body.school !== undefined) updateData.school = body.school;
+    if (body.status !== undefined) updateData.status = body.status;
+    await db.collection('users').doc(id).update(updateData);
+    const updated = await db.collection('users').doc(id).get();
+    return NextResponse.json({ success: true, data: { id, ...updated.data() } });
   } catch {
     return NextResponse.json({ success: false, error: { code: 'INTERNAL', message: 'Failed to update teacher' } }, { status: 500 });
   }

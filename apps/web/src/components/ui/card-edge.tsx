@@ -4,10 +4,11 @@ import { cn } from "@/lib/utils";
 const STYLES: Record<string, string> = {
   primary: "bg-primary-600/50",
   orange: "bg-warning-500/50",
+  info: "bg-info-500/50",
 } as const;
 
 interface CardEdgeProps {
-  variant: "primary" | "orange" | "hidden";
+  variant: "primary" | "orange" | "info" | "hidden";
   className?: string;
 }
 

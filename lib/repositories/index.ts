@@ -14,4 +14,12 @@ export { QuizAttemptRepository } from './quiz/quiz-attempt.repository';
 export { QuizAnswerRepository } from './quiz/quiz-answer.repository';
 export * from './gamification';
 
+export * from './teacher';
+
+export * from './live';
+
+export * from './stories';
+
+export * from './final-reviews';
+
 export type { ICursor, ICursorBuilder } from './../shared/types/cursor.types';
