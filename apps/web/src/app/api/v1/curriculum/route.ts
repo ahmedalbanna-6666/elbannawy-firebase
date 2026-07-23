@@ -1,8 +1,83 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { CurriculumService, CurriculumApplicationService } from '@el-bannawy/lib';
+import { getAdminAuth, getAdminDb } from '@/lib/firebase/admin';
+import { CurriculumService, CurriculumApplicationService, UnitRepository, LessonRepository } from '@el-bannawy/lib';
 
 const curriculumService = new CurriculumService();
 const applicationService = new CurriculumApplicationService(curriculumService);
+const unitRepo = new UnitRepository();
+const lessonRepo = new LessonRepository();
+
+async function handleCurriculumTree(request: NextRequest): Promise<NextResponse> {
+  try {
+    const authHeader = request.headers.get('Authorization');
+    if (!authHeader?.startsWith('Bearer ')) return NextResponse.json({ success: false, error: { code: 'UNAUTHORIZED', message: 'Unauthorized' } }, { status: 401 });
+    const token = authHeader.slice(7);
+    const decoded = await getAdminAuth().verifyIdToken(token);
+
+    const userDoc = await getAdminDb().collection('users').doc(decoded.uid).get();
+    if (!userDoc.exists) return NextResponse.json({ success: true, data: [] });
+    const userData = userDoc.data() as Record<string, unknown>;
+    const stageId = userData.stageId as string | undefined;
+    const gradeId = userData.gradeId as string | undefined;
+    const termId = userData.termId as string | undefined;
+
+    const stagesResult = await applicationService.listStages({ isActive: true }, { limit: 50 });
+    if (!stagesResult.ok) return NextResponse.json({ success: true, data: [] });
+    const stages = stagesResult.value.items;
+
+    const result: Array<Record<string, unknown>> = [];
+
+    for (const stage of stages) {
+      const gradesResult = await applicationService.getGradesByStage(stage.id);
+      const grades = gradesResult.ok ? gradesResult.value : [];
+
+      const gradeEntries: Array<Record<string, unknown>> = [];
+      for (const grade of grades) {
+        let units: Array<Record<string, unknown>> = [];
+
+        if (termId) {
+          const unitsResult = await unitRepo.getUnitsByTerm(termId);
+          if (unitsResult.ok) {
+            const unitEntries: Array<Record<string, unknown>> = [];
+            for (const unit of unitsResult.value) {
+              const lessonsResult = await lessonRepo.getPublishedLessons(unit.id);
+              const lessonItems = lessonsResult.ok
+                ? lessonsResult.value.map((l) => ({
+                    id: l.id, title: l.title, displayOrder: l.displayOrder,
+                    estimatedDuration: l.estimatedDuration ?? 30,
+                    isPremium: false, sequentialMode: true,
+                    homeworkEnabled: false, quizEnabled: false,
+                  }))
+                : [];
+              unitEntries.push({
+                id: unit.id, title: unit.name, description: unit.nameAr ?? unit.name,
+                displayOrder: unit.order, isPremium: unit.isPremium, unlocked: true,
+                lessons: lessonItems,
+              });
+            }
+            units = unitEntries;
+          }
+        }
+
+        if (stageId === stage.id && (!gradeId || gradeId === grade.id)) {
+          gradeEntries.push({
+            id: grade.id, name: grade.name, displayOrder: grade.order, units,
+          });
+        }
+      }
+
+      if (gradeEntries.length > 0) {
+        result.push({
+          id: stage.id, name: stage.name, displayOrder: stage.order, grades: gradeEntries,
+        });
+      }
+    }
+
+    return NextResponse.json({ success: true, data: result });
+  } catch {
+    return NextResponse.json({ success: true, data: [] });
+  }
+}
 
 function mapErrorCode(code: string): number {
   switch (code) {
@@ -20,7 +95,12 @@ function mapErrorCode(code: string): number {
 
 export async function GET(request: NextRequest): Promise<NextResponse> {
   const { searchParams } = new URL(request.url);
+  const hasCollection = searchParams.has('collection');
   const collection = searchParams.get('collection') ?? 'educational-systems';
+
+  if (!hasCollection) {
+    return handleCurriculumTree(request);
+  }
   const limit = Math.min(Math.max(Number(searchParams.get('limit')) || 20, 1), 100);
   const cursor = searchParams.get('cursor') ?? undefined;
   const isActiveParam = searchParams.get('isActive');
