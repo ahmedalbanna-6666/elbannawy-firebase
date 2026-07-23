@@ -87,6 +87,26 @@ export {
 } from './vocabulary-relation.validator';
 
 export {
+  CreateVideoProgressInputSchema,
+  UpdateVideoProgressInputSchema,
+} from './video-progress.validator';
+export type {
+  CreateVideoProgressInputType,
+  UpdateVideoProgressInputType,
+} from './video-progress.validator';
+
+export {
+  CreateTimelineEventInputSchema,
+  UpdateTimelineEventInputSchema,
+  TimelineEventTypeEnum,
+  TimelineEventProgressInputSchema,
+} from './timeline-event.validator';
+export type {
+  CreateTimelineEventInputType,
+  UpdateTimelineEventInputType,
+} from './timeline-event.validator';
+
+export {
   CreateLessonVideoInputSchema,
   UpdateLessonVideoInputSchema,
   LessonVideoFilterSchema,

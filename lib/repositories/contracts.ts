@@ -1126,3 +1126,124 @@ export interface ILessonDocumentRepository {
   update(lessonId: string, input: UpdateLessonDocumentInput, expectedVersion: number): Promise<RepositoryResult<ILessonDocument>>;
   delete(lessonId: string): Promise<RepositoryResult<void>>;
 }
+
+// ===== Video Progress Contracts =====
+
+export interface IVideoProgress {
+  readonly id: string;
+  readonly userId: string;
+  readonly videoId: string;
+  readonly lessonId: string;
+  readonly lastPositionSeconds: number;
+  readonly watchedSeconds: number;
+  readonly watchPercent: number;
+  readonly completed: boolean;
+  readonly completedAt?: string;
+  readonly lastActiveAt: string;
+  readonly createdAt: string;
+  readonly updatedAt: string;
+}
+
+export interface CreateVideoProgressInput {
+  readonly id: string;
+  readonly userId: string;
+  readonly videoId: string;
+  readonly lessonId: string;
+  readonly lastPositionSeconds?: number;
+  readonly watchedSeconds?: number;
+}
+
+export interface UpdateVideoProgressInput {
+  readonly lastPositionSeconds?: number;
+  readonly watchedSeconds?: number;
+  readonly completed?: boolean;
+  readonly completedAt?: string;
+}
+
+export interface IVideoProgressRepository {
+  getByUserAndVideo(userId: string, videoId: string): Promise<RepositoryResult<IVideoProgress | null>>;
+  upsert(id: string, input: CreateVideoProgressInput | UpdateVideoProgressInput): Promise<RepositoryResult<IVideoProgress>>;
+  listByUserAndLesson(userId: string, lessonId: string): Promise<RepositoryResult<IVideoProgress[]>>;
+}
+
+// ===== Timeline Event Contracts =====
+
+export type TimelineEventType = 'ACTIVITY' | 'QUESTION' | 'NOTE' | 'QUIZ';
+
+export interface ITimelineEvent {
+  readonly id: string;
+  readonly videoId: string;
+  readonly lessonId: string;
+  readonly activityId: string;
+  readonly timestampSeconds: number;
+  readonly eventType: TimelineEventType;
+  readonly required: boolean;
+  readonly enabled: boolean;
+  readonly displayOrder: number;
+  readonly contentVersion: number;
+  readonly createdAt: string;
+  readonly updatedAt: string;
+  readonly schemaVersion: number;
+  readonly deletedAt?: string | null;
+}
+
+export interface CreateTimelineEventInput {
+  readonly id: string;
+  readonly videoId: string;
+  readonly lessonId: string;
+  readonly activityId: string;
+  readonly timestampSeconds: number;
+  readonly eventType: TimelineEventType;
+  readonly required?: boolean;
+  readonly enabled?: boolean;
+  readonly displayOrder: number;
+}
+
+export interface UpdateTimelineEventInput {
+  readonly timestampSeconds?: number;
+  readonly eventType?: TimelineEventType;
+  readonly required?: boolean;
+  readonly enabled?: boolean;
+  readonly displayOrder?: number;
+}
+
+export interface ITimelineEventRepository {
+  create(input: CreateTimelineEventInput): Promise<RepositoryResult<ITimelineEvent>>;
+  getById(id: string): Promise<RepositoryResult<ITimelineEvent | null>>;
+  update(id: string, input: UpdateTimelineEventInput, expectedVersion: number): Promise<RepositoryResult<ITimelineEvent>>;
+  listByVideo(videoId: string): Promise<RepositoryResult<ITimelineEvent[]>>;
+  delete(id: string): Promise<RepositoryResult<void>>;
+}
+
+// ===== Timeline Event Progress Contracts =====
+
+export interface ITimelineEventProgress {
+  readonly id: string;
+  readonly userId: string;
+  readonly videoId: string;
+  readonly lessonId: string;
+  readonly timelineEventId: string;
+  readonly activityId: string;
+  readonly completed: boolean;
+  readonly skipped: boolean;
+  readonly completedAt?: string;
+  readonly attemptCount: number;
+  readonly createdAt: string;
+  readonly updatedAt: string;
+}
+
+export interface CreateTimelineEventProgressInput {
+  readonly id: string;
+  readonly userId: string;
+  readonly videoId: string;
+  readonly lessonId: string;
+  readonly timelineEventId: string;
+  readonly activityId: string;
+}
+
+export interface ITimelineEventProgressRepository {
+  getByUserAndEvent(userId: string, timelineEventId: string): Promise<RepositoryResult<ITimelineEventProgress | null>>;
+  upsert(input: CreateTimelineEventProgressInput): Promise<RepositoryResult<ITimelineEventProgress>>;
+  markCompleted(id: string): Promise<RepositoryResult<ITimelineEventProgress>>;
+  listByUserAndVideo(userId: string, videoId: string): Promise<RepositoryResult<ITimelineEventProgress[]>>;
+}

@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAdminDb } from '@/lib/firebase/admin';
+import { TimelineEventRepository } from '@el-bannawy/lib';
+
+const eventRepository = new TimelineEventRepository();
 
 export async function GET(
   _request: NextRequest,
@@ -7,13 +9,11 @@ export async function GET(
 ): Promise<NextResponse> {
   const { eventId } = await params;
   try {
-    const db = getAdminDb();
-    const snapshot = await db.collection('videoQuestions').where('eventId', '==', eventId).limit(1).get();
-    if (snapshot.empty) {
+    const result = await eventRepository.getById(eventId);
+    if (!result.ok || !result.value) {
       return NextResponse.json({ success: true, data: null });
     }
-    const doc = snapshot.docs[0]!;
-    return NextResponse.json({ success: true, data: { id: doc.id, ...doc.data() } });
+    return NextResponse.json({ success: true, data: result.value });
   } catch {
     return NextResponse.json({ success: true, data: null });
   }
