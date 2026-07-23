@@ -21,7 +21,10 @@ export function usePermissions(): {
 } {
   const user = useAuthStore((s) => s.user);
   const userRole = user?.role;
-  const normalizedRole = userRole?.toUpperCase() as UserRole;
+  const aliasMap: Record<string, UserRole> = { ADMIN: "ADMINISTRATOR" };
+  const normalizedRole: UserRole | undefined = userRole
+    ? (aliasMap[userRole.toUpperCase()] ?? userRole.toUpperCase() as UserRole)
+    : undefined;
 
   const role = normalizedRole ?? "STUDENT";
 

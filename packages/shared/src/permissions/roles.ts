@@ -56,7 +56,7 @@ const ROLE_PERMISSIONS: Record<UserRole, readonly Permission[]> = {
 };
 
 export function getPermissionsForRole(role: UserRole): readonly Permission[] {
-  return ROLE_PERMISSIONS[role];
+  return ROLE_PERMISSIONS[role] ?? [];
 }
 
 export function hasPermission(role: UserRole, permission: Permission): boolean {

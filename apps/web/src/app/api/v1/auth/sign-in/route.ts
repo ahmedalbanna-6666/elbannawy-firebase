@@ -1,0 +1,78 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { getAdminAuth } from '@/lib/firebase/admin';
+
+const FIREBASE_API_KEY = process.env.NEXT_PUBLIC_FIREBASE_API_KEY ?? '';
+
+export async function POST(request: NextRequest): Promise<NextResponse> {
+  try {
+    const { email, password } = (await request.json()) as Record<string, string>;
+    if (!email || !password) {
+      return NextResponse.json({ success: false, error: { code: 'INVALID_INPUT', message: 'Email and password required' } }, { status: 400 });
+    }
+
+    const https = await import('https');
+    const qs = 'grant_type=password&email=' + encodeURIComponent(email) + '&password=' + encodeURIComponent(password) + '&key=' + FIREBASE_API_KEY;
+
+    const result = await new Promise<{ ok: boolean; data: unknown }>((resolve) => {
+      const req = https.request({
+        hostname: 'identitytoolkit.googleapis.com',
+        path: '/v1/accounts:signInWithPassword?key=' + FIREBASE_API_KEY,
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+      }, (res) => {
+        let d = '';
+        res.on('data', c => d += c);
+        res.on('end', () => {
+          try { resolve({ ok: res.statusCode === 200, data: JSON.parse(d) }); }
+          catch { resolve({ ok: false, data: d }); }
+        });
+      });
+      req.on('error', (e) => resolve({ ok: false, data: e.message }));
+      req.setTimeout(10000, () => { req.destroy(); resolve({ ok: false, data: { error: { message: 'Request timed out' } } }); });
+      req.write(qs);
+      req.end();
+    });
+
+    if (!result.ok || !result.data) {
+      const errData = result.data as { error?: { message?: string } };
+      return NextResponse.json({ success: false, error: { code: 'AUTH_FAILED', message: errData?.error?.message || 'Authentication failed' } }, { status: 401 });
+    }
+
+    const data = result.data as { idToken: string; localId: string; email: string; displayName?: string };
+    const adminAuth = getAdminAuth();
+    const userRecord = await adminAuth.getUser(data.localId);
+    const claims = userRecord.customClaims ?? {};
+    const rawRole = ((claims as Record<string, string>).role ?? 'student').toLowerCase();
+    const roleMap: Record<string, string> = { admin: 'administrator' };
+    const role = roleMap[rawRole] ?? rawRole;
+
+    const expiresIn = 60 * 60 * 24 * 5; // 5 days in seconds
+
+    const response = NextResponse.json({
+      success: true,
+      token: data.idToken,
+      user: {
+        id: data.localId,
+        email: data.email,
+        fullName: data.displayName || userRecord.displayName || 'User',
+        role,
+        status: 'active',
+      },
+    });
+
+    // Store the ID token directly in the cookie (createSessionCookie requires a valid
+    // Firebase ID token from securetoken.google.com, but Identity Toolkit issues tokens
+    // from identitytoolkit.google.com, so we store the raw token and verify via lookup API)
+    response.cookies.set('auth_token', data.idToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'lax',
+      maxAge: expiresIn,
+      path: '/',
+    });
+
+    return response;
+  } catch (e) {
+    return NextResponse.json({ success: false, error: { code: 'INTERNAL', message: e instanceof Error ? e.message : 'Sign-in failed' } }, { status: 500 });
+  }
+}
