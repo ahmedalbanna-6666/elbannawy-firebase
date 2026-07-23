@@ -1416,3 +1416,170 @@ export interface ITimelineEventProgressRepository {
   markCompleted(id: string): Promise<RepositoryResult<ITimelineEventProgress>>;
   listByUserAndVideo(userId: string, videoId: string): Promise<RepositoryResult<ITimelineEventProgress[]>>;
 }
+
+// ===== Quiz Contracts =====
+
+export interface IQuiz {
+  readonly id: string;
+  readonly lessonId: string;
+  readonly title: string;
+  readonly instructions?: string;
+  readonly passingScore: number;
+  readonly maxAttempts: number;
+  readonly unlimitedAttempts: boolean;
+  readonly published: boolean;
+  readonly allowRetry: boolean;
+  readonly showAnswers: boolean;
+  readonly xpReward: number;
+  readonly requiredForCompletion: boolean;
+  readonly contentVersion: number;
+  readonly createdAt: string;
+  readonly updatedAt: string;
+  readonly schemaVersion: number;
+  readonly deletedAt?: string | null;
+}
+
+export interface CreateQuizInput {
+  readonly id: string;
+  readonly lessonId: string;
+  readonly title: string;
+  readonly instructions?: string;
+  readonly passingScore?: number;
+  readonly maxAttempts?: number;
+  readonly unlimitedAttempts?: boolean;
+  readonly published?: boolean;
+  readonly allowRetry?: boolean;
+  readonly showAnswers?: boolean;
+  readonly xpReward?: number;
+  readonly requiredForCompletion?: boolean;
+}
+
+export interface UpdateQuizInput {
+  readonly title?: string;
+  readonly instructions?: string;
+  readonly passingScore?: number;
+  readonly maxAttempts?: number;
+  readonly unlimitedAttempts?: boolean;
+  readonly published?: boolean;
+  readonly allowRetry?: boolean;
+  readonly showAnswers?: boolean;
+  readonly xpReward?: number;
+  readonly requiredForCompletion?: boolean;
+}
+
+export interface IQuizRepository {
+  create(input: CreateQuizInput): Promise<RepositoryResult<IQuiz>>;
+  getById(id: string): Promise<RepositoryResult<IQuiz | null>>;
+  getByLessonId(lessonId: string): Promise<RepositoryResult<IQuiz | null>>;
+  update(id: string, input: UpdateQuizInput, expectedVersion: number): Promise<RepositoryResult<IQuiz>>;
+  delete(id: string): Promise<RepositoryResult<void>>;
+}
+
+export interface IQuizQuestion {
+  readonly id: string;
+  readonly quizId: string;
+  readonly questionType: QuestionType;
+  readonly prompt: string;
+  readonly instructions?: string;
+  readonly explanation?: string;
+  readonly options: Record<string, string> | null;
+  readonly points: number;
+  readonly displayOrder: number;
+  readonly contentVersion: number;
+  readonly createdAt: string;
+  readonly updatedAt: string;
+  readonly schemaVersion: number;
+}
+
+export interface CreateQuizQuestionInput {
+  readonly id: string;
+  readonly quizId: string;
+  readonly questionType: QuestionType;
+  readonly prompt: string;
+  readonly instructions?: string;
+  readonly explanation?: string;
+  readonly options?: Record<string, string> | null;
+  readonly points?: number;
+  readonly displayOrder: number;
+}
+
+export interface IQuizQuestionRepository {
+  create(input: CreateQuizQuestionInput): Promise<RepositoryResult<IQuizQuestion>>;
+  listByQuiz(quizId: string): Promise<RepositoryResult<IQuizQuestion[]>>;
+  getById(id: string): Promise<RepositoryResult<IQuizQuestion | null>>;
+  deleteByQuiz(quizId: string): Promise<RepositoryResult<void>>;
+}
+
+export interface IQuizAttempt {
+  readonly id: string;
+  readonly studentId: string;
+  readonly quizId: string;
+  readonly attemptNumber: number;
+  readonly status: IHomeworkAttemptStatus;
+  readonly score?: number;
+  readonly passed?: boolean;
+  readonly startedAt: string;
+  readonly submittedAt?: string;
+  readonly gradedAt?: string;
+  readonly timeSpentSeconds?: number;
+  readonly contentVersion: number;
+  readonly createdAt: string;
+  readonly updatedAt: string;
+}
+
+export interface CreateQuizAttemptInput {
+  readonly id: string;
+  readonly studentId: string;
+  readonly quizId: string;
+  readonly attemptNumber: number;
+}
+
+export interface UpdateQuizAttemptInput {
+  readonly status?: IHomeworkAttemptStatus;
+  readonly score?: number;
+  readonly passed?: boolean;
+  readonly submittedAt?: string;
+  readonly gradedAt?: string;
+  readonly timeSpentSeconds?: number;
+}
+
+export interface IQuizAttemptRepository {
+  create(input: CreateQuizAttemptInput): Promise<RepositoryResult<IQuizAttempt>>;
+  getById(id: string): Promise<RepositoryResult<IQuizAttempt | null>>;
+  getActive(studentId: string, quizId: string): Promise<RepositoryResult<IQuizAttempt | null>>;
+  update(id: string, input: UpdateQuizAttemptInput): Promise<RepositoryResult<IQuizAttempt>>;
+  listByStudentAndQuiz(studentId: string, quizId: string): Promise<RepositoryResult<IQuizAttempt[]>>;
+  countByStudentAndQuiz(studentId: string, quizId: string): Promise<RepositoryResult<number>>;
+}
+
+export interface IQuizAnswer {
+  readonly id: string;
+  readonly attemptId: string;
+  readonly studentId: string;
+  readonly quizId: string;
+  readonly questionId: string;
+  readonly answer: Record<string, unknown>;
+  readonly isCorrect?: boolean;
+  readonly score?: number;
+  readonly feedback?: string;
+  readonly submittedAt: string;
+  readonly createdAt: string;
+}
+
+export interface CreateQuizAnswerInput {
+  readonly id: string;
+  readonly attemptId: string;
+  readonly studentId: string;
+  readonly quizId: string;
+  readonly questionId: string;
+  readonly answer: Record<string, unknown>;
+  readonly isCorrect?: boolean;
+  readonly score?: number;
+  readonly feedback?: string;
+}
+
+export interface IQuizAnswerRepository {
+  create(input: CreateQuizAnswerInput): Promise<RepositoryResult<IQuizAnswer>>;
+  listByAttempt(attemptId: string): Promise<RepositoryResult<IQuizAnswer[]>>;
+  deleteByAttempt(attemptId: string): Promise<RepositoryResult<void>>;
+}

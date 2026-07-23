@@ -87,6 +87,15 @@ export {
 } from './vocabulary-relation.validator';
 
 export {
+  CreateQuizInputSchema,
+  UpdateQuizInputSchema,
+  CreateQuizQuestionInputSchema,
+  CreateQuizAttemptInputSchema,
+  UpdateQuizAttemptInputSchema,
+  CreateQuizAnswerInputSchema,
+} from './quiz.validator';
+
+export {
   CreateVideoProgressInputSchema,
   UpdateVideoProgressInputSchema,
 } from './video-progress.validator';

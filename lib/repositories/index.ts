@@ -8,5 +8,9 @@ export * from './user';
 export * from './activities';
 export * from './vocabulary';
 export * from './homework';
+export { QuizRepository } from './quiz/quiz.repository';
+export { QuizQuestionRepository } from './quiz/quiz-question.repository';
+export { QuizAttemptRepository } from './quiz/quiz-attempt.repository';
+export { QuizAnswerRepository } from './quiz/quiz-answer.repository';
 
 export type { ICursor, ICursorBuilder } from './../shared/types/cursor.types';
