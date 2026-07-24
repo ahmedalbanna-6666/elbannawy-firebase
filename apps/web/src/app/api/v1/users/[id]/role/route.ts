@@ -11,7 +11,7 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> },
 ): Promise<NextResponse> {
   const auth = await requireAdmin(request);
-  if (auth instanceof Response) return auth;
+  if (!auth.authorized) return auth.response;
 
   const { id } = await params;
 

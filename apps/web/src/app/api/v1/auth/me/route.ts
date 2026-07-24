@@ -125,9 +125,11 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       success: true,
       data: responseData,
     });
-  } catch {
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : 'An unexpected error occurred';
+    console.error('/api/v1/auth/me error:', msg, e instanceof Error ? e.stack : '');
     return NextResponse.json(
-      { success: false, error: { code: 'INTERNAL', message: 'An unexpected error occurred' } },
+      { success: false, error: { code: 'INTERNAL', message: msg } },
       { status: 500 },
     );
   }

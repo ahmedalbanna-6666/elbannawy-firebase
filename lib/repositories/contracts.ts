@@ -2299,6 +2299,98 @@ export interface ICoinPurchaseRequestRepository {
   update(id: string, input: Partial<ICoinPurchaseRequest>): Promise<RepositoryResult<ICoinPurchaseRequest>>;
 }
 
+// ===== Subscription Contracts =====
+
+export type SubscriptionPlanType = 'MONTHLY' | 'QUARTERLY' | 'SEMI_ANNUAL' | 'YEARLY' | 'FULL_COURSE' | 'CUSTOM';
+
+export type SubscriptionStatus = 'TRIAL' | 'ACTIVE' | 'GRACE' | 'EXPIRED' | 'CANCELLED' | 'UPGRADED';
+
+export type SubscriptionBillingInterval = 'MONTHLY' | 'QUARTERLY' | 'SEMI_ANNUAL' | 'YEARLY' | 'ONE_TIME';
+
+export interface ISubscriptionPlan {
+  readonly id: string;
+  readonly name: string;
+  readonly nameAr: string;
+  readonly description: string;
+  readonly descriptionAr: string;
+  readonly type: SubscriptionPlanType;
+  readonly billingInterval: SubscriptionBillingInterval;
+  readonly billingIntervalCount: number;
+  readonly priceMinorUnits: number;
+  readonly currency: string;
+  readonly trialDays: number;
+  readonly maxStudentsPerPlan: number;
+  readonly features: string[];
+  readonly contentScope: 'ALL_PREMIUM' | 'SPECIFIC_UNITS' | 'SPECIFIC_LESSONS' | 'FULL_COURSE';
+  readonly contentIds: string[];
+  readonly gradeIds: string[];
+  readonly active: boolean;
+  readonly sortOrder: number;
+  readonly createdAt: string;
+  readonly updatedAt: string;
+}
+
+export interface ISubscription {
+  readonly id: string;
+  readonly studentId: string;
+  readonly planId: string;
+  readonly planName: string;
+  readonly status: SubscriptionStatus;
+  readonly billingInterval: SubscriptionBillingInterval;
+  readonly priceMinorUnits: number;
+  readonly currency: string;
+  readonly trialEndAt: string | null;
+  readonly currentPeriodStart: string;
+  readonly currentPeriodEnd: string;
+  readonly nextBillingDate: string | null;
+  readonly cancelledAt: string | null;
+  readonly upgradeFromId: string | null;
+  readonly paymentMethod: string;
+  readonly paymentGateway: string;
+  readonly paymentId: string | null;
+  readonly entitlementsAutoGranted: boolean;
+  readonly autoRenew: boolean;
+  readonly gracePeriodEnd: string | null;
+  readonly createdAt: string;
+  readonly updatedAt: string;
+}
+
+export interface ISubscriptionPlanFilter {
+  readonly type?: SubscriptionPlanType;
+  readonly active?: boolean;
+  readonly contentScope?: string;
+  readonly gradeId?: string;
+}
+
+export interface ISubscriptionFilter {
+  readonly studentId?: string;
+  readonly planId?: string;
+  readonly status?: SubscriptionStatus;
+  readonly expiringWithinDays?: number;
+  readonly dateFrom?: string;
+  readonly dateTo?: string;
+}
+
+export interface ISubscriptionPlanRepository {
+  create(input: ISubscriptionPlan): Promise<RepositoryResult<ISubscriptionPlan>>;
+  getById(id: string): Promise<RepositoryResult<ISubscriptionPlan | null>>;
+  list(filter?: ISubscriptionPlanFilter): Promise<RepositoryResult<ISubscriptionPlan[]>>;
+  update(id: string, input: Partial<ISubscriptionPlan>): Promise<RepositoryResult<ISubscriptionPlan>>;
+  delete(id: string): Promise<RepositoryResult<void>>;
+}
+
+export interface ISubscriptionRepository {
+  create(input: ISubscription): Promise<RepositoryResult<ISubscription>>;
+  getById(id: string): Promise<RepositoryResult<ISubscription | null>>;
+  getActiveByStudent(studentId: string): Promise<RepositoryResult<ISubscription | null>>;
+  listByStudent(studentId: string): Promise<RepositoryResult<ISubscription[]>>;
+  listByPlan(planId: string): Promise<RepositoryResult<ISubscription[]>>;
+  listExpiring(withinDays: number): Promise<RepositoryResult<ISubscription[]>>;
+  listExpired(): Promise<RepositoryResult<ISubscription[]>>;
+  update(id: string, input: Partial<ISubscription>): Promise<RepositoryResult<ISubscription>>;
+  cancel(id: string): Promise<RepositoryResult<ISubscription>>;
+}
+
 // ===== Notification Dispatcher Interface =====
 
 export interface INotificationPayload {

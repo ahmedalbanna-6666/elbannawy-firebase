@@ -109,15 +109,24 @@ The Home page contains:
 
 4. Curriculum Units
 
-5. Story
+5. Coins / Subscription Status (balance + plan info, upgrade CTA)
 
-6. Final Review
+6. Story
 
-7. Learn From Mistakes
+7. Final Review
 
-8. Educational Games
+8. Learn From Mistakes
+
+9. Educational Games
 
 This order must never change.
+
+## Premium Indicators on Home
+
+- If student has an active subscription: show subscription badge + plan name + days remaining
+- If student has no subscription: show "Upgrade to Premium" CTA card
+- Premium units/lessons in the curriculum display a premium badge and price (coins) or "Subscribe to Unlock" prompt
+- If student already unlocked a premium item: show regular status (completed/current/locked)
 
 ---
 
@@ -523,23 +532,330 @@ XP cannot be purchased.
 
 ---
 
-# Coins Journey
+# Purchase & Content Activation Journey
 
-Purchase Coins
+## Premium Content Discovery
 
-↓
-
-Activate Content
+Student browses content
 
 ↓
 
-Use Coins
+Sees Premium badge on locked unit/lesson
 
 ↓
 
-Balance Updated
+Views price (Coins or Subscription required)
 
-Coins never affect rankings.
+↓
+
+Option A: Purchase with Coins (one-time unlock)
+
+Option B: Subscribe (recurring access to all premium content)
+
+---
+
+## Subscription Purchase Journey (Option B)
+
+Student selects subscription plan
+
+↓
+
+Plan types: Monthly, Quarterly, Yearly, Full Course
+
+↓
+
+Proceeds to Checkout
+
+↓
+
+Selects Payment Method (Paymob, Fawry, Instapay, etc.)
+
+↓
+
+Redirected to Payment Gateway
+
+↓
+
+Completes Payment
+
+↓
+
+Back to Platform — Payment Verification
+
+↓
+
+Payment Verified ✅
+
+↓
+
+Subscription Activated 🎉
+
+↓
+
+Content Entitlements Auto-Generated (all premium units/lessons in plan)
+
+↓
+
+Student accesses premium content
+
+↓
+
+First premium lesson unlocked
+
+---
+
+## Subscription States
+
+| State | Description | Student Experience |
+|-------|-------------|-------------------|
+| TRIAL | Free trial period (N days) | Full premium access, no payment yet |
+| ACTIVE | Within billing period | Full premium access |
+| GRACE | Payment overdue (N days) | Access continues, reminders sent |
+| EXPIRED | Past due beyond grace period | Premium content locked |
+| CANCELLED | Student/admin cancelled | Access until period end, then locked |
+| UPGRADED | Upgraded to higher plan | New plan active, old plan prorated |
+
+## Subscription Lifecycle
+
+```
+TRIAL (if offered)
+  ↓ on trial end or payment
+ACTIVE
+  ↓ on cancel
+ACTIVE (until period end) → CANCELLED
+  ↓ on non-payment
+GRACE (N days)
+  ↓ after grace period
+EXPIRED → all entitlements revoked
+```
+
+---
+
+## Coin Purchase Journey (Option A)
+
+Student opens Coins Store
+
+↓
+
+Views available Coin Packages (500, 1000, 2000, etc.)
+
+↓
+
+Selects Package
+
+↓
+
+Chooses Payment Method
+
+↓
+
+Completes Payment
+
+↓
+
+Payment Verified ✅
+
+↓
+
+Coins Added to Wallet
+
+↓
+
+New Balance Updated
+
+---
+
+## Content Unlock with Coins
+
+Student on Premium Unit/Lesson
+
+↓
+
+Sees: "Unlock with N Coins" button
+
+↓
+
+Clicks Unlock
+
+↓
+
+System checks wallet balance
+
+↓
+
+Sufficient Balance
+
+↓
+
+Coins Deducted
+
+↓
+
+Content Entitlement Created
+
+↓
+
+Content Activated ✅
+
+↓
+
+Student accesses premium lesson
+
+Insufficient Balance
+
+↓
+
+"Not enough coins" prompt
+
+↓
+
+Option: Buy more coins (redirect to coin store)
+
+---
+
+## Content Activation Rules
+
+### Automatic Activation (Subscription)
+
+| Trigger | Action | Scope |
+|---------|--------|-------|
+| Subscription created | Grant entitlements for all premium content in plan | All units/lessons in plan |
+| Subscription renewed | Extend all entitlements expiration date | Same scope |
+| Subscription upgraded | Grant additional entitlements for new plan | Additional units/lessons |
+| Subscription downgraded | Keep existing entitlements until period end | No immediate revocation |
+| Subscription expired | Revoke all entitlements tied to subscription | All subscription-scoped entitlements |
+
+### Manual Activation (Secretary/Admin)
+
+Secretary or Admin may:
+
+- Manually activate content for a student
+- Manually deactivate content (revoke entitlement)
+- Extend subscription period
+- Grant temporary access (X days)
+- Activate full course for a student
+
+### Entitlement Expiration
+
+When an entitlement expires:
+
+1. Student loses access to the premium content
+2. Premium badge reappears on locked content
+3. Student can re-subscribe or re-purchase
+4. Student progress on that content is preserved (not deleted)
+5. If student re-subscribes, progress is restored
+
+Entitlements never delete student progress — they only gate access.
+
+---
+
+## Free Trial Journey
+
+Student selects Subscription Plan
+
+↓
+
+Plan has Free Trial (e.g., 7 days)
+
+↓
+
+Student enters payment method (not charged)
+
+↓
+
+Trial period starts
+
+↓
+
+Full premium access during trial
+
+↓
+
+Day N-1: Reminder "Your trial ends tomorrow"
+
+↓
+
+Day N: Trial ends
+
+↓
+
+Option A: Auto-convert to paid (if payment method on file)
+
+Option B: Prompt to subscribe (premium content locked)
+
+↓
+
+If no action: subscription enters EXPIRED state
+
+---
+
+## Upgrade / Downgrade Journey
+
+### Upgrade
+
+Student on Basic Plan (Monthly)
+
+↓
+
+Selects Premium Plan (Yearly)
+
+↓
+
+System calculates prorated credit for remaining Basic period
+
+↓
+
+Student pays difference
+
+↓
+
+Subscription upgraded immediately
+
+↓
+
+Additional entitlements granted immediately
+
+### Downgrade
+
+Student on Premium Plan
+
+↓
+
+Selects Basic Plan
+
+↓
+
+No immediate refund (unless within refund policy)
+
+↓
+
+Premium access continues until current period end
+
+↓
+
+At period end: downgrade takes effect
+
+↓
+
+Premium-only entitlements revoked
+
+↓
+
+Basic entitlements remain
+
+---
+
+## Purchase Analytics
+
+Track:
+
+- Subscription conversion rate (trial → paid)
+- Monthly Recurring Revenue (MRR)
+- Average Revenue Per User (ARPU)
+- Churn rate
+- Most popular plan
+- Coin purchase volume
+- Content unlock popularity (which units/lessons most unlocked)
 
 ---
 
