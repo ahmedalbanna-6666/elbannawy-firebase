@@ -1,11 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAdminAuth } from '@/lib/firebase/admin';
 import { normalizeRole } from '@/lib/firebase/auth-helper';
+import { checkRateLimit } from '@/lib/rate-limiter';
 
 const FIREBASE_API_KEY = process.env.NEXT_PUBLIC_FIREBASE_API_KEY ?? '';
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
+    const ip = request.headers.get('x-forwarded-for') ?? request.headers.get('x-real-ip') ?? 'unknown';
+    const rateCheck = checkRateLimit(`auth:sign-in:${ip}`, { maxRequests: 5, windowMs: 60_000 });
+    if (!rateCheck.allowed) {
+      return NextResponse.json({ success: false, error: { code: 'RATE_LIMITED', message: 'Too many attempts. Try again later.' } }, { status: 429 });
+    }
+
     const { email, password } = (await request.json()) as Record<string, string>;
     if (!email || !password) {
       return NextResponse.json({ success: false, error: { code: 'INVALID_INPUT', message: 'Email and password required' } }, { status: 400 });

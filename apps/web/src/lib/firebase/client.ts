@@ -3,6 +3,7 @@ import { getAuth, connectAuthEmulator, type Auth } from "firebase/auth";
 import { getDatabase, connectDatabaseEmulator, type Database } from "firebase/database";
 import { getFirestore, connectFirestoreEmulator, type Firestore } from "firebase/firestore";
 import { getStorage, connectStorageEmulator, type FirebaseStorage } from "firebase/storage";
+import { initializeAppCheck, ReCaptchaEnterpriseProvider, type AppCheck } from "firebase/app-check";
 
 import firebaseConfig, { isFirebaseConfigured } from "./config";
 
@@ -11,6 +12,7 @@ let clientAuthInstance: Auth | null = null;
 let clientDbInstance: Firestore | null = null;
 let clientStorageInstance: FirebaseStorage | null = null;
 let clientRealtimeDbInstance: Database | null = null;
+let clientAppCheckInstance: AppCheck | null = null;
 
 function ensureClientApp(): FirebaseApp {
   if (clientApp) return clientApp;
@@ -25,6 +27,18 @@ function ensureClientApp(): FirebaseApp {
     );
   }
   clientApp = initializeApp(firebaseConfig as FirebaseOptions);
+
+  const appCheckKey = process.env.NEXT_PUBLIC_FIREBASE_APP_CHECK_KEY;
+  if (appCheckKey && typeof window !== "undefined") {
+    try {
+      clientAppCheckInstance = initializeAppCheck(clientApp, {
+        provider: new ReCaptchaEnterpriseProvider(appCheckKey),
+        isTokenAutoRefreshEnabled: true,
+      });
+    } catch {
+      // App Check initialization failed silently
+    }
+  }
 
   if (process.env.NEXT_PUBLIC_FIREBASE_EMULATOR_HOST) {
     const host = process.env.NEXT_PUBLIC_FIREBASE_EMULATOR_HOST;

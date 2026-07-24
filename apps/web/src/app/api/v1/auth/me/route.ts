@@ -110,17 +110,20 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       // permissions lookup failed silently
     }
 
+    const userData = user as unknown as Record<string, unknown>;
     const responseData: Record<string, unknown> = {
       id: user.id,
       fullName: user.fullName,
       mobileNumber: user.mobileNumber,
       role: normalizeRole(user.role),
       status: 'active',
-      gradeId: user.gradeId ?? null,
-      educationalSystemId: user.educationalSystemId ?? null,
-      stageId: user.stageId ?? null,
-      effectivePermissions: effectivePermissions ?? [],
+      gradeId: userData.gradeId ?? null,
+      educationalSystemId: userData.educationalSystemId ?? null,
+      stageId: userData.stageId ?? null,
     };
+    if (effectivePermissions) {
+      responseData.effectivePermissions = effectivePermissions;
+    }
 
     return NextResponse.json({
       success: true,

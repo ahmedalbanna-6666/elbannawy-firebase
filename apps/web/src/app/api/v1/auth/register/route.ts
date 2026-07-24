@@ -1,12 +1,19 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { getAdminAuth } from '@/lib/firebase/admin';
 import { UserService, UserApplicationService, CreateUserInputSchema } from '@el-bannawy/lib';
+import { checkRateLimit } from '@/lib/rate-limiter';
 
 const userService = new UserService();
 const applicationService = new UserApplicationService(userService);
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
+    const ip = request.headers.get('x-forwarded-for') ?? request.headers.get('x-real-ip') ?? 'unknown';
+    const rateCheck = checkRateLimit(`auth:register:${ip}`, { maxRequests: 3, windowMs: 300_000 });
+    if (!rateCheck.allowed) {
+      return NextResponse.json({ success: false, error: { code: 'RATE_LIMITED', message: 'Too many registration attempts. Try again later.' } }, { status: 429 });
+    }
+
     const body = (await request.json()) as Record<string, unknown>;
 
     if (!body.mobile || !body.password || !body.fullName) {

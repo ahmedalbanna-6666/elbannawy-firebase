@@ -1,11 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAdminAuth } from '@/lib/firebase/admin';
 import { UserService } from '@el-bannawy/lib';
+import { checkRateLimit } from '@/lib/rate-limiter';
 
 const userService = new UserService();
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
+    const ip = request.headers.get('x-forwarded-for') ?? request.headers.get('x-real-ip') ?? 'unknown';
+    const rateCheck = checkRateLimit(`auth:reset-password:${ip}`, { maxRequests: 3, windowMs: 300_000 });
+    if (!rateCheck.allowed) {
+      return NextResponse.json({ success: false, error: { code: 'RATE_LIMITED', message: 'Too many attempts. Try again later.' } }, { status: 429 });
+    }
+
     const { mobile, newPassword } = (await request.json()) as { mobile: string; newPassword: string };
 
     if (!mobile || !newPassword) {

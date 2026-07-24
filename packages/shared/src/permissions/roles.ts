@@ -57,19 +57,20 @@ const ROLE_PERMISSIONS: Record<UserRole, readonly Permission[]> = {
 };
 
 export function getPermissionsForRole(role: UserRole): readonly Permission[] {
-  return ROLE_PERMISSIONS[role];
+  return ROLE_PERMISSIONS[role] ?? [];
 }
 
 export function hasPermission(role: UserRole, permission: Permission): boolean {
-  return getPermissionsForRole(role).includes(permission);
+  const perms = getPermissionsForRole(role);
+  return perms.length > 0 && perms.includes(permission);
 }
 
 export function hasAnyPermission(role: UserRole, permissions: Permission[]): boolean {
-  const rolePermissions = getPermissionsForRole(role);
-  return permissions.some((p) => rolePermissions.includes(p));
+  const perms = getPermissionsForRole(role);
+  return perms.length > 0 && permissions.some((p) => perms.includes(p));
 }
 
 export function hasAllPermissions(role: UserRole, permissions: Permission[]): boolean {
-  const rolePermissions = getPermissionsForRole(role);
-  return permissions.every((p) => rolePermissions.includes(p));
+  const perms = getPermissionsForRole(role);
+  return perms.length > 0 && permissions.every((p) => perms.includes(p));
 }

@@ -1,19 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+const API_KEY = process.env.NEXT_PUBLIC_FIREBASE_API_KEY;
+
 export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
+    if (!API_KEY) {
+      return NextResponse.json({ error: 'Firebase API key not configured' }, { status: 500 });
+    }
+
     const { email, password } = (await request.json()) as Record<string, string>;
     if (!email || !password) {
       return NextResponse.json({ error: 'email and password required' }, { status: 400 });
     }
 
     const https = await import('https');
-    const qs = 'grant_type=password&email=' + encodeURIComponent(email) + '&password=' + encodeURIComponent(password) + '&key=AIzaSyA3tYGPqgMBW1vvnUHLj18oihxTKLDREyQ';
+    const qs = 'grant_type=password&email=' + encodeURIComponent(email) + '&password=' + encodeURIComponent(password) + '&key=' + API_KEY;
 
     const result = await new Promise<{ ok: boolean; data: unknown }>((resolve) => {
       const req = https.request({
         hostname: 'identitytoolkit.googleapis.com',
-        path: '/v1/accounts:signInWithPassword?key=AIzaSyA3tYGPqgMBW1vvnUHLj18oihxTKLDREyQ',
+        path: '/v1/accounts:signInWithPassword?key=' + API_KEY,
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
       }, (res) => {
