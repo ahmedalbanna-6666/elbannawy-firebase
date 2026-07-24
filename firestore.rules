@@ -2,6 +2,21 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
+    function isAdmin() {
+      return request.auth != null && request.auth.token.role == "admin";
+    }
+    function isTeacher() {
+      return request.auth != null && (
+        request.auth.token.role == "teacher" ||
+        request.auth.token.role == "admin"
+      );
+    }
+    function isSupport() {
+      return request.auth != null && (
+        request.auth.token.role == "support" ||
+        request.auth.token.role == "admin"
+      );
+    }
 
     // ── User documents ──────────────────────────────────────────
     match /users/{userId} {
@@ -9,61 +24,61 @@ service cloud.firestore {
       allow write: if request.auth != null && request.auth.uid == userId;
     }
 
-    // ── Educational system (public read) ────────────────────────
+    // ── Educational system ──────────────────────────────────────
     match /educationalSystems/{doc} {
       allow read: if request.auth != null;
-      allow write: if request.auth != null && request.auth.token.isAdmin == true;
+      allow write: if isAdmin();
     }
 
     match /stages/{doc} {
       allow read: if request.auth != null;
-      allow write: if request.auth != null && request.auth.token.isAdmin == true;
+      allow write: if isAdmin();
     }
 
     match /grades/{doc} {
       allow read: if request.auth != null;
-      allow write: if request.auth != null && request.auth.token.isAdmin == true;
+      allow write: if isAdmin();
     }
 
     match /academicYears/{doc} {
       allow read: if request.auth != null;
-      allow write: if request.auth != null && request.auth.token.isAdmin == true;
+      allow write: if isAdmin();
     }
 
     match /terms/{doc} {
       allow read: if request.auth != null;
-      allow write: if request.auth != null && request.auth.token.isAdmin == true;
+      allow write: if isAdmin();
     }
 
-    // ── Curriculum content (read for all authenticated) ─────────
+    // ── Curriculum ──────────────────────────────────────────────
     match /books/{doc} {
       allow read: if request.auth != null;
-      allow write: if request.auth != null && request.auth.token.isAdmin == true;
+      allow write: if isAdmin();
     }
 
     match /units/{doc} {
       allow read: if request.auth != null;
-      allow write: if request.auth != null && request.auth.token.isAdmin == true;
+      allow write: if isAdmin();
     }
 
     match /lessons/{doc} {
       allow read: if request.auth != null;
-      allow write: if request.auth != null && request.auth.token.isAdmin == true;
+      allow write: if isAdmin();
     }
 
     match /lessonVideos/{doc} {
       allow read: if request.auth != null;
-      allow write: if request.auth != null && request.auth.token.isAdmin == true;
+      allow write: if isAdmin();
     }
 
     match /activities/{doc} {
       allow read: if request.auth != null;
-      allow write: if request.auth != null && request.auth.token.isAdmin == true;
+      allow write: if isAdmin();
     }
 
     match /answerKeys/{doc} {
-      allow read: if request.auth != null && request.auth.token.isTeacher == true;
-      allow write: if request.auth != null && request.auth.token.isAdmin == true;
+      allow read: if isTeacher();
+      allow write: if isAdmin();
     }
 
     // ── Student progress (owner only) ───────────────────────────
@@ -83,11 +98,11 @@ service cloud.firestore {
       allow read, write: if request.auth != null && request.auth.uid == resource.data.userId;
     }
 
-    // ── Homework & Quiz attempts (owner read, teacher read) ────
+    // ── Homework & Quiz attempts ────────────────────────────────
     match /homeworkAttempts/{doc} {
       allow read: if request.auth != null && (
         request.auth.uid == resource.data.userId ||
-        request.auth.token.isTeacher == true
+        isTeacher()
       );
       allow write: if request.auth != null && request.auth.uid == resource.data.userId;
     }
@@ -95,7 +110,7 @@ service cloud.firestore {
     match /quizAttempts/{doc} {
       allow read: if request.auth != null && (
         request.auth.uid == resource.data.userId ||
-        request.auth.token.isTeacher == true
+        isTeacher()
       );
       allow write: if request.auth != null && request.auth.uid == resource.data.userId;
     }
@@ -108,12 +123,11 @@ service cloud.firestore {
 
     match /achievements/{doc} {
       allow read: if request.auth != null;
-      allow write: if request.auth != null && request.auth.token.isAdmin == true;
+      allow write: if isAdmin();
     }
 
     match /userAchievements/{doc} {
-      allow read: if request.auth != null && request.auth.uid == resource.data.userId;
-      allow write: if request.auth != null && request.auth.uid == resource.data.userId;
+      allow read, write: if request.auth != null && request.auth.uid == resource.data.userId;
     }
 
     // ── Payments & Wallet ───────────────────────────────────────
@@ -125,14 +139,14 @@ service cloud.firestore {
     match /payments/{doc} {
       allow read: if request.auth != null && (
         request.auth.uid == resource.data.userId ||
-        request.auth.token.isAdmin == true
+        isAdmin()
       );
-      allow write: if request.auth != null && request.auth.token.isAdmin == true;
+      allow write: if isAdmin();
     }
 
     match /invoices/{doc} {
       allow read: if request.auth != null && request.auth.uid == resource.data.userId;
-      allow write: if request.auth != null && request.auth.token.isAdmin == true;
+      allow write: if isAdmin();
     }
 
     // ── Notifications ───────────────────────────────────────────
@@ -142,7 +156,7 @@ service cloud.firestore {
 
     match /notifications/{doc} {
       allow read: if request.auth != null && request.auth.uid == resource.data.userId;
-      allow write: if request.auth != null && request.auth.token.isAdmin == true;
+      allow write: if isAdmin();
     }
 
     match /deviceTokens/{doc} {
@@ -169,13 +183,13 @@ service cloud.firestore {
     match /supportTickets/{ticketId} {
       allow read: if request.auth != null && (
         request.auth.uid == resource.data.userId ||
-        request.auth.token.isAdmin == true
+        isAdmin()
       );
       allow write: if request.auth != null && request.auth.uid == resource.data.userId;
       match /messages/{messageId} {
         allow read: if request.auth != null && (
           request.auth.uid == get(/databases/$(database)/documents/supportTickets/$(ticketId)).data.userId ||
-          request.auth.token.isAdmin == true
+          isAdmin()
         );
         allow write: if request.auth != null;
       }
@@ -183,18 +197,18 @@ service cloud.firestore {
 
     // ── Administration ──────────────────────────────────────────
     match /systemSettings/{doc} {
-      allow read: if request.auth != null && request.auth.token.isAdmin == true;
-      allow write: if request.auth != null && request.auth.token.isAdmin == true;
+      allow read: if isAdmin();
+      allow write: if isAdmin();
     }
 
     match /featureFlags/{doc} {
       allow read: if request.auth != null;
-      allow write: if request.auth != null && request.auth.token.isAdmin == true;
+      allow write: if isAdmin();
     }
 
     match /auditLogs/{doc} {
-      allow read: if request.auth != null && request.auth.token.isAdmin == true;
-      allow write: if request.auth != null && request.auth.token.isAdmin == true;
+      allow read: if isAdmin();
+      allow write: if isAdmin();
     }
 
     // ── Referrals ───────────────────────────────────────────────
@@ -204,13 +218,13 @@ service cloud.firestore {
 
     match /referralPolicies/{doc} {
       allow read: if request.auth != null;
-      allow write: if request.auth != null && request.auth.token.isAdmin == true;
+      allow write: if isAdmin();
     }
 
     // ── Live Classes ────────────────────────────────────────────
     match /liveSessions/{doc} {
       allow read: if request.auth != null;
-      allow write: if request.auth != null && (request.auth.token.isTeacher == true || request.auth.token.isAdmin == true);
+      allow write: if isTeacher();
     }
     match /liveBookings/{doc} {
       allow read: if request.auth != null && request.auth.uid == resource.data.studentId;
@@ -218,36 +232,36 @@ service cloud.firestore {
     }
     match /teacherAvailability/{doc} {
       allow read: if request.auth != null;
-      allow write: if request.auth != null && (request.auth.token.isTeacher == true || request.auth.token.isAdmin == true);
+      allow write: if isTeacher();
     }
     match /teacherDateBlocks/{doc} {
       allow read: if request.auth != null;
-      allow write: if request.auth != null && (request.auth.token.isTeacher == true || request.auth.token.isAdmin == true);
+      allow write: if isTeacher();
     }
     match /liveAttendance/{doc} {
-      allow read: if request.auth != null && (request.auth.token.isTeacher == true || request.auth.token.isAdmin == true);
-      allow write: if request.auth != null && (request.auth.token.isTeacher == true || request.auth.token.isAdmin == true);
+      allow read: if isTeacher();
+      allow write: if isTeacher();
     }
     match /liveAnnouncements/{doc} {
       allow read: if request.auth != null;
-      allow write: if request.auth != null && (request.auth.token.isTeacher == true || request.auth.token.isAdmin == true);
+      allow write: if isTeacher();
     }
     match /liveSessionSecrets/{doc} {
-      allow read, write: if request.auth != null && request.auth.token.isAdmin == true;
+      allow read, write: if isAdmin();
     }
 
     // ── Stories ─────────────────────────────────────────────────
     match /stories/{doc} {
       allow read: if request.auth != null;
-      allow write: if request.auth != null && (request.auth.token.isTeacher == true || request.auth.token.isAdmin == true);
+      allow write: if isTeacher();
     }
     match /storyChapters/{doc} {
       allow read: if request.auth != null;
-      allow write: if request.auth != null && (request.auth.token.isTeacher == true || request.auth.token.isAdmin == true);
+      allow write: if isTeacher();
     }
     match /storyLessons/{doc} {
       allow read: if request.auth != null;
-      allow write: if request.auth != null && (request.auth.token.isTeacher == true || request.auth.token.isAdmin == true);
+      allow write: if isTeacher();
     }
     match /storyProgress/{doc} {
       allow read, write: if request.auth != null && request.auth.uid == resource.data.studentId;
@@ -256,13 +270,13 @@ service cloud.firestore {
     // ── Final Reviews ───────────────────────────────────────────
     match /finalReviews/{doc} {
       allow read: if request.auth != null;
-      allow write: if request.auth != null && (request.auth.token.isTeacher == true || request.auth.token.isAdmin == true);
+      allow write: if isTeacher();
     }
-    match /finalReviewUnits/{doc} { allow read: if request.auth != null; allow write: if request.auth != null && request.auth.token.isAdmin == true; }
-    match /finalReviewLessons/{doc} { allow read: if request.auth != null; allow write: if request.auth != null && request.auth.token.isAdmin == true; }
-    match /finalReviewQuestions/{doc} { allow read: if request.auth != null; allow write: if request.auth != null && request.auth.token.isAdmin == true; }
+    match /finalReviewUnits/{doc} { allow read: if request.auth != null; allow write: if isAdmin(); }
+    match /finalReviewLessons/{doc} { allow read: if request.auth != null; allow write: if isAdmin(); }
+    match /finalReviewQuestions/{doc} { allow read: if request.auth != null; allow write: if isAdmin(); }
     match /finalReviewAttempts/{doc} {
-      allow read: if request.auth != null && (request.auth.uid == resource.data.studentId || request.auth.token.isTeacher == true);
+      allow read: if request.auth != null && (request.auth.uid == resource.data.studentId || isTeacher());
       allow write: if request.auth != null && request.auth.uid == resource.data.studentId;
     }
     match /finalReviewAnswers/{doc} {
@@ -273,15 +287,15 @@ service cloud.firestore {
     // ── Competitions ────────────────────────────────────────────
     match /competitions/{doc} {
       allow read: if request.auth != null;
-      allow write: if request.auth != null && (request.auth.token.isTeacher == true || request.auth.token.isAdmin == true);
+      allow write: if isTeacher();
     }
     match /competitionParticipants/{doc} {
       allow read: if request.auth != null;
-      allow write: if request.auth != null && (request.auth.uid == resource.data.studentId || request.auth.token.isTeacher == true);
+      allow write: if request.auth != null && (request.auth.uid == resource.data.studentId || isTeacher());
     }
     match /competitionQuestions/{doc} {
       allow read: if request.auth != null;
-      allow write: if request.auth != null && request.auth.token.isAdmin == true;
+      allow write: if isAdmin();
     }
     match /competitionAttempts/{doc} {
       allow read: if request.auth != null && request.auth.uid == resource.data.studentId;
@@ -295,7 +309,7 @@ service cloud.firestore {
     }
     match /coinPackages/{doc} {
       allow read: if request.auth != null;
-      allow write: if request.auth != null && request.auth.token.isAdmin == true;
+      allow write: if isAdmin();
     }
     match /contentEntitlements/{doc} {
       allow read: if request.auth != null && request.auth.uid == resource.data.studentId;
@@ -303,16 +317,16 @@ service cloud.firestore {
     }
 
     match /coinPurchaseRequests/{doc} {
-      allow read: if request.auth != null && (request.auth.uid == resource.data.studentId || request.auth.token.isAdmin == true);
+      allow read: if request.auth != null && (request.auth.uid == resource.data.studentId || isAdmin());
       allow create: if request.auth != null && request.auth.uid == request.resource.data.studentId;
-      allow update: if request.auth != null && request.auth.token.isAdmin == true;
+      allow update: if isAdmin();
       allow delete: if false;
     }
 
     // ── Grade Support Contacts ──────────────────────────────────
     match /gradeSupportContacts/{doc} {
       allow read: if request.auth != null;
-      allow write: if request.auth != null && (request.auth.token.isAdmin == true || request.auth.token.isSupport == true);
+      allow write: if isSupport();
     }
 
     // ── Default deny ────────────────────────────────────────────

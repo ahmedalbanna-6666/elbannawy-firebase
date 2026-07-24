@@ -12,7 +12,7 @@ import {
   serverTimestamp,
   type DataSnapshot,
 } from "firebase/database";
-import { getRealtimeDatabase, isFirebaseConfigured } from "@/lib/firebase-config";
+import { getClientRealtimeDatabase as getRealtimeDatabase, isFirebaseConfigured } from "@/lib/firebase/client";
 
 type RealtimeCallback<T> = (data: T | null) => void;
 
