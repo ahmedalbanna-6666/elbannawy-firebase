@@ -165,12 +165,14 @@ export function Sidebar({ items, className, onClose, onProfileClick, profileGrad
           "light:hover:[&::-webkit-scrollbar-thumb]:bg-neutral-400",
         )}
       >
-        {items.map((entry, _idx) => {
+        {Array.isArray(items) ? items.map((entry, _idx) => {
+          if (!entry || typeof entry !== "object") return null;
           if (isSection(entry)) {
+            const sectionItems = Array.isArray(entry.items) ? entry.items : [];
             return (
               <div key={entry.title}>
                 <ul className="flex flex-col gap-2">
-                  {entry.items.map((item) => (
+                  {sectionItems.map((item) => (
                     <li key={item.id}>
                       {isDivider(item) && !collapsed ? (
                         <div className="mx-2 my-1 h-px bg-white/5 light:bg-neutral-200" />
@@ -226,7 +228,7 @@ export function Sidebar({ items, className, onClose, onProfileClick, profileGrad
               )}
             </button>
           );
-        })}
+        }) : null}
 
         {!collapsed && children && (
           <div className="mt-4 border-t border-white/5 pt-4 light:border-neutral-200">

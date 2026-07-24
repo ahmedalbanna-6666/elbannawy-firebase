@@ -67,7 +67,7 @@ export function AcademicSettings(): ReactNode {
 
   useEffect(() => {
     if (!myGrades || !isTeacher) return;
-    const gs = myGrades.grades;
+    const gs = Array.isArray(myGrades.grades) ? myGrades.grades : [];
     if (gs.length === 1) {
       const g = gs[0];
       const stageKey = stageLabelToKey(g.stage.name) ?? g.stage.name;
@@ -84,10 +84,11 @@ export function AcademicSettings(): ReactNode {
     }
   }, [myGrades, isTeacher, setEducationalSystem, setStage, setGrade]);
 
-  const assignedGradeNames = new Set(myGrades?.grades.map((g) => g.name) ?? []);
+  const gradesArr = Array.isArray(myGrades?.grades) ? myGrades.grades : [];
+  const assignedGradeNames = new Set(gradesArr.map((g) => g.name));
 
   const filteredStageOptions = STAGE_OPTIONS.filter(
-    (s) => myGrades?.grades.some((g) => g.stage.name === s.value),
+    (s) => gradesArr.some((g) => g.stage.name === s.value),
   );
 
   const gradeOptions = stage ? getGradeOptions(stage) : [];
@@ -130,13 +131,13 @@ export function AcademicSettings(): ReactNode {
           <Skeleton className="h-8 rounded-lg" />
         ) : isTeacher && myGrades ? (
           <div className="flex flex-col gap-2">
-            {myGrades.grades.length === 0 && (
+            {gradesArr.length === 0 && (
               <p className="text-[10px] text-neutral-500">
                 لم يتم إسناد أي صفوف دراسية. يرجى التواصل مع الإدارة.
               </p>
             )}
 
-            {myGrades.grades.length > 0 && (
+            {gradesArr.length > 0 && (
               <>
                 <Select
                   size="sm"
@@ -154,7 +155,7 @@ export function AcademicSettings(): ReactNode {
                   onChange={(e) => { setStage(e.target.value); }}
                 />
 
-                {myGrades.grades.length <= 1 ? (
+                {gradesArr.length <= 1 ? (
                   <Select
                     size="sm"
                     options={filteredGradeOptions.length > 0 ? filteredGradeOptions : gradeOptions}
@@ -166,7 +167,7 @@ export function AcademicSettings(): ReactNode {
                   <div className="flex flex-col gap-1">
                     <span className="text-[10px] text-neutral-400">الصف الدراسي</span>
                     <div className="flex flex-wrap gap-1.5">
-                      {myGrades.grades.map((g) => {
+                      {gradesArr.map((g) => {
                         const isActive = grade === g.name;
                         return (
                           <button
@@ -202,7 +203,7 @@ export function AcademicSettings(): ReactNode {
                   onChange={(e) => { setTerm(e.target.value); }}
                 />
 
-                {myGrades.grades.length === 1 && (
+                {gradesArr.length === 1 && (
                   <span className="text-[10px] text-primary-400">
                     تم تحديد الصف الوحيد المسند تلقائياً
                   </span>

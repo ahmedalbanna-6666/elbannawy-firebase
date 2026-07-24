@@ -116,21 +116,23 @@ export default function DashboardLayout({ children }: DashboardLayoutProps): Rea
 
   const sidebarItems: SidebarContent = useMemo(
     () => {
-      const modules = getSidebarModules(can) ?? [];
+      const raw = getSidebarModules(can);
+      const modules = Array.isArray(raw) ? raw : [];
       const items: SidebarContent = [];
       let lastCategory: NavModule["category"] = null;
       let dividerCount = 0;
 
-       for (const m of modules) {
-         if (m.id === "home") {
-           items.push({ id: m.id, label: m.title, icon: m.icon, onClick: (): void => { router.push(m.route); } });
-           lastCategory = null;
-           continue;
-         }
+      for (const m of modules) {
+        if (!m || typeof m !== "object") continue;
+        if (m.id === "home") {
+          items.push({ id: m.id, label: m.title, icon: m.icon, onClick: (): void => { router.push(m.route); } });
+          lastCategory = null;
+          continue;
+        }
 
-         if (m.id === "achievements" && userRole !== "STUDENT") {
-           continue;
-         }
+        if (m.id === "achievements" && userRole !== "STUDENT") {
+          continue;
+        }
 
         if (m.category === "student" && lastCategory !== "student") {
           dividerCount += 1;

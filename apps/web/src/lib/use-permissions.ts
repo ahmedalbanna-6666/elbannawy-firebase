@@ -55,5 +55,5 @@ export function usePermissions(): {
     isTeacher: role === "TEACHER",
     isStaff: role === "STAFF",
     isStudent: role === "STUDENT",
-  } as const;
+  };
 }

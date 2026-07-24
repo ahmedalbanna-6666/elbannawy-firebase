@@ -65,15 +65,17 @@ export function AcademicContextBar({ className }: AcademicContextBarProps): Reac
 
   const gradeToId = useMemo(() => {
     const map = new Map<string, string>();
-    if (isTeacher && myGrades) {
+    if (isTeacher && myGrades && Array.isArray(myGrades.grades)) {
       for (const g of myGrades.grades) {
         map.set(g.name, g.id);
       }
     }
-    if (isAdmin && allStages) {
+    if (isAdmin && Array.isArray(allStages)) {
       for (const stage of allStages) {
-        for (const g of stage.grades) {
-          map.set(g.name, g.id);
+        if (stage && typeof stage === "object" && Array.isArray(stage.grades)) {
+          for (const g of stage.grades) {
+            map.set(g.name, g.id);
+          }
         }
       }
     }
@@ -88,8 +90,9 @@ export function AcademicContextBar({ className }: AcademicContextBarProps): Reac
     : gradeOptions;
 
   const stageGradeNames = new Map<string, Set<string>>();
-  if (isTeacher && myGrades) {
+  if (isTeacher && myGrades && Array.isArray(myGrades.grades)) {
     for (const g of myGrades.grades) {
+      if (!g || typeof g !== "object" || !g.stage) continue;
       const stageKey = stageLabelToKey(g.stage.name) ?? g.stage.name;
       if (!stageGradeNames.has(stageKey)) {
         stageGradeNames.set(stageKey, new Set());

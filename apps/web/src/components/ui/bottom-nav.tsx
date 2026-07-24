@@ -20,6 +20,7 @@ interface BottomNavProps {
 }
 
 export function BottomNav({ items, className }: BottomNavProps): ReactNode {
+  const navItems = Array.isArray(items) ? items : [];
   return (
     <nav
       className={cn(
@@ -27,7 +28,7 @@ export function BottomNav({ items, className }: BottomNavProps): ReactNode {
         className,
       )}
     >
-      {items.map((item) => {
+      {navItems.map((item) => {
         const Icon = item.active && item.activeIcon ? item.activeIcon : item.icon;
         return (
           <button
