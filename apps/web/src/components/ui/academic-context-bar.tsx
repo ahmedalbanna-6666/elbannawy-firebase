@@ -8,6 +8,7 @@ import { useAcademicContextStore } from "@/lib/academic-context-store";
 import { useAuthStore } from "@/lib/auth-store";
 import {
   ACADEMIC_YEAR_OPTIONS,
+  ACADEMIC_TERMS,
   STAGE_OPTIONS,
   TERM_OPTIONS,
   SYSTEM_OPTIONS,
@@ -32,6 +33,7 @@ export function AcademicContextBar({ className }: AcademicContextBarProps): Reac
   const grade = useAcademicContextStore((s) => s.grade);
   const term = useAcademicContextStore((s) => s.term);
   const setAcademicYear = useAcademicContextStore((s) => s.setAcademicYear);
+  const setAcademicYearId = useAcademicContextStore((s) => s.setAcademicYearId);
   const setEducationalSystem = useAcademicContextStore((s) => s.setEducationalSystem);
   const setStage = useAcademicContextStore((s) => s.setStage);
   const setGrade = useAcademicContextStore((s) => s.setGrade);
@@ -52,6 +54,46 @@ export function AcademicContextBar({ className }: AcademicContextBarProps): Reac
     enabled: isTeacher && !!userId,
     staleTime: 30_000,
   });
+
+  const { data: academicYears } = useQuery({
+    queryKey: ["admin-academic-context-years"],
+    queryFn: async () => {
+      const res = await api.get<{ id: string; name: string; terms: { id: string; name: string }[] }[]>("/admin/academic-years");
+      return res.data ?? [];
+    },
+    enabled: isAdmin,
+    staleTime: 60_000,
+  });
+
+  const yearToId = useMemo(() => {
+    const map = new Map<string, string>();
+    if (isAdmin && Array.isArray(academicYears)) {
+      for (const y of academicYears) {
+        if (y && typeof y === "object" && y.name) {
+          map.set(y.name, y.id);
+          const dashName = y.name.replace(/\//g, "-");
+          if (dashName !== y.name) map.set(dashName, y.id);
+          const slashName = y.name.replace(/-/g, "/");
+          if (slashName !== y.name) map.set(slashName, y.id);
+        }
+      }
+    }
+    return map;
+  }, [isAdmin, academicYears]);
+
+  const termToId = useMemo(() => {
+    const map = new Map<string, string>();
+    if (isAdmin && academicYear && Array.isArray(academicYears)) {
+      const yearId = yearToId.get(academicYear);
+      const year = academicYears.find((y) => y.id === yearId || y.name === academicYear);
+      if (year && Array.isArray(year.terms)) {
+        for (const t of year.terms) {
+          map.set(t.name, t.id);
+        }
+      }
+    }
+    return map;
+  }, [isAdmin, academicYears, academicYear, yearToId]);
 
   const { data: allStages } = useQuery({
     queryKey: ["curriculum-stages"],
@@ -121,7 +163,11 @@ export function AcademicContextBar({ className }: AcademicContextBarProps): Reac
           options={ACADEMIC_YEAR_OPTIONS}
           placeholder="السنة الدراسية"
           value={academicYear ?? ""}
-          onChange={(e): void => { setAcademicYear(e.target.value); }}
+          onChange={(e): void => {
+            const selected = e.target.value;
+            setAcademicYear(selected);
+            setAcademicYearId(yearToId.get(selected) ?? null);
+          }}
           aria-label="السنة الدراسية"
         />
       )}
@@ -159,7 +205,12 @@ export function AcademicContextBar({ className }: AcademicContextBarProps): Reac
           options={TERM_OPTIONS}
           placeholder="الترم"
           value={term ?? ""}
-          onChange={(e): void => { setTerm(e.target.value); setTermId(e.target.value); }}
+          onChange={(e): void => {
+            const selected = e.target.value;
+            setTerm(selected);
+            const termLabel = ACADEMIC_TERMS.find((t) => t.id === selected)?.label;
+            setTermId(termLabel ? (termToId.get(termLabel) ?? null) : null);
+          }}
           aria-label="الترم"
         />
       )}
