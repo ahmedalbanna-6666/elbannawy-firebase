@@ -1,5 +1,0 @@
-{
-  "buildCommand": "cd ../.. && pnpm install --frozen-lockfile --filter=@el-bannawy/web... && cd apps/web && pnpm run build",
-  "installCommand": "cd ../.. && pnpm install --frozen-lockfile --filter=@el-bannawy/web...",
-  "rootDirectory": "apps/web"
-}
