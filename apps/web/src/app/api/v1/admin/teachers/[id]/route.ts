@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { GRADES, STAGES } from '@el-bannawy/lib';
 import { getAdminDb } from '@/lib/firebase/admin';
 
 export async function GET(
@@ -34,22 +35,13 @@ export async function GET(
     const assignedGrades = await Promise.all(
       gradeIdList.map(async (gid) => {
         try {
-          const gDoc = await db.collection('grades').doc(gid).get();
-          if (!gDoc.exists) return null;
-          const g = gDoc.data() as Record<string, unknown>;
-          const stageId = g.stageId as string ?? '';
-          let stageName = '';
-          if (stageId) {
-            const sDoc = await db.collection('stages').doc(stageId).get().catch(() => null);
-            if (sDoc?.exists) {
-              stageName = (sDoc.data() as Record<string, unknown>)?.nameAr as string ?? (sDoc.data() as Record<string, unknown>)?.name as string ?? '';
-            }
-          }
+          const grade = GRADES.find((g) => g.id === gid);
+          const stage = grade ? STAGES.find((s) => s.id === grade.stageId) : null;
           const countSnap = await db.collection('users').where('gradeId', '==', gid).where('deletedAt', '==', null).count().get().catch(() => null);
           return {
             id: gid,
-            name: (g.nameAr as string) || (g.name as string) || gid,
-            stage: { id: stageId, name: stageName },
+            name: grade?.nameAr ?? grade?.name ?? gid,
+            stage: stage ? { id: stage.id, name: stage.nameAr } : grade ? { id: grade.stageId, name: '' } : { id: '', name: '' },
             _count: { users: countSnap?.data().count ?? 0 },
           };
         } catch {

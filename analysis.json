@@ -1,7 +1,7 @@
 {
   "rootCollections": [
     "users", "loginEvents", "teacherAssignments",
-    "educationalSystems", "stages", "grades", "academicYears", "terms", "books", "units", "lessons",
+    "academicYears", "terms", "books", "units", "lessons",
     "lessonVideos", "lessonDocuments", "timelineEvents", "activities", "answerKeys",
     "vocabularySections", "vocabularyItems", "vocabularyRelations",
     "homework", "homeworkQuestions", "quizzes", "quizQuestions", "assessments", "assessmentQuestions",

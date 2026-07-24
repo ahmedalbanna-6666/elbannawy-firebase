@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { LessonService, LessonApplicationService, NotificationDispatcher } from '@el-bannawy/lib';
+import { LessonService, LessonApplicationService, NotificationDispatcher, GRADES } from '@el-bannawy/lib';
 import { getAdminDb } from '@/lib/firebase/admin';
 
 const lessonService = new LessonService();
@@ -21,8 +21,8 @@ export async function POST(
       if (lesson && (lesson as any).gradeId) {
         const db = getAdminDb();
         const gradeId = (lesson as any).gradeId;
-        const gradeDoc = await db.collection('grades').doc(gradeId).get();
-        const gradeName = gradeDoc.exists ? (gradeDoc.data() as any)?.name || '' : '';
+        const grade = GRADES.find((g) => g.id === gradeId);
+        const gradeName = grade?.name ?? '';
         const studentSnap = await db.collection('users').where('gradeId', '==', gradeId).where('role', '==', 'student').get();
         const studentIds = studentSnap.docs.map((d) => d.id);
         if (studentIds.length > 0) {

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import type { Firestore, DocumentData } from 'firebase-admin/firestore';
+import { GRADES, STAGES } from '@el-bannawy/lib';
 import { getAdminAuth, getAdminDb } from '@/lib/firebase/admin';
 import { authenticateRequest } from '@/lib/firebase/auth-helper';
 
@@ -17,46 +17,22 @@ function extractString(raw: unknown): string | null {
   return null;
 }
 
-function getDocName(data: DocumentData | undefined): string {
-  if (!data) return '';
-  const nameAr: unknown = data.nameAr;
-  const name: unknown = data.name;
-  return typeof nameAr === 'string' && nameAr.length > 0 ? nameAr : typeof name === 'string' ? name : '';
-}
-
-async function resolveAcademicNames(
-  db: Firestore,
+function resolveAcademicNames(
   gradeId: string | null,
   stageId: string | null,
   termId: string | null,
-): Promise<{ stage: { id: string; name: string } | null; grade: { id: string; name: string } | null; currentTerm: { id: string; name: string } | null }> {
-  const gradeIdSafe: string | null = gradeId;
-  const stageIdSafe: string | null = stageId;
-  const termIdSafe: string | null = termId;
+): { stage: { id: string; name: string } | null; grade: { id: string; name: string } | null; currentTerm: { id: string; name: string } | null } {
+  const resolvedGrade: { id: string; name: string } | null = gradeId
+    ? { id: gradeId, name: GRADES.find((g) => g.id === gradeId)?.nameAr ?? gradeId }
+    : null;
 
-  const [gradeDoc, stageDoc, termDoc] = await Promise.all([
-    gradeIdSafe ? db.collection('grades').doc(gradeIdSafe).get().catch(() => null) : null,
-    stageIdSafe ? db.collection('stages').doc(stageIdSafe).get().catch(() => null) : null,
-    termIdSafe ? db.collection('academicTerms').doc(termIdSafe).get().catch(() => null) : null,
-  ]);
+  const resolvedStage: { id: string; name: string } | null = stageId
+    ? { id: stageId, name: STAGES.find((s) => s.id === stageId)?.nameAr ?? stageId }
+    : null;
 
-  const resolvedGrade: { id: string; name: string } | null = gradeDoc?.exists && gradeIdSafe
-    ? { id: gradeIdSafe, name: getDocName(gradeDoc.data()) || gradeIdSafe }
-    : gradeIdSafe
-      ? { id: gradeIdSafe, name: gradeIdSafe }
-      : null;
-
-  const resolvedStage: { id: string; name: string } | null = stageDoc?.exists && stageIdSafe
-    ? { id: stageIdSafe, name: getDocName(stageDoc.data()) || stageIdSafe }
-    : stageIdSafe
-      ? { id: stageIdSafe, name: stageIdSafe }
-      : null;
-
-  const resolvedTerm: { id: string; name: string } | null = termDoc?.exists && termIdSafe
-    ? { id: termIdSafe, name: getDocName(termDoc.data()) || termIdSafe }
-    : termIdSafe
-      ? { id: termIdSafe, name: termIdSafe }
-      : null;
+  const resolvedTerm: { id: string; name: string } | null = termId
+    ? { id: termId, name: termId }
+    : null;
 
   return { stage: resolvedStage, grade: resolvedGrade, currentTerm: resolvedTerm };
 }
@@ -96,7 +72,7 @@ async function getProfileData(decoded: { uid: string }): Promise<Record<string, 
   const stageId = extractString(u.stageId);
   const termId = extractString(u.termId);
 
-  const roleProfile = await resolveAcademicNames(db, gradeId, stageId, termId);
+  const roleProfile = resolveAcademicNames(gradeId, stageId, termId);
 
   return {
     id: decoded.uid,
@@ -151,15 +127,9 @@ export async function PATCH(request: NextRequest): Promise<NextResponse> {
     if (body.mobileNumber !== undefined) updateData.mobileNumber = body.mobileNumber ?? null;
 
     if (body.gradeId) {
-      const gradeDoc = await db.collection('grades').doc(body.gradeId as string).get().catch(() => null);
-      if (gradeDoc?.exists) {
-        const gradeData = gradeDoc.data();
-        if (gradeData) {
-          const gsId: unknown = gradeData.stageId;
-          if (typeof gsId === 'string') {
-            updateData.stageId = gsId;
-          }
-        }
+      const grade = GRADES.find((g) => g.id === body.gradeId);
+      if (grade) {
+        updateData.stageId = grade.stageId;
       }
     }
 
