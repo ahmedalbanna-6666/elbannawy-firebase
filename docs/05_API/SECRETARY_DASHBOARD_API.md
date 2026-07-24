@@ -1,9 +1,10 @@
 # SECRETARY_DASHBOARD_API.md
 
 # El-bannawy Platform
+
 ## Secretary Dashboard API Specification
 
-Version: 1.0.0
+Version: 2.0.0
 
 ---
 
@@ -14,14 +15,17 @@ This document defines all API endpoints used by the Secretary Dashboard.
 The Secretary Dashboard API manages administrative operations including:
 
 - Student Registration
-- Subscription Management
-- Payment Verification
+- Subscription Management (create, renew, cancel, expire)
+- Content Activation (grant/revoke premium content access)
+- Payment Verification (including auto-activation flow)
 - Coin Purchases
 - Live Class Scheduling
 - Parent Communication
 - Administrative Reports
 
 The Secretary Dashboard never manages educational content.
+
+Secretaries are the primary operators for content activation after purchase — they bridge the gap between payment verification and student access to premium content.
 
 ---
 
@@ -49,7 +53,9 @@ Secretary Role
 ---
 
 # ==========================
+
 # DASHBOARD
+
 # ==========================
 
 GET
@@ -74,7 +80,9 @@ Response
 ---
 
 # ==========================
+
 # STUDENTS
+
 # ==========================
 
 GET
@@ -133,7 +141,9 @@ Reset student password.
 ---
 
 # ==========================
+
 # SUBSCRIPTIONS
+
 # ==========================
 
 ## List Subscriptions
@@ -143,6 +153,7 @@ GET /secretary/subscriptions
 Return subscriptions list.
 
 Supported query parameters:
+
 - studentId — return all subscriptions for a specific student
 - status — filter by status (ACTIVE, TRIAL, GRACE, EXPIRED, CANCELLED)
 - expiringWithin — return subscriptions expiring within N days
@@ -285,7 +296,9 @@ Response:
 ---
 
 # ==========================
+
 # CONTENT ACTIVATION
+
 # ==========================
 
 The Content Activation endpoint allows secretaries to manually grant or revoke access to premium content for students.
@@ -408,7 +421,9 @@ Response includes payment status, subscription details, and activated entitlemen
 ---
 
 # ==========================
+
 # PAYMENTS
+
 # ==========================
 
 GET
@@ -436,7 +451,9 @@ Return payment details.
 ---
 
 # ==========================
+
 # COINS
+
 # ==========================
 
 GET
@@ -458,7 +475,9 @@ Secretaries cannot manually add Coins.
 ---
 
 # ==========================
+
 # LIVE CLASSES
+
 # ==========================
 
 GET
@@ -494,7 +513,9 @@ Cancel session.
 ---
 
 # ==========================
+
 # WHATSAPP
+
 # ==========================
 
 POST
@@ -526,7 +547,9 @@ Return message history.
 ---
 
 # ==========================
+
 # REPORTS
+
 # ==========================
 
 GET
@@ -552,7 +575,9 @@ Supported
 ---
 
 # ==========================
+
 # PROFILE
+
 # ==========================
 
 GET
@@ -578,7 +603,9 @@ Editable
 ---
 
 # ==========================
+
 # VALIDATION
+
 # ==========================
 
 Validate
@@ -596,7 +623,9 @@ Validate
 ---
 
 # ==========================
+
 # SECURITY
+
 # ==========================
 
 Secretaries cannot:
@@ -616,7 +645,9 @@ All requests require authorization.
 ---
 
 # ==========================
+
 # RATE LIMIT
+
 # ==========================
 
 Dashboard
@@ -638,7 +669,9 @@ WhatsApp
 ---
 
 # ==========================
+
 # STATUS CODES
+
 # ==========================
 
 200 OK
@@ -666,7 +699,9 @@ WhatsApp
 ---
 
 # ==========================
+
 # PERFORMANCE
+
 # ==========================
 
 Dashboard
@@ -688,7 +723,9 @@ Background Processing
 ---
 
 # ==========================
+
 # AUDIT LOGS
+
 # ==========================
 
 Record
@@ -710,7 +747,9 @@ Record
 ---
 
 # ==========================
+
 # ACCEPTANCE CRITERIA
+
 # ==========================
 
 ✓ Dashboard works.

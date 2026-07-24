@@ -1,15 +1,21 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { authenticateRequest } from '@/lib/firebase/auth-helper';
-import { SubscriptionRepository, ContentEntitlementRepository } from '@el-bannawy/lib';
+import { NextRequest, NextResponse } from "next/server";
+import { authenticateRequest } from "@/lib/firebase/auth-helper";
+import { SubscriptionRepository, ContentEntitlementRepository } from "@el-bannawy/lib";
 
 const subRepo = new SubscriptionRepository();
 const entitlementRepo = new ContentEntitlementRepository();
 
-export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }): Promise<NextResponse> {
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+): Promise<NextResponse> {
   try {
     const decoded = await authenticateRequest(request);
     if (!decoded) {
-      return NextResponse.json({ success: false, error: { code: 'UNAUTHORIZED', message: 'Not authenticated' } }, { status: 401 });
+      return NextResponse.json(
+        { success: false, error: { code: "UNAUTHORIZED", message: "Not authenticated" } },
+        { status: 401 },
+      );
     }
 
     const { id } = await params;
@@ -18,10 +24,13 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       return NextResponse.json({ success: false, error: result.error }, { status: 500 });
     }
     if (!result.value) {
-      return NextResponse.json({ success: false, error: { code: 'NOT_FOUND', message: 'Subscription not found' } }, { status: 404 });
+      return NextResponse.json(
+        { success: false, error: { code: "NOT_FOUND", message: "Subscription not found" } },
+        { status: 404 },
+      );
     }
 
-    const entitlements = await entitlementRepo.listBySource('subscription', id);
+    const entitlements = await entitlementRepo.listBySource("subscription", id);
 
     return NextResponse.json({
       success: true,
@@ -31,22 +40,42 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       },
     });
   } catch (error) {
-    return NextResponse.json({ success: false, error: { code: 'INTERNAL', message: error instanceof Error ? error.message : 'Unknown error' } }, { status: 500 });
+    return NextResponse.json(
+      {
+        success: false,
+        error: {
+          code: "INTERNAL",
+          message: error instanceof Error ? error.message : "Unknown error",
+        },
+      },
+      { status: 500 },
+    );
   }
 }
 
-export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }): Promise<NextResponse> {
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+): Promise<NextResponse> {
   try {
     const decoded = await authenticateRequest(request);
     if (!decoded) {
-      return NextResponse.json({ success: false, error: { code: 'UNAUTHORIZED', message: 'Not authenticated' } }, { status: 401 });
+      return NextResponse.json(
+        { success: false, error: { code: "UNAUTHORIZED", message: "Not authenticated" } },
+        { status: 401 },
+      );
     }
 
     const { id } = await params;
 
     let body: { status?: string; currentPeriodEnd?: string; autoRenew?: boolean };
-    try { body = await request.json() as typeof body; } catch {
-      return NextResponse.json({ success: false, error: { code: 'INVALID_INPUT', message: 'Invalid JSON body' } }, { status: 400 });
+    try {
+      body = (await request.json()) as typeof body;
+    } catch {
+      return NextResponse.json(
+        { success: false, error: { code: "INVALID_INPUT", message: "Invalid JSON body" } },
+        { status: 400 },
+      );
     }
 
     const updateData: Record<string, unknown> = {};
@@ -62,15 +91,30 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
 
     return NextResponse.json({ success: true, data: result.value });
   } catch (error) {
-    return NextResponse.json({ success: false, error: { code: 'INTERNAL', message: error instanceof Error ? error.message : 'Unknown error' } }, { status: 500 });
+    return NextResponse.json(
+      {
+        success: false,
+        error: {
+          code: "INTERNAL",
+          message: error instanceof Error ? error.message : "Unknown error",
+        },
+      },
+      { status: 500 },
+    );
   }
 }
 
-export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }): Promise<NextResponse> {
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+): Promise<NextResponse> {
   try {
     const decoded = await authenticateRequest(request);
     if (!decoded) {
-      return NextResponse.json({ success: false, error: { code: 'UNAUTHORIZED', message: 'Not authenticated' } }, { status: 401 });
+      return NextResponse.json(
+        { success: false, error: { code: "UNAUTHORIZED", message: "Not authenticated" } },
+        { status: 401 },
+      );
     }
 
     const { id } = await params;
@@ -81,6 +125,15 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
 
     return NextResponse.json({ success: true, data: result.value });
   } catch (error) {
-    return NextResponse.json({ success: false, error: { code: 'INTERNAL', message: error instanceof Error ? error.message : 'Unknown error' } }, { status: 500 });
+    return NextResponse.json(
+      {
+        success: false,
+        error: {
+          code: "INTERNAL",
+          message: error instanceof Error ? error.message : "Unknown error",
+        },
+      },
+      { status: 500 },
+    );
   }
 }

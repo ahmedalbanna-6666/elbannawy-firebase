@@ -1,6 +1,7 @@
 # USER_JOURNEY.md
 
 # El-bannawy Platform
+
 ## User Journey
 
 Version: 1.0.0
@@ -606,14 +607,14 @@ First premium lesson unlocked
 
 ## Subscription States
 
-| State | Description | Student Experience |
-|-------|-------------|-------------------|
-| TRIAL | Free trial period (N days) | Full premium access, no payment yet |
-| ACTIVE | Within billing period | Full premium access |
-| GRACE | Payment overdue (N days) | Access continues, reminders sent |
-| EXPIRED | Past due beyond grace period | Premium content locked |
-| CANCELLED | Student/admin cancelled | Access until period end, then locked |
-| UPGRADED | Upgraded to higher plan | New plan active, old plan prorated |
+| State     | Description                  | Student Experience                   |
+| --------- | ---------------------------- | ------------------------------------ |
+| TRIAL     | Free trial period (N days)   | Full premium access, no payment yet  |
+| ACTIVE    | Within billing period        | Full premium access                  |
+| GRACE     | Payment overdue (N days)     | Access continues, reminders sent     |
+| EXPIRED   | Past due beyond grace period | Premium content locked               |
+| CANCELLED | Student/admin cancelled      | Access until period end, then locked |
+| UPGRADED  | Upgraded to higher plan      | New plan active, old plan prorated   |
 
 ## Subscription Lifecycle
 
@@ -717,13 +718,13 @@ Option: Buy more coins (redirect to coin store)
 
 ### Automatic Activation (Subscription)
 
-| Trigger | Action | Scope |
-|---------|--------|-------|
-| Subscription created | Grant entitlements for all premium content in plan | All units/lessons in plan |
-| Subscription renewed | Extend all entitlements expiration date | Same scope |
-| Subscription upgraded | Grant additional entitlements for new plan | Additional units/lessons |
-| Subscription downgraded | Keep existing entitlements until period end | No immediate revocation |
-| Subscription expired | Revoke all entitlements tied to subscription | All subscription-scoped entitlements |
+| Trigger                 | Action                                             | Scope                                |
+| ----------------------- | -------------------------------------------------- | ------------------------------------ |
+| Subscription created    | Grant entitlements for all premium content in plan | All units/lessons in plan            |
+| Subscription renewed    | Extend all entitlements expiration date            | Same scope                           |
+| Subscription upgraded   | Grant additional entitlements for new plan         | Additional units/lessons             |
+| Subscription downgraded | Keep existing entitlements until period end        | No immediate revocation              |
+| Subscription expired    | Revoke all entitlements tied to subscription       | All subscription-scoped entitlements |
 
 ### Manual Activation (Secretary/Admin)
 

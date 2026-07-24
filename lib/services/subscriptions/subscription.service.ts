@@ -1,17 +1,20 @@
-import { SubscriptionPlanRepository, SubscriptionRepository } from '../../repositories/subscriptions';
-import { ContentEntitlementRepository, WalletRepository, CoinTransactionRepository } from '../../repositories/coins';
-import { PaymentRepository } from '../../repositories/payments';
-import { getFirestoreInstance } from '../../repositories/firestore/firestore.service';
-import { RepositoryResult } from '../../shared/types/repository.types';
-import type { ISubscription, ISubscriptionPlan } from '../../repositories/contracts';
+import {
+  SubscriptionPlanRepository,
+  SubscriptionRepository,
+} from "../../repositories/subscriptions";
+import { ContentEntitlementRepository } from "../../repositories/coins";
+import { getFirestoreInstance } from "../../repositories/firestore/firestore.service";
+import { RepositoryResult, RepositoryError } from "../../shared/types/repository.types";
+import type { ISubscription, ISubscriptionPlan } from "../../repositories/contracts";
+
+function err(code: RepositoryError["code"], message: string): RepositoryError {
+  return { code, message, retryable: false, requestId: "" };
+}
 
 export class SubscriptionService {
   private planRepo = new SubscriptionPlanRepository();
   private subRepo = new SubscriptionRepository();
   private entitlementRepo = new ContentEntitlementRepository();
-  private walletRepo = new WalletRepository();
-  private coinTxRepo = new CoinTransactionRepository();
-  private paymentRepo = new PaymentRepository();
 
   async createSubscription(
     studentId: string,
@@ -23,13 +26,13 @@ export class SubscriptionService {
     try {
       const planResult = await this.planRepo.getById(planId);
       if (!planResult.ok || !planResult.value) {
-        return { ok: false, error: { code: 'NOT_FOUND', message: 'Subscription plan not found' } };
+        return { ok: false, error: err("NOT_FOUND", "Subscription plan not found") };
       }
       const plan = planResult.value;
 
       const existing = await this.subRepo.getActiveByStudent(studentId);
       if (existing.ok && existing.value) {
-        return { ok: false, error: { code: 'CONFLICT', message: 'Student already has an active subscription' } };
+        return { ok: false, error: err("CONFLICT", "Student already has an active subscription") };
       }
 
       const now = new Date();
@@ -40,9 +43,14 @@ export class SubscriptionService {
       if (plan.trialDays > 0) {
         const trialEndDate = new Date(now.getTime() + plan.trialDays * 86400000);
         trialEnd = trialEndDate.toISOString();
-        periodEnd = new Date(trialEndDate.getTime() + this.getIntervalMs(plan.billingInterval, plan.billingIntervalCount));
+        periodEnd = new Date(
+          trialEndDate.getTime() +
+            this.getIntervalMs(plan.billingInterval, plan.billingIntervalCount),
+        );
       } else {
-        periodEnd = new Date(now.getTime() + this.getIntervalMs(plan.billingInterval, plan.billingIntervalCount));
+        periodEnd = new Date(
+          now.getTime() + this.getIntervalMs(plan.billingInterval, plan.billingIntervalCount),
+        );
       }
 
       const subscription: ISubscription = {
@@ -50,21 +58,21 @@ export class SubscriptionService {
         studentId,
         planId: plan.id,
         planName: plan.name,
-        status: plan.trialDays > 0 ? 'TRIAL' : 'ACTIVE',
+        status: plan.trialDays > 0 ? "TRIAL" : "ACTIVE",
         billingInterval: plan.billingInterval,
         priceMinorUnits: plan.priceMinorUnits,
         currency: plan.currency,
         trialEndAt: trialEnd,
         currentPeriodStart: periodStart,
         currentPeriodEnd: periodEnd.toISOString(),
-        nextBillingDate: plan.billingInterval === 'ONE_TIME' ? null : periodEnd.toISOString(),
+        nextBillingDate: plan.billingInterval === "ONE_TIME" ? null : periodEnd.toISOString(),
         cancelledAt: null,
         upgradeFromId: null,
         paymentMethod,
         paymentGateway,
         paymentId,
         entitlementsAutoGranted: false,
-        autoRenew: plan.billingInterval !== 'ONE_TIME',
+        autoRenew: plan.billingInterval !== "ONE_TIME",
         gracePeriodEnd: null,
         createdAt: now.toISOString(),
         updatedAt: now.toISOString(),
@@ -73,7 +81,7 @@ export class SubscriptionService {
       const result = await this.subRepo.create(subscription);
       if (!result.ok) return result;
 
-      if (plan.contentScope !== 'ALL_PREMIUM' && plan.contentIds.length > 0) {
+      if (plan.contentScope !== "ALL_PREMIUM" && plan.contentIds.length > 0) {
         await this.grantContentEntitlements(studentId, plan, subscription.id, paymentId);
       }
 
@@ -81,7 +89,7 @@ export class SubscriptionService {
 
       return result;
     } catch (error) {
-      return { ok: false, error: { code: 'INTERNAL', message: error instanceof Error ? error.message : 'Unknown error' } };
+      return { ok: false, error: err("INTERNAL", error instanceof Error ? error.message : "Unknown error") };
     }
   }
 
@@ -93,17 +101,17 @@ export class SubscriptionService {
     try {
       const subResult = await this.subRepo.getById(subscriptionId);
       if (!subResult.ok || !subResult.value) {
-        return { ok: false, error: { code: 'NOT_FOUND', message: 'Subscription not found' } };
+        return { ok: false, error: err("NOT_FOUND", "Subscription not found") };
       }
       const sub = subResult.value;
 
-      if (sub.status !== 'ACTIVE' && sub.status !== 'GRACE') {
-        return { ok: false, error: { code: 'PRECONDITION_FAILED', message: 'Subscription is not renewable' } };
+      if (sub.status !== "ACTIVE" && sub.status !== "GRACE") {
+        return { ok: false, error: err("PRECONDITION_FAILED", "Subscription is not renewable") };
       }
 
       const planResult = await this.planRepo.getById(sub.planId);
       if (!planResult.ok || !planResult.value) {
-        return { ok: false, error: { code: 'NOT_FOUND', message: 'Plan not found' } };
+        return { ok: false, error: err("NOT_FOUND", "Plan not found") };
       }
 
       const now = new Date();
@@ -111,14 +119,14 @@ export class SubscriptionService {
       const newPeriodEnd = new Date(now.getTime() + intervalMs).toISOString();
 
       return this.subRepo.update(subscriptionId, {
-        status: 'ACTIVE',
+        status: "ACTIVE",
         currentPeriodStart: now.toISOString(),
         currentPeriodEnd: newPeriodEnd,
-        nextBillingDate: sub.billingInterval === 'ONE_TIME' ? null : newPeriodEnd,
+        nextBillingDate: sub.billingInterval === "ONE_TIME" ? null : newPeriodEnd,
         gracePeriodEnd: null,
       });
     } catch (error) {
-      return { ok: false, error: { code: 'INTERNAL', message: error instanceof Error ? error.message : 'Unknown error' } };
+      return { ok: false, error: err("INTERNAL", error instanceof Error ? error.message : "Unknown error") };
     }
   }
 
@@ -126,17 +134,17 @@ export class SubscriptionService {
     try {
       const subResult = await this.subRepo.getById(subscriptionId);
       if (!subResult.ok || !subResult.value) {
-        return { ok: false, error: { code: 'NOT_FOUND', message: 'Subscription not found' } };
+        return { ok: false, error: err("NOT_FOUND", "Subscription not found") };
       }
 
-      const result = await this.subRepo.update(subscriptionId, { status: 'EXPIRED' });
+      const result = await this.subRepo.update(subscriptionId, { status: "EXPIRED" });
       if (!result.ok) return result;
 
       await this.revokeSubscriptionEntitlements(subscriptionId);
 
       return result;
     } catch (error) {
-      return { ok: false, error: { code: 'INTERNAL', message: error instanceof Error ? error.message : 'Unknown error' } };
+      return { ok: false, error: err("INTERNAL", error instanceof Error ? error.message : "Unknown error") };
     }
   }
 
@@ -148,58 +156,65 @@ export class SubscriptionService {
     try {
       const subResult = await this.subRepo.getById(subscriptionId);
       if (!subResult.ok || !subResult.value) {
-        return { ok: false, error: { code: 'NOT_FOUND', message: 'Subscription not found' } };
+        return { ok: false, error: err("NOT_FOUND", "Subscription not found") };
       }
       const current = subResult.value;
 
       const newPlanResult = await this.planRepo.getById(newPlanId);
       if (!newPlanResult.ok || !newPlanResult.value) {
-        return { ok: false, error: { code: 'NOT_FOUND', message: 'New plan not found' } };
+        return { ok: false, error: err("NOT_FOUND", "New plan not found") };
       }
       const newPlan = newPlanResult.value;
 
       const now = new Date();
-      const newPeriodEnd = new Date(now.getTime() + this.getIntervalMs(newPlan.billingInterval, newPlan.billingIntervalCount)).toISOString();
+      const newPeriodEnd = new Date(
+        now.getTime() + this.getIntervalMs(newPlan.billingInterval, newPlan.billingIntervalCount),
+      ).toISOString();
 
       const upgraded: ISubscription = {
         id: `sub_${Date.now()}`,
         studentId: current.studentId,
         planId: newPlan.id,
         planName: newPlan.name,
-        status: 'ACTIVE',
+        status: "ACTIVE",
         billingInterval: newPlan.billingInterval,
         priceMinorUnits: newPlan.priceMinorUnits,
         currency: newPlan.currency,
         trialEndAt: null,
         currentPeriodStart: now.toISOString(),
         currentPeriodEnd: newPeriodEnd,
-        nextBillingDate: newPlan.billingInterval === 'ONE_TIME' ? null : newPeriodEnd,
+        nextBillingDate: newPlan.billingInterval === "ONE_TIME" ? null : newPeriodEnd,
         cancelledAt: null,
         upgradeFromId: subscriptionId,
         paymentMethod: current.paymentMethod,
         paymentGateway: current.paymentGateway,
         paymentId: additionalPaymentId,
         entitlementsAutoGranted: false,
-        autoRenew: newPlan.billingInterval !== 'ONE_TIME',
+        autoRenew: newPlan.billingInterval !== "ONE_TIME",
         gracePeriodEnd: null,
         createdAt: now.toISOString(),
         updatedAt: now.toISOString(),
       };
 
-      await this.subRepo.update(subscriptionId, { status: 'UPGRADED' });
+      await this.subRepo.update(subscriptionId, { status: "UPGRADED" });
 
       const result = await this.subRepo.create(upgraded);
       if (!result.ok) return result;
 
-      if (newPlan.contentScope !== 'ALL_PREMIUM' && newPlan.contentIds.length > 0) {
-        await this.grantContentEntitlements(current.studentId, newPlan, upgraded.id, additionalPaymentId);
+      if (newPlan.contentScope !== "ALL_PREMIUM" && newPlan.contentIds.length > 0) {
+        await this.grantContentEntitlements(
+          current.studentId,
+          newPlan,
+          upgraded.id,
+          additionalPaymentId,
+        );
       }
 
       await this.subRepo.update(upgraded.id, { entitlementsAutoGranted: true });
 
       return result;
     } catch (error) {
-      return { ok: false, error: { code: 'INTERNAL', message: error instanceof Error ? error.message : 'Unknown error' } };
+      return { ok: false, error: err("INTERNAL", error instanceof Error ? error.message : "Unknown error") };
     }
   }
 
@@ -216,19 +231,19 @@ export class SubscriptionService {
     try {
       const expiredResult = await this.listExpiredSubscriptions();
       if (!expiredResult.ok || !expiredResult.value) {
-        return { ok: true, value: { expired: 0 } };
+        return { ok: true, value: { expired: 0 } } as unknown as RepositoryResult<{ expired: number }>;
       }
 
       let count = 0;
       for (const sub of expiredResult.value) {
-        if (sub.status === 'ACTIVE' || sub.status === 'GRACE') {
+        if (sub.status === "ACTIVE" || sub.status === "GRACE") {
           const gracePeriodMs = 3 * 86400000;
           const periodEnd = new Date(sub.currentPeriodEnd).getTime();
           const now = Date.now();
 
-          if (sub.status === 'ACTIVE' && now > periodEnd && now <= periodEnd + gracePeriodMs) {
+          if (sub.status === "ACTIVE" && now > periodEnd && now <= periodEnd + gracePeriodMs) {
             const graceEnd = new Date(periodEnd + gracePeriodMs).toISOString();
-            await this.subRepo.update(sub.id, { status: 'GRACE', gracePeriodEnd: graceEnd });
+            await this.subRepo.update(sub.id, { status: "GRACE", gracePeriodEnd: graceEnd });
             continue;
           }
 
@@ -239,7 +254,7 @@ export class SubscriptionService {
 
       return { ok: true, value: { expired: count } };
     } catch (error) {
-      return { ok: false, error: { code: 'INTERNAL', message: error instanceof Error ? error.message : 'Unknown error' } };
+      return { ok: false, error: err("INTERNAL", error instanceof Error ? error.message : "Unknown error") };
     }
   }
 
@@ -255,9 +270,18 @@ export class SubscriptionService {
 
     for (const contentId of plan.contentIds) {
       const scope = plan.contentScope;
-      const contentType = scope === 'FULL_COURSE' || scope === 'ALL_PREMIUM' ? 'UNIT' : scope === 'SPECIFIC_UNITS' ? 'UNIT' : 'LESSON';
+      const contentType =
+        scope === "FULL_COURSE" || scope === "ALL_PREMIUM"
+          ? "UNIT"
+          : scope === "SPECIFIC_UNITS"
+            ? "UNIT"
+            : "LESSON";
 
-      const existing = await this.entitlementRepo.getByStudentAndContent(studentId, contentType, contentId);
+      const existing = await this.entitlementRepo.getByStudentAndContent(
+        studentId,
+        contentType,
+        contentId,
+      );
       if (existing.ok && existing.value) continue;
 
       const entitlement = {
@@ -265,7 +289,7 @@ export class SubscriptionService {
         studentId,
         contentType,
         contentId,
-        sourceType: 'subscription',
+        sourceType: "subscription",
         sourceId: subscriptionId,
         paymentId,
         active: true,
@@ -279,13 +303,14 @@ export class SubscriptionService {
 
   private async revokeSubscriptionEntitlements(subscriptionId: string): Promise<void> {
     const db = getFirestoreInstance();
-    const snap = await db.collection('contentEntitlements')
-      .where('sourceType', '==', 'subscription')
-      .where('sourceId', '==', subscriptionId)
+    const snap = await db
+      .collection("contentEntitlements")
+      .where("sourceType", "==", "subscription")
+      .where("sourceId", "==", subscriptionId)
       .get();
 
     const batch = db.batch();
-    snap.docs.forEach((doc) => {
+    snap.docs.forEach((doc: FirebaseFirestore.QueryDocumentSnapshot) => {
       batch.update(doc.ref, { active: false });
     });
     await batch.commit();
@@ -294,12 +319,18 @@ export class SubscriptionService {
   private getIntervalMs(interval: string, count: number): number {
     const day = 86400000;
     switch (interval) {
-      case 'MONTHLY': return 30 * day * count;
-      case 'QUARTERLY': return 90 * day * count;
-      case 'SEMI_ANNUAL': return 180 * day * count;
-      case 'YEARLY': return 365 * day * count;
-      case 'ONE_TIME': return 365 * 10 * day;
-      default: return 30 * day;
+      case "MONTHLY":
+        return 30 * day * count;
+      case "QUARTERLY":
+        return 90 * day * count;
+      case "SEMI_ANNUAL":
+        return 180 * day * count;
+      case "YEARLY":
+        return 365 * day * count;
+      case "ONE_TIME":
+        return 365 * 10 * day;
+      default:
+        return 30 * day;
     }
   }
 }

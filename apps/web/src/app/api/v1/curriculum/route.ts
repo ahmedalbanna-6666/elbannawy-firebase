@@ -13,12 +13,27 @@ async function handleCurriculumTree(request: NextRequest): Promise<NextResponse>
     const decoded = await authenticateRequest(request);
     if (!decoded) return NextResponse.json({ success: false, error: { code: 'UNAUTHORIZED', message: 'Unauthorized' } }, { status: 401 });
 
-    const userDoc = await getAdminDb().collection('users').doc(decoded.uid).get();
+    const db = getAdminDb();
+    const userDoc = await db.collection('users').doc(decoded.uid).get();
     if (!userDoc.exists) return NextResponse.json({ success: true, data: [] });
     const userData = userDoc.data() as Record<string, unknown>;
     const stageId = userData.stageId as string | undefined;
     const gradeId = userData.gradeId as string | undefined;
     const termId = userData.termId as string | undefined;
+
+    const entitlementsSnap = await db.collection('contentEntitlements')
+      .where('studentId', '==', decoded.uid)
+      .where('active', '==', true)
+      .get();
+    const entitlementMap = new Map<string, true>();
+    entitlementsSnap.forEach((doc) => {
+      const data = doc.data() as { contentType: string; contentId: string };
+      entitlementMap.set(`${data.contentType}:${data.contentId}`, true);
+    });
+    function isUnlocked(isPremium: boolean, contentType: string, contentId: string): boolean {
+      if (!isPremium) return true;
+      return entitlementMap.has(`${contentType}:${contentId}`);
+    }
 
     const stagesResult = await applicationService.listStages({ isActive: true }, { limit: 50 });
     if (!stagesResult.ok) return NextResponse.json({ success: true, data: [] });
@@ -46,11 +61,13 @@ async function handleCurriculumTree(request: NextRequest): Promise<NextResponse>
                     estimatedDuration: l.estimatedDuration ?? 30,
                     isPremium: false, sequentialMode: true,
                     homeworkEnabled: false, quizEnabled: false,
+                    unlocked: isUnlocked(false, 'LESSON', l.id),
                   }))
                 : [];
               unitEntries.push({
                 id: unit.id, title: unit.name, description: unit.nameAr ?? unit.name,
-                displayOrder: unit.order, isPremium: unit.isPremium, unlocked: true,
+                displayOrder: unit.order, isPremium: unit.isPremium,
+                unlocked: isUnlocked(!!unit.isPremium, 'UNIT', unit.id),
                 lessons: lessonItems,
               });
             }

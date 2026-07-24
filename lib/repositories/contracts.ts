@@ -1,9 +1,9 @@
 // lib/repositories/contracts.ts
 
-import { RepositoryResult } from '../shared/types/repository.types';
-import { Page, PageQuery } from '../shared/types/pagination.types';
+import { RepositoryResult } from "../shared/types/repository.types";
+import { Page, PageQuery } from "../shared/types/pagination.types";
 
-export type IUserRole = 'student' | 'teacher' | 'staff' | 'secretary' | 'support' | 'administrator';
+export type IUserRole = "student" | "teacher" | "staff" | "secretary" | "support" | "administrator";
 
 // Base entity interface
 export interface IBaseEntity {
@@ -74,7 +74,7 @@ export interface UserSummary {
 }
 
 export interface AccountStatus {
-  readonly status: 'active' | 'inactive' | 'suspended' | 'pending';
+  readonly status: "active" | "inactive" | "suspended" | "pending";
   readonly reason?: string;
 }
 
@@ -89,9 +89,20 @@ export interface IUserRepository {
   findUserByMobile(mobileNumber: string): Promise<RepositoryResult<IUser | null>>;
   findUserByEmail(email: string): Promise<RepositoryResult<IUser | null>>;
   listUsers(filter: UserFilter, page: PageQuery): Promise<RepositoryResult<Page<UserSummary>>>;
-  updateProfile(userId: string, input: UpdateProfileInput, expectedVersion: number): Promise<RepositoryResult<IUser>>;
-  updateAcademicAssignment(userId: string, input: AcademicAssignmentInput): Promise<RepositoryResult<IUser>>;
-  changeAccountStatus(userId: string, status: AccountStatus, requestId: string): Promise<RepositoryResult<void>>;
+  updateProfile(
+    userId: string,
+    input: UpdateProfileInput,
+    expectedVersion: number,
+  ): Promise<RepositoryResult<IUser>>;
+  updateAcademicAssignment(
+    userId: string,
+    input: AcademicAssignmentInput,
+  ): Promise<RepositoryResult<IUser>>;
+  changeAccountStatus(
+    userId: string,
+    status: AccountStatus,
+    requestId: string,
+  ): Promise<RepositoryResult<void>>;
   changeRole(userId: string, role: Role, requestId: string): Promise<RepositoryResult<IUser>>;
   softDeleteUser(userId: string, requestId: string): Promise<RepositoryResult<void>>;
   restoreUser(userId: string, requestId: string): Promise<RepositoryResult<void>>;
@@ -104,7 +115,7 @@ export interface TeacherAssignment {
   readonly teacherId: string;
   readonly gradeId: string;
   readonly academicYearId: string;
-  readonly status: 'active' | 'inactive';
+  readonly status: "active" | "inactive";
   readonly createdAt: string;
   readonly updatedAt: string;
 }
@@ -117,10 +128,18 @@ export interface CreateTeacherAssignmentInput {
 }
 
 export interface ITutorRepository {
-  createAssignment(input: CreateTeacherAssignmentInput): Promise<RepositoryResult<TeacherAssignment>>;
+  createAssignment(
+    input: CreateTeacherAssignmentInput,
+  ): Promise<RepositoryResult<TeacherAssignment>>;
   getAssignmentById(assignmentId: string): Promise<RepositoryResult<TeacherAssignment>>;
-  listTeacherAssignments(teacherId: string, page: PageQuery): Promise<RepositoryResult<Page<TeacherAssignment>>>;
-  listGradeTeachers(gradeId: string, page: PageQuery): Promise<RepositoryResult<Page<TeacherAssignment>>>;
+  listTeacherAssignments(
+    teacherId: string,
+    page: PageQuery,
+  ): Promise<RepositoryResult<Page<TeacherAssignment>>>;
+  listGradeTeachers(
+    gradeId: string,
+    page: PageQuery,
+  ): Promise<RepositoryResult<Page<TeacherAssignment>>>;
   hasGradeScope(teacherId: string, gradeId: string): Promise<RepositoryResult<boolean>>;
   deactivateAssignment(assignmentId: string, requestId: string): Promise<RepositoryResult<void>>;
 }
@@ -363,43 +382,93 @@ export interface CurriculumFilter {
   readonly search?: string;
 }
 
-export type CurriculumCollection = 'educationalSystems' | 'stages' | 'grades' | 'academicYears' | 'academicTerms';
+export type CurriculumCollection =
+  | "educationalSystems"
+  | "stages"
+  | "grades"
+  | "academicYears"
+  | "academicTerms";
 
 export interface ICurriculumRepository {
-  createEducationalSystem(input: CreateEducationalSystemInput): Promise<RepositoryResult<IEducationalSystem>>;
-  updateEducationalSystem(id: string, input: UpdateEducationalSystemInput, expectedVersion: number): Promise<RepositoryResult<IEducationalSystem>>;
+  createEducationalSystem(
+    input: CreateEducationalSystemInput,
+  ): Promise<RepositoryResult<IEducationalSystem>>;
+  updateEducationalSystem(
+    id: string,
+    input: UpdateEducationalSystemInput,
+    expectedVersion: number,
+  ): Promise<RepositoryResult<IEducationalSystem>>;
   getEducationalSystemById(id: string): Promise<RepositoryResult<IEducationalSystem>>;
-  listEducationalSystems(filter: CurriculumFilter, page: PageQuery): Promise<RepositoryResult<Page<IEducationalSystemSummary>>>;
+  listEducationalSystems(
+    filter: CurriculumFilter,
+    page: PageQuery,
+  ): Promise<RepositoryResult<Page<IEducationalSystemSummary>>>;
 
   createStage(input: CreateStageInput): Promise<RepositoryResult<IStage>>;
-  updateStage(id: string, input: UpdateStageInput, expectedVersion: number): Promise<RepositoryResult<IStage>>;
+  updateStage(
+    id: string,
+    input: UpdateStageInput,
+    expectedVersion: number,
+  ): Promise<RepositoryResult<IStage>>;
   getStageById(id: string): Promise<RepositoryResult<IStage>>;
-  listStages(filter: CurriculumFilter, page: PageQuery): Promise<RepositoryResult<Page<IStageSummary>>>;
+  listStages(
+    filter: CurriculumFilter,
+    page: PageQuery,
+  ): Promise<RepositoryResult<Page<IStageSummary>>>;
   getStagesBySystem(systemId: string): Promise<RepositoryResult<IStage[]>>;
 
   createGrade(input: CreateGradeInput): Promise<RepositoryResult<IGrade>>;
-  updateGrade(id: string, input: UpdateGradeInput, expectedVersion: number): Promise<RepositoryResult<IGrade>>;
+  updateGrade(
+    id: string,
+    input: UpdateGradeInput,
+    expectedVersion: number,
+  ): Promise<RepositoryResult<IGrade>>;
   getGradeById(id: string): Promise<RepositoryResult<IGrade>>;
-  listGrades(filter: CurriculumFilter, page: PageQuery): Promise<RepositoryResult<Page<IGradeSummary>>>;
+  listGrades(
+    filter: CurriculumFilter,
+    page: PageQuery,
+  ): Promise<RepositoryResult<Page<IGradeSummary>>>;
   getGradesByStage(stageId: string): Promise<RepositoryResult<IGrade[]>>;
 
   createAcademicYear(input: CreateAcademicYearInput): Promise<RepositoryResult<IAcademicYear>>;
-  updateAcademicYear(id: string, input: UpdateAcademicYearInput, expectedVersion: number): Promise<RepositoryResult<IAcademicYear>>;
+  updateAcademicYear(
+    id: string,
+    input: UpdateAcademicYearInput,
+    expectedVersion: number,
+  ): Promise<RepositoryResult<IAcademicYear>>;
   getAcademicYearById(id: string): Promise<RepositoryResult<IAcademicYear>>;
-  listAcademicYears(filter: CurriculumFilter, page: PageQuery): Promise<RepositoryResult<Page<IAcademicYearSummary>>>;
+  listAcademicYears(
+    filter: CurriculumFilter,
+    page: PageQuery,
+  ): Promise<RepositoryResult<Page<IAcademicYearSummary>>>;
 
   createAcademicTerm(input: CreateAcademicTermInput): Promise<RepositoryResult<IAcademicTerm>>;
-  updateAcademicTerm(id: string, input: UpdateAcademicTermInput, expectedVersion: number): Promise<RepositoryResult<IAcademicTerm>>;
+  updateAcademicTerm(
+    id: string,
+    input: UpdateAcademicTermInput,
+    expectedVersion: number,
+  ): Promise<RepositoryResult<IAcademicTerm>>;
   getAcademicTermById(id: string): Promise<RepositoryResult<IAcademicTerm>>;
-  listAcademicTerms(filter: CurriculumFilter, page: PageQuery): Promise<RepositoryResult<Page<IAcademicTermSummary>>>;
+  listAcademicTerms(
+    filter: CurriculumFilter,
+    page: PageQuery,
+  ): Promise<RepositoryResult<Page<IAcademicTermSummary>>>;
   getTermsByAcademicYear(academicYearId: string): Promise<RepositoryResult<IAcademicTerm[]>>;
 
   getCurrentAcademicYear(): Promise<RepositoryResult<IAcademicYear | null>>;
   getCurrentAcademicTerm(academicYearId: string): Promise<RepositoryResult<IAcademicTerm | null>>;
   getCurrentAcademicContext(): Promise<RepositoryResult<ICurrentAcademicContext>>;
 
-  softDeleteCurriculum(id: string, collection: CurriculumCollection, requestId: string): Promise<RepositoryResult<void>>;
-  restoreCurriculum(id: string, collection: CurriculumCollection, requestId: string): Promise<RepositoryResult<void>>;
+  softDeleteCurriculum(
+    id: string,
+    collection: CurriculumCollection,
+    requestId: string,
+  ): Promise<RepositoryResult<void>>;
+  restoreCurriculum(
+    id: string,
+    collection: CurriculumCollection,
+    requestId: string,
+  ): Promise<RepositoryResult<void>>;
 }
 
 // ===== Unit Contracts =====
@@ -469,7 +538,11 @@ export interface UnitFilter {
 
 export interface IUnitRepository {
   createUnit(input: CreateUnitInput): Promise<RepositoryResult<IUnit>>;
-  updateUnit(id: string, input: UpdateUnitInput, expectedVersion: number): Promise<RepositoryResult<IUnit>>;
+  updateUnit(
+    id: string,
+    input: UpdateUnitInput,
+    expectedVersion: number,
+  ): Promise<RepositoryResult<IUnit>>;
   getUnitById(id: string): Promise<RepositoryResult<IUnit>>;
   listUnits(filter: UnitFilter, page: PageQuery): Promise<RepositoryResult<Page<IUnitSummary>>>;
   getUnitsByTerm(academicTermId: string): Promise<RepositoryResult<IUnit[]>>;
@@ -479,7 +552,7 @@ export interface IUnitRepository {
 
 // ===== Lesson Contracts =====
 
-export type LessonStatus = 'draft' | 'published' | 'archived';
+export type LessonStatus = "draft" | "published" | "archived";
 
 export interface ILesson {
   readonly id: string;
@@ -545,25 +618,45 @@ export interface LessonFilter {
 
 export interface ILessonRepository {
   createLesson(input: CreateLessonInput): Promise<RepositoryResult<ILesson>>;
-  updateLesson(id: string, input: UpdateLessonInput, expectedVersion: number): Promise<RepositoryResult<ILesson>>;
+  updateLesson(
+    id: string,
+    input: UpdateLessonInput,
+    expectedVersion: number,
+  ): Promise<RepositoryResult<ILesson>>;
   getLessonById(id: string): Promise<RepositoryResult<ILesson>>;
-  listLessons(filter: LessonFilter, page: PageQuery): Promise<RepositoryResult<Page<ILessonSummary>>>;
+  listLessons(
+    filter: LessonFilter,
+    page: PageQuery,
+  ): Promise<RepositoryResult<Page<ILessonSummary>>>;
   getLessonsByUnit(unitId: string): Promise<RepositoryResult<ILesson[]>>;
   getPublishedLessons(unitId: string): Promise<RepositoryResult<ILesson[]>>;
-  searchLessons(searchTerm: string, page: PageQuery): Promise<RepositoryResult<Page<ILessonSummary>>>;
-  getPreviousLesson(unitId: string, currentDisplayOrder: number): Promise<RepositoryResult<ILesson | null>>;
-  getNextLesson(unitId: string, currentDisplayOrder: number): Promise<RepositoryResult<ILesson | null>>;
+  searchLessons(
+    searchTerm: string,
+    page: PageQuery,
+  ): Promise<RepositoryResult<Page<ILessonSummary>>>;
+  getPreviousLesson(
+    unitId: string,
+    currentDisplayOrder: number,
+  ): Promise<RepositoryResult<ILesson | null>>;
+  getNextLesson(
+    unitId: string,
+    currentDisplayOrder: number,
+  ): Promise<RepositoryResult<ILesson | null>>;
   softDeleteLesson(id: string, requestId: string): Promise<RepositoryResult<void>>;
   restoreLesson(id: string, requestId: string): Promise<RepositoryResult<void>>;
   archiveLesson(id: string, requestId: string): Promise<RepositoryResult<void>>;
   publishLesson(id: string, requestId: string): Promise<RepositoryResult<ILesson>>;
   unpublishLesson(id: string, requestId: string): Promise<RepositoryResult<ILesson>>;
-  changeOrder(id: string, newOrder: number, expectedVersion: number): Promise<RepositoryResult<ILesson>>;
+  changeOrder(
+    id: string,
+    newOrder: number,
+    expectedVersion: number,
+  ): Promise<RepositoryResult<ILesson>>;
 }
 
 // ===== Activity Contracts =====
 
-export type IActivityStatus = 'draft' | 'published' | 'archived';
+export type IActivityStatus = "draft" | "published" | "archived";
 
 export interface IActivity {
   readonly id: string;
@@ -689,24 +782,38 @@ export interface ActivityFilter {
 
 export interface IActivityRepository {
   createActivity(input: CreateActivityInput): Promise<RepositoryResult<IActivity>>;
-  updateActivity(id: string, input: UpdateActivityInput, expectedVersion: number): Promise<RepositoryResult<IActivity>>;
+  updateActivity(
+    id: string,
+    input: UpdateActivityInput,
+    expectedVersion: number,
+  ): Promise<RepositoryResult<IActivity>>;
   getActivityById(id: string): Promise<RepositoryResult<IActivity>>;
-  listActivities(filter: ActivityFilter, page: PageQuery): Promise<RepositoryResult<Page<IActivitySummary>>>;
+  listActivities(
+    filter: ActivityFilter,
+    page: PageQuery,
+  ): Promise<RepositoryResult<Page<IActivitySummary>>>;
   getActivitiesByLesson(lessonId: string): Promise<RepositoryResult<IActivity[]>>;
-  searchActivities(searchTerm: string, page: PageQuery): Promise<RepositoryResult<Page<IActivitySummary>>>;
+  searchActivities(
+    searchTerm: string,
+    page: PageQuery,
+  ): Promise<RepositoryResult<Page<IActivitySummary>>>;
   softDeleteActivity(id: string, requestId: string): Promise<RepositoryResult<void>>;
   restoreActivity(id: string, requestId: string): Promise<RepositoryResult<void>>;
   publishActivity(id: string, requestId: string): Promise<RepositoryResult<IActivity>>;
   unpublishActivity(id: string, requestId: string): Promise<RepositoryResult<IActivity>>;
-  changeActivityOrder(id: string, newOrder: number, expectedVersion: number): Promise<RepositoryResult<IActivity>>;
+  changeActivityOrder(
+    id: string,
+    newOrder: number,
+    expectedVersion: number,
+  ): Promise<RepositoryResult<IActivity>>;
 }
 
 // ===== Student Attempt Contracts =====
 
-export type IAttemptStatus = 'in_progress' | 'submitted' | 'graded' | 'expired';
+export type IAttemptStatus = "in_progress" | "submitted" | "graded" | "expired";
 
-export type IHomeworkAttemptStatus = 'not_started' | 'in_progress' | 'submitted' | 'graded';
-export type IGradingMethod = 'auto' | 'manual' | 'ai_assisted' | 'practice';
+export type IHomeworkAttemptStatus = "not_started" | "in_progress" | "submitted" | "graded";
+export type IGradingMethod = "auto" | "manual" | "ai_assisted" | "practice";
 
 export interface IStudentAttempt {
   readonly id: string;
@@ -795,16 +902,28 @@ export interface IStudentAttemptRepository {
   createAttempt(input: CreateAttemptInput): Promise<RepositoryResult<IStudentAttempt>>;
   updateAttempt(id: string, input: UpdateAttemptInput): Promise<RepositoryResult<IStudentAttempt>>;
   getAttemptById(id: string): Promise<RepositoryResult<IStudentAttempt>>;
-  getStudentAttempt(activityId: string, studentId: string): Promise<RepositoryResult<IStudentAttempt | null>>;
-  getLatestAttempt(activityId: string, studentId: string): Promise<RepositoryResult<IStudentAttempt | null>>;
-  listAttempts(filter: AttemptFilter, page: PageQuery): Promise<RepositoryResult<Page<IStudentAttemptSummary>>>;
+  getStudentAttempt(
+    activityId: string,
+    studentId: string,
+  ): Promise<RepositoryResult<IStudentAttempt | null>>;
+  getLatestAttempt(
+    activityId: string,
+    studentId: string,
+  ): Promise<RepositoryResult<IStudentAttempt | null>>;
+  listAttempts(
+    filter: AttemptFilter,
+    page: PageQuery,
+  ): Promise<RepositoryResult<Page<IStudentAttemptSummary>>>;
   getAttemptsByActivity(activityId: string): Promise<RepositoryResult<IStudentAttempt[]>>;
-  getAttemptsByStudent(studentId: string, page: PageQuery): Promise<RepositoryResult<Page<IStudentAttemptSummary>>>;
+  getAttemptsByStudent(
+    studentId: string,
+    page: PageQuery,
+  ): Promise<RepositoryResult<Page<IStudentAttemptSummary>>>;
 }
 
 // ===== Lesson Progress Contracts =====
 
-export type ILessonProgressStatus = 'not_started' | 'in_progress' | 'completed';
+export type ILessonProgressStatus = "not_started" | "in_progress" | "completed";
 
 export interface ILessonProgress {
   readonly id: string;
@@ -846,14 +965,23 @@ export interface UpdateLessonProgressInput {
 export interface ILessonProgressRepository {
   createProgress(input: CreateLessonProgressInput): Promise<RepositoryResult<ILessonProgress>>;
   getProgress(id: string): Promise<RepositoryResult<ILessonProgress>>;
-  getStudentLessonProgress(studentId: string, lessonId: string): Promise<RepositoryResult<ILessonProgress | null>>;
-  updateProgress(id: string, input: UpdateLessonProgressInput): Promise<RepositoryResult<ILessonProgress>>;
-  listStudentProgress(studentId: string, unitId?: string): Promise<RepositoryResult<ILessonProgress[]>>;
+  getStudentLessonProgress(
+    studentId: string,
+    lessonId: string,
+  ): Promise<RepositoryResult<ILessonProgress | null>>;
+  updateProgress(
+    id: string,
+    input: UpdateLessonProgressInput,
+  ): Promise<RepositoryResult<ILessonProgress>>;
+  listStudentProgress(
+    studentId: string,
+    unitId?: string,
+  ): Promise<RepositoryResult<ILessonProgress[]>>;
 }
 
 // ===== Vocabulary Section Contracts =====
 
-export type VocabularySectionKind = 'STANDARD_VOCABULARY' | 'SYNONYM_ANTONYM';
+export type VocabularySectionKind = "STANDARD_VOCABULARY" | "SYNONYM_ANTONYM";
 
 export interface IVocabularySection {
   readonly id: string;
@@ -894,7 +1022,11 @@ export interface VocabularySectionFilter {
 export interface IVocabularySectionRepository {
   create(input: CreateVocabularySectionInput): Promise<RepositoryResult<IVocabularySection>>;
   getById(id: string): Promise<RepositoryResult<IVocabularySection | null>>;
-  update(id: string, input: UpdateVocabularySectionInput, expectedVersion: number): Promise<RepositoryResult<IVocabularySection>>;
+  update(
+    id: string,
+    input: UpdateVocabularySectionInput,
+    expectedVersion: number,
+  ): Promise<RepositoryResult<IVocabularySection>>;
   listByLesson(lessonId: string): Promise<RepositoryResult<IVocabularySection[]>>;
   deleteByLesson(lessonId: string): Promise<RepositoryResult<void>>;
 }
@@ -960,7 +1092,11 @@ export interface VocabularyItemFilter {
 export interface IVocabularyItemRepository {
   create(input: CreateVocabularyItemInput): Promise<RepositoryResult<IVocabularyItem>>;
   getById(id: string): Promise<RepositoryResult<IVocabularyItem | null>>;
-  update(id: string, input: UpdateVocabularyItemInput, expectedVersion: number): Promise<RepositoryResult<IVocabularyItem>>;
+  update(
+    id: string,
+    input: UpdateVocabularyItemInput,
+    expectedVersion: number,
+  ): Promise<RepositoryResult<IVocabularyItem>>;
   listByLesson(lessonId: string): Promise<RepositoryResult<IVocabularyItem[]>>;
   listBySection(sectionId: string): Promise<RepositoryResult<IVocabularyItem[]>>;
   deleteByLesson(lessonId: string): Promise<RepositoryResult<void>>;
@@ -969,7 +1105,7 @@ export interface IVocabularyItemRepository {
 
 // ===== Vocabulary Relation Contracts =====
 
-export type VocabularyRelationType = 'SYNONYM' | 'ANTONYM';
+export type VocabularyRelationType = "SYNONYM" | "ANTONYM";
 
 export interface IVocabularyRelation {
   readonly id: string;
@@ -1017,7 +1153,11 @@ export interface VocabularyRelationFilter {
 export interface IVocabularyRelationRepository {
   create(input: CreateVocabularyRelationInput): Promise<RepositoryResult<IVocabularyRelation>>;
   getById(id: string): Promise<RepositoryResult<IVocabularyRelation | null>>;
-  update(id: string, input: UpdateVocabularyRelationInput, expectedVersion: number): Promise<RepositoryResult<IVocabularyRelation>>;
+  update(
+    id: string,
+    input: UpdateVocabularyRelationInput,
+    expectedVersion: number,
+  ): Promise<RepositoryResult<IVocabularyRelation>>;
   listByLesson(lessonId: string): Promise<RepositoryResult<IVocabularyRelation[]>>;
   listBySection(sectionId: string): Promise<RepositoryResult<IVocabularyRelation[]>>;
   deleteByLesson(lessonId: string): Promise<RepositoryResult<void>>;
@@ -1026,7 +1166,7 @@ export interface IVocabularyRelationRepository {
 
 // ===== Lesson Video Contracts =====
 
-export type VideoProvider = 'youtube' | 'vimeo' | 'other';
+export type VideoProvider = "youtube" | "vimeo" | "other";
 
 export interface ILessonVideo {
   readonly id: string;
@@ -1081,14 +1221,18 @@ export interface LessonVideoFilter {
 export interface ILessonVideoRepository {
   create(input: CreateLessonVideoInput): Promise<RepositoryResult<ILessonVideo>>;
   getById(id: string): Promise<RepositoryResult<ILessonVideo | null>>;
-  update(id: string, input: UpdateLessonVideoInput, expectedVersion: number): Promise<RepositoryResult<ILessonVideo>>;
+  update(
+    id: string,
+    input: UpdateLessonVideoInput,
+    expectedVersion: number,
+  ): Promise<RepositoryResult<ILessonVideo>>;
   listByLesson(lessonId: string): Promise<RepositoryResult<ILessonVideo[]>>;
   delete(id: string): Promise<RepositoryResult<void>>;
 }
 
 // ===== Lesson Document Contracts =====
 
-export type DocumentProcessingStatus = 'pending' | 'processing' | 'completed' | 'failed';
+export type DocumentProcessingStatus = "pending" | "processing" | "completed" | "failed";
 
 export interface ILessonDocument {
   readonly id: string;
@@ -1130,7 +1274,11 @@ export interface UpdateLessonDocumentInput {
 export interface ILessonDocumentRepository {
   create(input: CreateLessonDocumentInput): Promise<RepositoryResult<ILessonDocument>>;
   getByLessonId(lessonId: string): Promise<RepositoryResult<ILessonDocument | null>>;
-  update(lessonId: string, input: UpdateLessonDocumentInput, expectedVersion: number): Promise<RepositoryResult<ILessonDocument>>;
+  update(
+    lessonId: string,
+    input: UpdateLessonDocumentInput,
+    expectedVersion: number,
+  ): Promise<RepositoryResult<ILessonDocument>>;
   delete(lessonId: string): Promise<RepositoryResult<void>>;
 }
 
@@ -1185,12 +1333,16 @@ export interface IHomeworkRepository {
   create(input: CreateHomeworkInput): Promise<RepositoryResult<IHomework>>;
   getById(id: string): Promise<RepositoryResult<IHomework | null>>;
   getByLessonId(lessonId: string): Promise<RepositoryResult<IHomework | null>>;
-  update(id: string, input: UpdateHomeworkInput, expectedVersion: number): Promise<RepositoryResult<IHomework>>;
+  update(
+    id: string,
+    input: UpdateHomeworkInput,
+    expectedVersion: number,
+  ): Promise<RepositoryResult<IHomework>>;
   delete(id: string): Promise<RepositoryResult<void>>;
   listByLessonIds(lessonIds: string[]): Promise<RepositoryResult<IHomework[]>>;
 }
 
-export type QuestionType = 'MULTIPLE_CHOICE' | 'TRUE_FALSE' | 'FILL_BLANK' | 'MATCHING';
+export type QuestionType = "MULTIPLE_CHOICE" | "TRUE_FALSE" | "FILL_BLANK" | "MATCHING";
 
 export interface IHomeworkQuestion {
   readonly id: string;
@@ -1263,10 +1415,22 @@ export interface UpdateHomeworkAttemptInput {
 export interface IHomeworkAttemptRepository {
   create(input: CreateHomeworkAttemptInput): Promise<RepositoryResult<IHomeworkAttempt>>;
   getById(id: string): Promise<RepositoryResult<IHomeworkAttempt | null>>;
-  getActive(studentId: string, homeworkId: string): Promise<RepositoryResult<IHomeworkAttempt | null>>;
-  update(id: string, input: UpdateHomeworkAttemptInput): Promise<RepositoryResult<IHomeworkAttempt>>;
-  listByStudentAndHomework(studentId: string, homeworkId: string): Promise<RepositoryResult<IHomeworkAttempt[]>>;
-  countByStudentAndHomework(studentId: string, homeworkId: string): Promise<RepositoryResult<number>>;
+  getActive(
+    studentId: string,
+    homeworkId: string,
+  ): Promise<RepositoryResult<IHomeworkAttempt | null>>;
+  update(
+    id: string,
+    input: UpdateHomeworkAttemptInput,
+  ): Promise<RepositoryResult<IHomeworkAttempt>>;
+  listByStudentAndHomework(
+    studentId: string,
+    homeworkId: string,
+  ): Promise<RepositoryResult<IHomeworkAttempt[]>>;
+  countByStudentAndHomework(
+    studentId: string,
+    homeworkId: string,
+  ): Promise<RepositoryResult<number>>;
 }
 
 export interface IHomeworkAnswer {
@@ -1335,14 +1499,23 @@ export interface UpdateVideoProgressInput {
 }
 
 export interface IVideoProgressRepository {
-  getByUserAndVideo(userId: string, videoId: string): Promise<RepositoryResult<IVideoProgress | null>>;
-  upsert(id: string, input: CreateVideoProgressInput | UpdateVideoProgressInput): Promise<RepositoryResult<IVideoProgress>>;
-  listByUserAndLesson(userId: string, lessonId: string): Promise<RepositoryResult<IVideoProgress[]>>;
+  getByUserAndVideo(
+    userId: string,
+    videoId: string,
+  ): Promise<RepositoryResult<IVideoProgress | null>>;
+  upsert(
+    id: string,
+    input: CreateVideoProgressInput | UpdateVideoProgressInput,
+  ): Promise<RepositoryResult<IVideoProgress>>;
+  listByUserAndLesson(
+    userId: string,
+    lessonId: string,
+  ): Promise<RepositoryResult<IVideoProgress[]>>;
 }
 
 // ===== Timeline Event Contracts =====
 
-export type TimelineEventType = 'ACTIVITY' | 'QUESTION' | 'NOTE' | 'QUIZ';
+export type TimelineEventType = "ACTIVITY" | "QUESTION" | "NOTE" | "QUIZ";
 
 export interface ITimelineEvent {
   readonly id: string;
@@ -1384,7 +1557,11 @@ export interface UpdateTimelineEventInput {
 export interface ITimelineEventRepository {
   create(input: CreateTimelineEventInput): Promise<RepositoryResult<ITimelineEvent>>;
   getById(id: string): Promise<RepositoryResult<ITimelineEvent | null>>;
-  update(id: string, input: UpdateTimelineEventInput, expectedVersion: number): Promise<RepositoryResult<ITimelineEvent>>;
+  update(
+    id: string,
+    input: UpdateTimelineEventInput,
+    expectedVersion: number,
+  ): Promise<RepositoryResult<ITimelineEvent>>;
   listByVideo(videoId: string): Promise<RepositoryResult<ITimelineEvent[]>>;
   delete(id: string): Promise<RepositoryResult<void>>;
 }
@@ -1416,10 +1593,18 @@ export interface CreateTimelineEventProgressInput {
 }
 
 export interface ITimelineEventProgressRepository {
-  getByUserAndEvent(userId: string, timelineEventId: string): Promise<RepositoryResult<ITimelineEventProgress | null>>;
-  upsert(input: CreateTimelineEventProgressInput): Promise<RepositoryResult<ITimelineEventProgress>>;
+  getByUserAndEvent(
+    userId: string,
+    timelineEventId: string,
+  ): Promise<RepositoryResult<ITimelineEventProgress | null>>;
+  upsert(
+    input: CreateTimelineEventProgressInput,
+  ): Promise<RepositoryResult<ITimelineEventProgress>>;
   markCompleted(id: string): Promise<RepositoryResult<ITimelineEventProgress>>;
-  listByUserAndVideo(userId: string, videoId: string): Promise<RepositoryResult<ITimelineEventProgress[]>>;
+  listByUserAndVideo(
+    userId: string,
+    videoId: string,
+  ): Promise<RepositoryResult<ITimelineEventProgress[]>>;
 }
 
 // ===== Quiz Contracts =====
@@ -1476,7 +1661,11 @@ export interface IQuizRepository {
   create(input: CreateQuizInput): Promise<RepositoryResult<IQuiz>>;
   getById(id: string): Promise<RepositoryResult<IQuiz | null>>;
   getByLessonId(lessonId: string): Promise<RepositoryResult<IQuiz | null>>;
-  update(id: string, input: UpdateQuizInput, expectedVersion: number): Promise<RepositoryResult<IQuiz>>;
+  update(
+    id: string,
+    input: UpdateQuizInput,
+    expectedVersion: number,
+  ): Promise<RepositoryResult<IQuiz>>;
   delete(id: string): Promise<RepositoryResult<void>>;
 }
 
@@ -1553,7 +1742,10 @@ export interface IQuizAttemptRepository {
   getById(id: string): Promise<RepositoryResult<IQuizAttempt | null>>;
   getActive(studentId: string, quizId: string): Promise<RepositoryResult<IQuizAttempt | null>>;
   update(id: string, input: UpdateQuizAttemptInput): Promise<RepositoryResult<IQuizAttempt>>;
-  listByStudentAndQuiz(studentId: string, quizId: string): Promise<RepositoryResult<IQuizAttempt[]>>;
+  listByStudentAndQuiz(
+    studentId: string,
+    quizId: string,
+  ): Promise<RepositoryResult<IQuizAttempt[]>>;
   countByStudentAndQuiz(studentId: string, quizId: string): Promise<RepositoryResult<number>>;
 }
 
@@ -1701,7 +1893,7 @@ export interface ICoinTransaction {
   readonly id: string;
   readonly studentId: string;
   readonly amount: number;
-  readonly transactionType: 'PURCHASE' | 'REWARD' | 'SPEND' | 'REFUND';
+  readonly transactionType: "PURCHASE" | "REWARD" | "SPEND" | "REFUND";
   readonly sourceType: string;
   readonly sourceId?: string;
   readonly balanceAfter: number;
@@ -1738,7 +1930,14 @@ export interface IContentEntitlement {
 
 export interface IWalletRepository {
   getByStudentId(studentId: string): Promise<RepositoryResult<IWallet | null>>;
-  upsert(studentId: string, balance: number, totalPurchased: number, totalEarned: number, totalSpent: number, pending: number): Promise<RepositoryResult<IWallet>>;
+  upsert(
+    studentId: string,
+    balance: number,
+    totalPurchased: number,
+    totalEarned: number,
+    totalSpent: number,
+    pending: number,
+  ): Promise<RepositoryResult<IWallet>>;
 }
 
 export interface ICoinTransactionRepository {
@@ -1755,9 +1954,16 @@ export interface ICoinPackageRepository {
 }
 
 export interface IContentEntitlementRepository {
-  getByStudentAndContent(studentId: string, contentType: string, contentId: string): Promise<RepositoryResult<IContentEntitlement | null>>;
+  getByStudentAndContent(
+    studentId: string,
+    contentType: string,
+    contentId: string,
+  ): Promise<RepositoryResult<IContentEntitlement | null>>;
   listByStudent(studentId: string): Promise<RepositoryResult<IContentEntitlement[]>>;
-  listBySource(sourceType: string, sourceId: string): Promise<RepositoryResult<IContentEntitlement[]>>;
+  listBySource(
+    sourceType: string,
+    sourceId: string,
+  ): Promise<RepositoryResult<IContentEntitlement[]>>;
   create(input: IContentEntitlement): Promise<RepositoryResult<IContentEntitlement>>;
 }
 
@@ -1785,13 +1991,22 @@ export interface ICouponRepository {
 
 // ===== Live Class Contracts =====
 
-export type LiveSessionStatus = 'DRAFT' | 'PUBLISHED' | 'SCHEDULED' | 'OPEN' | 'FULL' | 'LIVE' | 'COMPLETED' | 'CANCELLED' | 'ARCHIVED';
-export type LiveSessionType = 'PRIVATE' | 'GROUP';
-export type LiveBookingStatus = 'CONFIRMED' | 'CANCELLED' | 'RESCHEDULED';
-export type LiveAttendanceStatus = 'JOINED' | 'LATE' | 'LEFT_EARLY' | 'ABSENT' | 'COMPLETED';
-export type LiveSubscriptionStatus = 'ACTIVE' | 'EXPIRED' | 'CANCELLED' | 'SUSPENDED';
-export type LiveSubscriptionType = 'PRIVATE_MONTHLY' | 'GROUP_MONTHLY' | 'ONE_TIME_PRIVATE';
-export type MeetingProvider = 'EXTERNAL_URL' | 'ZOOM_SDK';
+export type LiveSessionStatus =
+  | "DRAFT"
+  | "PUBLISHED"
+  | "SCHEDULED"
+  | "OPEN"
+  | "FULL"
+  | "LIVE"
+  | "COMPLETED"
+  | "CANCELLED"
+  | "ARCHIVED";
+export type LiveSessionType = "PRIVATE" | "GROUP";
+export type LiveBookingStatus = "CONFIRMED" | "CANCELLED" | "RESCHEDULED";
+export type LiveAttendanceStatus = "JOINED" | "LATE" | "LEFT_EARLY" | "ABSENT" | "COMPLETED";
+export type LiveSubscriptionStatus = "ACTIVE" | "EXPIRED" | "CANCELLED" | "SUSPENDED";
+export type LiveSubscriptionType = "PRIVATE_MONTHLY" | "GROUP_MONTHLY" | "ONE_TIME_PRIVATE";
+export type MeetingProvider = "EXTERNAL_URL" | "ZOOM_SDK";
 
 export interface ILiveSession {
   readonly id: string;
@@ -1947,7 +2162,10 @@ export interface ILiveRepository {
   getBookingsBySession(sessionId: string): Promise<RepositoryResult<ILiveBooking[]>>;
   getTeacherAvailability(teacherId: string): Promise<RepositoryResult<ITeacherAvailability[]>>;
   createAvailability(input: ITeacherAvailability): Promise<RepositoryResult<ITeacherAvailability>>;
-  updateAvailability(id: string, input: Partial<ITeacherAvailability>): Promise<RepositoryResult<ITeacherAvailability>>;
+  updateAvailability(
+    id: string,
+    input: Partial<ITeacherAvailability>,
+  ): Promise<RepositoryResult<ITeacherAvailability>>;
   deleteAvailability(id: string): Promise<RepositoryResult<void>>;
   listDateBlocks(teacherId: string): Promise<RepositoryResult<ITeacherDateBlock[]>>;
   createDateBlock(input: ITeacherDateBlock): Promise<RepositoryResult<ITeacherDateBlock>>;
@@ -2013,7 +2231,7 @@ export interface IStoryProgress {
   readonly storyId: string;
   readonly chapterId?: string;
   readonly storyLessonId?: string;
-  readonly status: 'not_started' | 'in_progress' | 'completed';
+  readonly status: "not_started" | "in_progress" | "completed";
   readonly progressPercent: number;
   readonly completedAt?: string;
   readonly lastActiveAt: string;
@@ -2036,7 +2254,10 @@ export interface IStoryRepository {
   listByGrade(gradeId: string): Promise<RepositoryResult<IStory[]>>;
   createChapter(input: Partial<IStoryChapter>): Promise<RepositoryResult<IStoryChapter>>;
   getChapterById(id: string): Promise<RepositoryResult<IStoryChapter | null>>;
-  updateChapter(id: string, input: Partial<IStoryChapter>): Promise<RepositoryResult<IStoryChapter>>;
+  updateChapter(
+    id: string,
+    input: Partial<IStoryChapter>,
+  ): Promise<RepositoryResult<IStoryChapter>>;
   deleteChapter(id: string): Promise<RepositoryResult<void>>;
   listChapters(storyId: string): Promise<RepositoryResult<IStoryChapter[]>>;
   createLesson(input: Partial<IStoryLesson>): Promise<RepositoryResult<IStoryLesson>>;
@@ -2099,7 +2320,7 @@ export interface IFinalReviewQuestion {
   readonly finalReviewId: string;
   readonly finalReviewUnitId: string;
   readonly finalReviewLessonId?: string;
-  readonly questionType: 'MULTIPLE_CHOICE' | 'TRUE_FALSE' | 'FILL_BLANK' | 'MATCHING';
+  readonly questionType: "MULTIPLE_CHOICE" | "TRUE_FALSE" | "FILL_BLANK" | "MATCHING";
   readonly prompt: string;
   readonly options?: Record<string, string>;
   readonly correctAnswer?: string;
@@ -2116,7 +2337,7 @@ export interface IFinalReviewAttempt {
   readonly studentId: string;
   readonly finalReviewId: string;
   readonly attemptNumber: number;
-  readonly status: 'in_progress' | 'submitted' | 'graded';
+  readonly status: "in_progress" | "submitted" | "graded";
   readonly score?: number;
   readonly maxScore: number;
   readonly passed?: boolean;
@@ -2172,19 +2393,33 @@ export interface IFinalReviewRepository {
   listByGrade(gradeId: string): Promise<RepositoryResult<IFinalReview[]>>;
   createUnit(input: Partial<IFinalReviewUnit>): Promise<RepositoryResult<IFinalReviewUnit>>;
   getUnitById(id: string): Promise<RepositoryResult<IFinalReviewUnit | null>>;
-  updateUnit(id: string, input: Partial<IFinalReviewUnit>): Promise<RepositoryResult<IFinalReviewUnit>>;
+  updateUnit(
+    id: string,
+    input: Partial<IFinalReviewUnit>,
+  ): Promise<RepositoryResult<IFinalReviewUnit>>;
   deleteUnit(id: string): Promise<RepositoryResult<void>>;
   listUnits(finalReviewId: string): Promise<RepositoryResult<IFinalReviewUnit[]>>;
   createLesson(input: Partial<IFinalReviewLesson>): Promise<RepositoryResult<IFinalReviewLesson>>;
   getLessonById(id: string): Promise<RepositoryResult<IFinalReviewLesson | null>>;
   listLessons(unitId: string): Promise<RepositoryResult<IFinalReviewLesson[]>>;
-  createQuestion(input: Partial<IFinalReviewQuestion>): Promise<RepositoryResult<IFinalReviewQuestion>>;
-  listQuestions(finalReviewUnitId: string, exam?: boolean): Promise<RepositoryResult<IFinalReviewQuestion[]>>;
+  createQuestion(
+    input: Partial<IFinalReviewQuestion>,
+  ): Promise<RepositoryResult<IFinalReviewQuestion>>;
+  listQuestions(
+    finalReviewUnitId: string,
+    exam?: boolean,
+  ): Promise<RepositoryResult<IFinalReviewQuestion[]>>;
   deleteQuestion(id: string): Promise<RepositoryResult<void>>;
   createAttempt(input: IFinalReviewAttempt): Promise<RepositoryResult<IFinalReviewAttempt>>;
   getAttempt(id: string): Promise<RepositoryResult<IFinalReviewAttempt | null>>;
-  updateAttempt(id: string, input: Partial<IFinalReviewAttempt>): Promise<RepositoryResult<IFinalReviewAttempt>>;
-  listAttempts(studentId: string, finalReviewId: string): Promise<RepositoryResult<IFinalReviewAttempt[]>>;
+  updateAttempt(
+    id: string,
+    input: Partial<IFinalReviewAttempt>,
+  ): Promise<RepositoryResult<IFinalReviewAttempt>>;
+  listAttempts(
+    studentId: string,
+    finalReviewId: string,
+  ): Promise<RepositoryResult<IFinalReviewAttempt[]>>;
   createAnswer(input: IFinalReviewAnswer): Promise<RepositoryResult<IFinalReviewAnswer>>;
   listAnswers(attemptId: string): Promise<RepositoryResult<IFinalReviewAnswer[]>>;
 }
@@ -2197,7 +2432,7 @@ export interface INotification {
   readonly title: string;
   readonly message: string;
   readonly type: string;
-  readonly priority: 'LOW' | 'NORMAL' | 'HIGH' | 'URGENT';
+  readonly priority: "LOW" | "NORMAL" | "HIGH" | "URGENT";
   readonly link?: string;
   readonly campaignId?: string;
   readonly read: boolean;
@@ -2238,7 +2473,9 @@ export interface INotificationRepository {
   markAllRead(userId: string): Promise<RepositoryResult<void>>;
   delete(id: string): Promise<RepositoryResult<void>>;
   getPreferences(userId: string): Promise<RepositoryResult<INotificationPreference | null>>;
-  upsertPreferences(input: INotificationPreference): Promise<RepositoryResult<INotificationPreference>>;
+  upsertPreferences(
+    input: INotificationPreference,
+  ): Promise<RepositoryResult<INotificationPreference>>;
 }
 
 // ===== Device Token Contracts =====
@@ -2247,7 +2484,7 @@ export interface IDeviceToken {
   readonly id: string;
   readonly userId: string;
   readonly token: string;
-  readonly platform: 'web' | 'android' | 'ios';
+  readonly platform: "web" | "android" | "ios";
   readonly appVersion?: string;
   readonly lastSeenAt: string;
   readonly active: boolean;
@@ -2280,7 +2517,7 @@ export interface ICoinPurchaseRequest {
   readonly priceMinorUnits: number;
   readonly currency: string;
   readonly paymentMethod: string;
-  readonly status: 'PENDING' | 'APPROVED' | 'REJECTED';
+  readonly status: "PENDING" | "APPROVED" | "REJECTED";
   readonly reviewedBy?: string;
   readonly reviewedAt?: string;
   readonly adminNote?: string;
@@ -2297,16 +2534,36 @@ export interface ICoinPurchaseRequestRepository {
   create(input: ICoinPurchaseRequest): Promise<RepositoryResult<ICoinPurchaseRequest>>;
   getById(id: string): Promise<RepositoryResult<ICoinPurchaseRequest | null>>;
   list(filter: ICoinPurchaseRequestFilter): Promise<RepositoryResult<ICoinPurchaseRequest[]>>;
-  update(id: string, input: Partial<ICoinPurchaseRequest>): Promise<RepositoryResult<ICoinPurchaseRequest>>;
+  update(
+    id: string,
+    input: Partial<ICoinPurchaseRequest>,
+  ): Promise<RepositoryResult<ICoinPurchaseRequest>>;
 }
 
 // ===== Subscription Contracts =====
 
-export type SubscriptionPlanType = 'MONTHLY' | 'QUARTERLY' | 'SEMI_ANNUAL' | 'YEARLY' | 'FULL_COURSE' | 'CUSTOM';
+export type SubscriptionPlanType =
+  | "MONTHLY"
+  | "QUARTERLY"
+  | "SEMI_ANNUAL"
+  | "YEARLY"
+  | "FULL_COURSE"
+  | "CUSTOM";
 
-export type SubscriptionStatus = 'TRIAL' | 'ACTIVE' | 'GRACE' | 'EXPIRED' | 'CANCELLED' | 'UPGRADED';
+export type SubscriptionStatus =
+  | "TRIAL"
+  | "ACTIVE"
+  | "GRACE"
+  | "EXPIRED"
+  | "CANCELLED"
+  | "UPGRADED";
 
-export type SubscriptionBillingInterval = 'MONTHLY' | 'QUARTERLY' | 'SEMI_ANNUAL' | 'YEARLY' | 'ONE_TIME';
+export type SubscriptionBillingInterval =
+  | "MONTHLY"
+  | "QUARTERLY"
+  | "SEMI_ANNUAL"
+  | "YEARLY"
+  | "ONE_TIME";
 
 export interface ISubscriptionPlan {
   readonly id: string;
@@ -2322,7 +2579,7 @@ export interface ISubscriptionPlan {
   readonly trialDays: number;
   readonly maxStudentsPerPlan: number;
   readonly features: string[];
-  readonly contentScope: 'ALL_PREMIUM' | 'SPECIFIC_UNITS' | 'SPECIFIC_LESSONS' | 'FULL_COURSE';
+  readonly contentScope: "ALL_PREMIUM" | "SPECIFIC_UNITS" | "SPECIFIC_LESSONS" | "FULL_COURSE";
   readonly contentIds: string[];
   readonly gradeIds: string[];
   readonly active: boolean;
@@ -2376,7 +2633,10 @@ export interface ISubscriptionPlanRepository {
   create(input: ISubscriptionPlan): Promise<RepositoryResult<ISubscriptionPlan>>;
   getById(id: string): Promise<RepositoryResult<ISubscriptionPlan | null>>;
   list(filter?: ISubscriptionPlanFilter): Promise<RepositoryResult<ISubscriptionPlan[]>>;
-  update(id: string, input: Partial<ISubscriptionPlan>): Promise<RepositoryResult<ISubscriptionPlan>>;
+  update(
+    id: string,
+    input: Partial<ISubscriptionPlan>,
+  ): Promise<RepositoryResult<ISubscriptionPlan>>;
   delete(id: string): Promise<RepositoryResult<void>>;
 }
 
@@ -2399,7 +2659,7 @@ export interface INotificationPayload {
   readonly title: string;
   readonly message: string;
   readonly type: string;
-  readonly priority: 'LOW' | 'NORMAL' | 'HIGH' | 'URGENT';
+  readonly priority: "LOW" | "NORMAL" | "HIGH" | "URGENT";
   readonly link?: string;
   readonly data?: Record<string, string>;
 }
@@ -2413,7 +2673,7 @@ export interface INotificationDispatcher {
 export interface IReport {
   readonly id: string;
   readonly studentId: string;
-  readonly periodType: 'WEEKLY' | 'MONTHLY' | 'TERM' | 'CUSTOM';
+  readonly periodType: "WEEKLY" | "MONTHLY" | "TERM" | "CUSTOM";
   readonly periodStart: string;
   readonly periodEnd: string;
   readonly completedLessons: number;
@@ -2438,9 +2698,18 @@ export interface IReportFilter {
 }
 
 export interface IReportRepository {
-  getStudentReport(studentId: string, periodStart: string, periodEnd: string): Promise<RepositoryResult<IReport | null>>;
+  getStudentReport(
+    studentId: string,
+    periodStart: string,
+    periodEnd: string,
+  ): Promise<RepositoryResult<IReport | null>>;
   list(filter: IReportFilter): Promise<RepositoryResult<IReport[]>>;
-  generateReport(studentId: string, periodType: string, periodStart: string, periodEnd: string): Promise<RepositoryResult<IReport>>;
+  generateReport(
+    studentId: string,
+    periodType: string,
+    periodStart: string,
+    periodEnd: string,
+  ): Promise<RepositoryResult<IReport>>;
 }
 
 // ===== Payment Contracts =====
@@ -2453,7 +2722,7 @@ export interface IPayment {
   readonly paymentMethod: string;
   readonly amountMinorUnits: number;
   readonly currency: string;
-  readonly status: 'PENDING' | 'COMPLETED' | 'FAILED' | 'REFUNDED';
+  readonly status: "PENDING" | "COMPLETED" | "FAILED" | "REFUNDED";
   readonly gatewayTransactionId?: string;
   readonly gatewayReference?: string;
   readonly idempotencyKey: string;
@@ -2480,15 +2749,19 @@ export interface IPaymentRepository {
   create(input: IPayment): Promise<RepositoryResult<IPayment>>;
   getById(id: string): Promise<RepositoryResult<IPayment | null>>;
   listByStudent(studentId: string): Promise<RepositoryResult<IPayment[]>>;
-  updateStatus(id: string, status: string, data?: Partial<IPayment>): Promise<RepositoryResult<IPayment>>;
+  updateStatus(
+    id: string,
+    status: string,
+    data?: Partial<IPayment>,
+  ): Promise<RepositoryResult<IPayment>>;
   createInvoice(input: IInvoice): Promise<RepositoryResult<IInvoice>>;
   getInvoicesByStudent(studentId: string): Promise<RepositoryResult<IInvoice[]>>;
 }
 
 // ===== Competition Contracts =====
 
-export type CompetitionMode = 'QUIZ' | 'XP_SPRINT';
-export type CompetitionStatus = 'DRAFT' | 'OPEN' | 'CLOSED' | 'FINALIZED';
+export type CompetitionMode = "QUIZ" | "XP_SPRINT";
+export type CompetitionStatus = "DRAFT" | "OPEN" | "CLOSED" | "FINALIZED";
 
 export interface ICompetition {
   readonly id: string;
@@ -2518,7 +2791,7 @@ export interface ICompetitionParticipant {
   readonly studentId: string;
   readonly score: number;
   readonly rank?: number;
-  readonly status: 'INVITED' | 'ACCEPTED' | 'SUBMITTED' | 'DISQUALIFIED';
+  readonly status: "INVITED" | "ACCEPTED" | "SUBMITTED" | "DISQUALIFIED";
   readonly invitedAt: string;
   readonly acceptedAt?: string;
   readonly submittedAt?: string;
@@ -2565,14 +2838,25 @@ export interface ICompetitionRepository {
   update(id: string, input: Partial<ICompetition>): Promise<RepositoryResult<ICompetition>>;
   delete(id: string): Promise<RepositoryResult<void>>;
   list(filter: ICompetitionFilter): Promise<RepositoryResult<ICompetition[]>>;
-  createParticipant(input: ICompetitionParticipant): Promise<RepositoryResult<ICompetitionParticipant>>;
-  getParticipant(competitionId: string, studentId: string): Promise<RepositoryResult<ICompetitionParticipant | null>>;
+  createParticipant(
+    input: ICompetitionParticipant,
+  ): Promise<RepositoryResult<ICompetitionParticipant>>;
+  getParticipant(
+    competitionId: string,
+    studentId: string,
+  ): Promise<RepositoryResult<ICompetitionParticipant | null>>;
   listParticipants(competitionId: string): Promise<RepositoryResult<ICompetitionParticipant[]>>;
-  updateParticipant(id: string, input: Partial<ICompetitionParticipant>): Promise<RepositoryResult<ICompetitionParticipant>>;
+  updateParticipant(
+    id: string,
+    input: Partial<ICompetitionParticipant>,
+  ): Promise<RepositoryResult<ICompetitionParticipant>>;
   createQuestion(input: ICompetitionQuestion): Promise<RepositoryResult<ICompetitionQuestion>>;
   listQuestions(competitionId: string): Promise<RepositoryResult<ICompetitionQuestion[]>>;
   createAttempt(input: ICompetitionAttempt): Promise<RepositoryResult<ICompetitionAttempt>>;
-  getAttempt(competitionId: string, studentId: string): Promise<RepositoryResult<ICompetitionAttempt | null>>;
+  getAttempt(
+    competitionId: string,
+    studentId: string,
+  ): Promise<RepositoryResult<ICompetitionAttempt | null>>;
 }
 
 // ===== Support / Ticket Contracts =====
@@ -2583,8 +2867,8 @@ export interface ISupportTicket {
   readonly subject: string;
   readonly description: string;
   readonly category: string;
-  readonly priority: 'LOW' | 'NORMAL' | 'HIGH' | 'URGENT';
-  readonly status: 'OPEN' | 'IN_PROGRESS' | 'WAITING' | 'RESOLVED' | 'CLOSED';
+  readonly priority: "LOW" | "NORMAL" | "HIGH" | "URGENT";
+  readonly status: "OPEN" | "IN_PROGRESS" | "WAITING" | "RESOLVED" | "CLOSED";
   readonly assignedTo?: string;
   readonly resolvedAt?: string;
   readonly closedAt?: string;
@@ -2628,6 +2912,8 @@ export interface ISupportTicketRepository {
   resolve(id: string): Promise<RepositoryResult<void>>;
   close(id: string): Promise<RepositoryResult<void>>;
   getGradeSupportContact(gradeId: string): Promise<RepositoryResult<IGradeSupportContact | null>>;
-  upsertGradeSupportContact(input: IGradeSupportContact): Promise<RepositoryResult<IGradeSupportContact>>;
+  upsertGradeSupportContact(
+    input: IGradeSupportContact,
+  ): Promise<RepositoryResult<IGradeSupportContact>>;
   listGradeSupportContacts(): Promise<RepositoryResult<IGradeSupportContact[]>>;
 }
