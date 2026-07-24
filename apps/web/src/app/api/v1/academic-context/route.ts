@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getAdminDb } from '@/lib/firebase/admin';
 import { authenticateRequest } from '@/lib/firebase/auth-helper';
 
+const SETTINGS_DOC = 'system-settings';
+
 export async function GET(request: NextRequest): Promise<NextResponse> {
   try {
     const decoded = await authenticateRequest(request);
@@ -11,40 +13,33 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
     const db = getAdminDb();
 
-    const [yearsSnap, termsSnap] = await Promise.all([
-      db.collection('academicYears').where('deletedAt', '==', null).where('isCurrent', '==', true).limit(1).get(),
-      db.collection('academicTerms').where('deletedAt', '==', null).where('isActive', '==', true).orderBy('order', 'asc').get(),
-    ]);
+    const settingsSnap = await db.collection('systemSettings').doc(SETTINGS_DOC).get();
+    const settings = settingsSnap.exists ? settingsSnap.data() : null;
+    const activeAcademicYearId = settings?.activeAcademicYearId as string | undefined;
+    const activeTermId = settings?.activeTermId as string | undefined;
+    const termManagementMode = (settings?.termManagementMode as string) ?? 'MANUAL';
 
     let academicYear: { id: string; name: string } | null = null;
-    if (!yearsSnap.empty) {
-      const doc = yearsSnap.docs[0];
-      const data = doc.data();
-      academicYear = {
-        id: doc.id,
-        name: (data.nameAr as string) || (data.name as string) || '',
-      };
+    let activeTerm: { id: string; name: string } | null = null;
+
+    if (activeAcademicYearId) {
+      const yearDoc = await db.collection('academicYears').doc(activeAcademicYearId).get();
+      if (yearDoc.exists) {
+        const data = yearDoc.data()!;
+        academicYear = {
+          id: yearDoc.id,
+          name: (data.nameAr as string) || (data.name as string) || '',
+        };
+      }
     }
 
-    let activeTerm: { id: string; name: string } | null = null;
-    if (academicYear) {
-      const termDocs = termsSnap.docs.filter((t) => {
-        const tData = t.data();
-        return (tData.academicYearId as string) === academicYear!.id;
-      });
-      if (termDocs.length > 0) {
-        const termDoc = termDocs[0];
-        const termData = termDoc.data();
+    if (activeTermId) {
+      const termDoc = await db.collection('academicTerms').doc(activeTermId).get();
+      if (termDoc.exists) {
+        const data = termDoc.data()!;
         activeTerm = {
           id: termDoc.id,
-          name: (termData.nameAr as string) || (termData.name as string) || '',
-        };
-      } else if (!termsSnap.empty) {
-        const firstTerm = termsSnap.docs[0];
-        const firstData = firstTerm.data();
-        activeTerm = {
-          id: firstTerm.id,
-          name: (firstData.nameAr as string) || (firstData.name as string) || '',
+          name: (data.nameAr as string) || (data.name as string) || '',
         };
       }
     }
@@ -54,7 +49,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       data: {
         academicYear,
         term: activeTerm,
-        termManagementMode: 'manual',
+        termManagementMode,
       },
     });
   } catch (error) {

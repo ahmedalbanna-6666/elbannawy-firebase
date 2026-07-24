@@ -28,6 +28,7 @@ interface MyGradesResponse {
 
 export function AcademicContextBar({ className }: AcademicContextBarProps): ReactNode {
   const academicYear = useAcademicContextStore((s) => s.academicYear);
+  const academicYearId = useAcademicContextStore((s) => s.academicYearId);
   const educationalSystem = useAcademicContextStore((s) => s.educationalSystem);
   const stage = useAcademicContextStore((s) => s.stage);
   const grade = useAcademicContextStore((s) => s.grade);
@@ -39,6 +40,7 @@ export function AcademicContextBar({ className }: AcademicContextBarProps): Reac
   const setGrade = useAcademicContextStore((s) => s.setGrade);
   const setTerm = useAcademicContextStore((s) => s.setTerm);
   const setTermId = useAcademicContextStore((s) => s.setTermId);
+  const applyPlatformContext = useAcademicContextStore((s) => s.applyPlatformContext);
 
   const userRole = useAuthStore((s) => s.user?.role);
   const userId = useAuthStore((s) => s.user?.id);
@@ -53,6 +55,24 @@ export function AcademicContextBar({ className }: AcademicContextBarProps): Reac
     },
     enabled: isTeacher && !!userId,
     staleTime: 30_000,
+  });
+
+  useQuery({
+    queryKey: ["platform-active-context"],
+    queryFn: async () => {
+      const res = await api.get<{ academicYear: { id: string; name: string } | null; term: { id: string; name: string } | null; termManagementMode: string }>("/academic-context");
+      const ctx = res.data;
+      if (ctx?.academicYear && ctx.term) {
+        applyPlatformContext({
+          academicYearId: ctx.academicYear.id,
+          academicYearName: ctx.academicYear.name,
+          termId: ctx.term.id,
+          termName: ctx.term.name,
+        });
+      }
+      return ctx;
+    },
+    staleTime: 120_000,
   });
 
   const { data: academicYears } = useQuery({
