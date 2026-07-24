@@ -85,8 +85,8 @@ export function AdminUnitsView(): ReactNode {
     queryKey: ["management-units", filterParams],
     queryFn: async () => {
       const endpoint = `/curriculum/units${filterParams ? `?${filterParams}` : ""}`;
-      const res = await api.get<UnitManagement[]>(endpoint);
-      return res.data ?? [];
+      const res = await api.get<{ items: UnitManagement[]; nextCursor: string | null }>(endpoint);
+      return res.data?.items ?? [];
     },
     staleTime: 30_000,
   });

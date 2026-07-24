@@ -36,7 +36,7 @@ export const CreateQuizQuestionInputSchema = z.object({
   prompt: z.string().min(1).max(5000),
   instructions: z.string().max(2000).optional(),
   explanation: z.string().max(2000).optional(),
-  options: z.record(z.string()).nullable().optional(),
+  options: z.record(z.string(), z.string()).nullable().optional(),
   points: z.number().int().min(1).optional().default(1),
   displayOrder: z.number().int().min(0),
 });
@@ -63,7 +63,7 @@ export const CreateQuizAnswerInputSchema = z.object({
   studentId: z.string().min(1).max(128),
   quizId: z.string().min(1).max(128),
   questionId: z.string().min(1).max(128),
-  answer: z.record(z.unknown()),
+  answer: z.record(z.string(), z.unknown()),
   isCorrect: z.boolean().optional(),
   score: z.number().int().min(0).optional(),
   feedback: z.string().max(2000).optional(),

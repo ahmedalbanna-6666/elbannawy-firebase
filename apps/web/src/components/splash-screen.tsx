@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { motion, AnimatePresence, animate } from "framer-motion";
+import { useEffect, useState, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 
 interface SplashScreenProps {
@@ -121,15 +121,8 @@ function PenTip({ progress, visible }: { progress: number; visible: boolean }): 
       animate={{ opacity: visible ? 1 : 0 }}
       transition={{ duration: 0.25, ease: "easeInOut" }}
     >
-      <svg width="22" height="28" viewBox="0 0 22 28" fill="none" style={{ transform: `rotate(${String(p.angle + 90)}deg)` }}>
-        <defs>
-          <linearGradient id="penG" x1="11" y1="0" x2="11" y2="28" gradientUnits="userSpaceOnUse">
-            <stop stopColor="#6366f1" />
-            <stop offset="0.5" stopColor="#4338ca" />
-            <stop offset="1" stopColor="#1e1b4b" />
-          </linearGradient>
-        </defs>
-        <path d="M11 2L20 27H2L11 2Z" fill="url(#penG)" stroke="#1e1b4b" strokeWidth="0.5" />
+        <svg width="22" height="28" viewBox="0 0 22 28" fill="none" style={{ transform: `rotate(${String(p.angle + 90)}deg)` }}>
+        <path d="M11 2L20 27H2L11 2Z" fill="#4338ca" stroke="#1e1b4b" strokeWidth="0.5" />
         <path d="M11 4L18 25.5H4L11 4Z" fill="#818cf8" opacity="0.3" />
         <ellipse cx="11" cy="3" rx="1.2" ry="0.8" fill="#e0e7ff" />
       </svg>
@@ -141,39 +134,68 @@ export function SplashScreen({ onFinish }: SplashScreenProps): React.ReactNode {
   const [phase, setPhase] = useState<"enter" | "pen" | "writing" | "pen-out" | "text" | "exit">("enter");
   const [showSplash, setShowSplash] = useState(true);
   const [progress, setProgress] = useState(0);
+  const mountedRef = useRef(true);
 
   useEffect(() => {
-    const run = async (): Promise<void> => {
-      setPhase("pen");
-      await new Promise((r) => setTimeout(r, 300));
+    mountedRef.current = true;
 
-      setPhase("writing");
-      await animate(0, 1, {
-        duration: 2.7,
-        ease: [0.45, 0, 0.2, 1],
-        onUpdate: (val) => setProgress(val),
+    const delay = (ms: number): Promise<void> =>
+      new Promise((r) => {
+        const id = setTimeout(() => {
+          if (mountedRef.current) r(undefined);
+        }, ms);
       });
 
-      setPhase("pen-out");
-      await new Promise((r) => setTimeout(r, 300));
-
-      setPhase("text");
-      await new Promise((r) => setTimeout(r, 800));
-
-      setPhase("exit");
-      await new Promise((r) => setTimeout(r, 500));
-
-      setShowSplash(false);
-      if (onFinish) onFinish();
+    const startWriting = (duration: number): Promise<void> => {
+      return new Promise((resolve) => {
+        const startTime = performance.now();
+        const tick = (now: number) => {
+          if (!mountedRef.current) return;
+          const elapsed = now - startTime;
+          const t = Math.min(elapsed / duration, 1);
+          const eased = 1 - Math.pow(1 - t, 3);
+          setProgress(eased);
+          if (t < 1) {
+            requestAnimationFrame(tick);
+          } else {
+            resolve();
+          }
+        };
+        requestAnimationFrame(tick);
+      });
     };
 
-    const controller = new AbortController();
-    run().catch(() => {
-      if (!controller.signal.aborted) {
+    const run = async (): Promise<void> => {
+      if (!mountedRef.current) return;
+      setPhase("pen");
+      await delay(300);
+
+      if (!mountedRef.current) return;
+      setPhase("writing");
+      await startWriting(2700);
+
+      if (!mountedRef.current) return;
+      setPhase("pen-out");
+      await delay(300);
+
+      if (!mountedRef.current) return;
+      setPhase("text");
+      await delay(800);
+
+      if (!mountedRef.current) return;
+      setPhase("exit");
+      await delay(500);
+
+      if (mountedRef.current) {
         setShowSplash(false);
+        if (onFinish) onFinish();
       }
-    });
-    return () => controller.abort();
+    };
+
+    run();
+    return () => {
+      mountedRef.current = false;
+    };
   }, []);
 
   if (!showSplash) return null;
@@ -213,7 +235,7 @@ export function SplashScreen({ onFinish }: SplashScreenProps): React.ReactNode {
         <PenTip progress={progress} visible={isPenVisible} />
 
         {phase === "writing" && progress > 0.02 && (
-          <svg className="absolute inset-0 pointer-events-none z-[5]" style={{ width: "100%", height: "100%" }}>
+          <svg className="absolute inset-0 pointer-events-none z-[5]" style={{ width: "100%", height: "100%" }} viewBox="0 0 100 100">
             <defs>
               <linearGradient id="inkFade" x1="0" y1="0" x2="1" y2="0">
                 <stop offset="0" stopColor="#1a1a2e" stopOpacity="0" />
@@ -229,7 +251,7 @@ export function SplashScreen({ onFinish }: SplashScreenProps): React.ReactNode {
                   const pp = getPathPoint(i / PEN_PATH.length);
                   pts.push(pp);
                 }
-                return pts.map((pt) => `${String(pt.x)}% ${String(pt.y)}%`).join(", ");
+                return pts.map((pt) => `${String(pt.x)} ${String(pt.y)}`).join(", ");
               })()}
               fill="none"
               stroke="url(#inkFade)"

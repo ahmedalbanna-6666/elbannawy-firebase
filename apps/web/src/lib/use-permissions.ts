@@ -28,7 +28,7 @@ export function usePermissions(): {
 
   const role = normalizedRole ?? "STUDENT";
 
-  const authorizedPermissions: readonly Permission[] | undefined = user?.effectivePermissions;
+  const authorizedPermissions: readonly Permission[] | undefined = Array.isArray(user?.effectivePermissions) ? user?.effectivePermissions : undefined;
 
   return {
     role,

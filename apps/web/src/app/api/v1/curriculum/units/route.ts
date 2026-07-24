@@ -18,12 +18,48 @@ function mapErrorCode(code: string): number {
   }
 }
 
+function toFrontendUnit(u: Record<string, unknown>): Record<string, unknown> {
+  return {
+    id: u.id,
+    title: u.name ?? u.nameAr ?? '',
+    description: u.description ?? null,
+    displayOrder: u.order ?? 0,
+    published: u.published ?? false,
+    isPremium: u.isPremium ?? false,
+    lockedOverride: null,
+    createdAt: u.createdAt ?? new Date().toISOString(),
+    updatedAt: u.updatedAt ?? new Date().toISOString(),
+    grade: { id: u.gradeId ?? '', name: '', stage: { id: '', name: '' } },
+    _count: { lessons: 0 },
+  };
+}
+
+function fromFrontendUnit(body: Record<string, unknown>): Record<string, unknown> {
+  const payload: Record<string, unknown> = {
+    id: body.id ?? `unit-${String(Date.now())}`,
+    name: body.title ?? body.name ?? '',
+    nameAr: body.title ?? body.name ?? '',
+    description: body.description ?? '',
+    order: body.displayOrder ?? body.order ?? 0,
+    academicTermId: body.termId ?? body.academicTermId ?? '',
+    isActive: true,
+    isPremium: body.isPremium ?? false,
+    published: body.published ?? false,
+  };
+  if (body.isActive !== undefined) payload.isActive = body.isActive;
+  if (body.lockedOverride !== undefined) payload.lockedOverride = body.lockedOverride;
+  if (body.gradeId) payload.gradeId = body.gradeId;
+  if (body.academicYearId) payload.academicYearId = body.academicYearId;
+  if (body.educationalSystem) payload.educationalSystem = body.educationalSystem;
+  return payload;
+}
+
 export async function GET(request: NextRequest): Promise<NextResponse> {
   const { searchParams } = new URL(request.url);
-  const limit = Math.min(Math.max(Number(searchParams.get('limit')) || 20, 1), 100);
+  const limit = Math.min(Math.max(Number(searchParams.get('limit')) || 100, 1), 100);
   const cursor = searchParams.get('cursor') ?? undefined;
   const isActiveParam = searchParams.get('isActive');
-  const academicTermId = searchParams.get('academicTermId');
+  const academicTermId = searchParams.get('academicTermId') ?? searchParams.get('termId');
   const gradeId = searchParams.get('gradeId');
   const search = searchParams.get('search');
 
@@ -40,11 +76,14 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     if (academicTermId) {
       const result = await applicationService.getUnitsByTerm(academicTermId);
       if (!result.ok) return NextResponse.json({ success: false, error: result.error }, { status: mapErrorCode(result.error.code) });
-      return NextResponse.json({ success: true, data: { items: result.value, nextCursor: null } });
+      const items = (result.value as unknown as Record<string, unknown>[]).map(toFrontendUnit);
+      return NextResponse.json({ success: true, data: { items, nextCursor: null } });
     }
     const result = await applicationService.listUnits(filter, page);
     if (!result.ok) return NextResponse.json({ success: false, error: result.error }, { status: mapErrorCode(result.error.code) });
-    return NextResponse.json({ success: true, data: result.value });
+    const items = ((result.value as unknown as { items: Record<string, unknown>[] }).items).map(toFrontendUnit);
+    const nextCursor = (result.value as unknown as { nextCursor: string | null }).nextCursor;
+    return NextResponse.json({ success: true, data: { items, nextCursor } });
   } catch (error) {
     return NextResponse.json({ success: false, error: { code: 'INTERNAL', message: error instanceof Error ? error.message : 'Unknown error' } }, { status: 500 });
   }
@@ -58,9 +97,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ success: false, error: { code: 'INVALID_INPUT', message: 'Invalid JSON body' } }, { status: 400 });
   }
   try {
-    const result = await applicationService.createUnit(body);
+    const payload = fromFrontendUnit(body);
+    const result = await applicationService.createUnit(payload);
     if (!result.ok) return NextResponse.json({ success: false, error: result.error }, { status: mapErrorCode(result.error.code) });
-    return NextResponse.json({ success: true, data: result.value }, { status: 201 });
+    return NextResponse.json({ success: true, data: toFrontendUnit(result.value as unknown as Record<string, unknown>) }, { status: 201 });
   } catch (error) {
     return NextResponse.json({ success: false, error: { code: 'INTERNAL', message: error instanceof Error ? error.message : 'Unknown error' } }, { status: 500 });
   }
