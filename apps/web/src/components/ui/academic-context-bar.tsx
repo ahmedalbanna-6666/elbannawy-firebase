@@ -112,8 +112,8 @@ export function AcademicContextBar({ className }: AcademicContextBarProps): Reac
   const { data: allStages } = useQuery({
     queryKey: ["curriculum-stages"],
     queryFn: async () => {
-      const res = await api.get<{ id: string; name: string; grades: { id: string; name: string }[] }[]>("/curriculum/stages");
-      return res.data ?? [];
+      const res = await api.get<{ items: { id: string; name: string; grades: { id: string; name: string }[] }[] }>("/curriculum/stages");
+      return res.data?.items ?? [];
     },
     enabled: isAdmin,
     staleTime: 60_000,

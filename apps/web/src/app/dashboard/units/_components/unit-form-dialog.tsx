@@ -168,12 +168,12 @@ export function UnitFormDialog({
     if (!gradeFromStore) return null;
     if (stages && stages.length > 0) {
       for (const stage of stages) {
-        const grade = stage.grades.find((g) => g.name === gradeFromStore);
+        const grade = stage.grades.find((g) => g.id === gradeFromStore);
         if (grade) return grade.id;
       }
     }
     if (myGrades?.grades) {
-      const grade = myGrades.grades.find((g) => g.name === gradeFromStore);
+      const grade = myGrades.grades.find((g) => g.id === gradeFromStore);
       if (grade) return grade.id;
     }
     return null;
