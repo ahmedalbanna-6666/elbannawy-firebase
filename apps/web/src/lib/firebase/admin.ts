@@ -24,11 +24,15 @@ function ensureAdminApp(): App {
       "Firebase Admin is not configured. Set FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, and FIREBASE_PRIVATE_KEY."
     );
   }
+  let rawKey = FIREBASE_ADMIN_CONFIG.privateKey.replace(/^["']|["']$/g, "");
+  if (!rawKey.includes("\n") && rawKey.includes("\\n")) {
+    rawKey = rawKey.replace(/\\n/g, "\n");
+  }
   const options: AppOptions = {
     credential: cert({
       projectId: FIREBASE_ADMIN_CONFIG.projectId,
       clientEmail: FIREBASE_ADMIN_CONFIG.clientEmail,
-      privateKey: FIREBASE_ADMIN_CONFIG.privateKey.replace(/\\n/g, "\n"),
+      privateKey: rawKey,
     }),
     projectId: FIREBASE_ADMIN_CONFIG.projectId,
     storageBucket: FIREBASE_ADMIN_CONFIG.storageBucket || undefined,

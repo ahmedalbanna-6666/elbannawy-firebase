@@ -63,6 +63,7 @@ apps/web/src/app/api/v1/units/
   [id]/publish/route.ts           — POST publish
   [id]/unpublish/route.ts         — POST unpublish
   [id]/order/route.ts             — PATCH order
+  reorder/route.ts                — POST bulk-reorder
 ```
 
 ## Firestore Collection
@@ -107,11 +108,50 @@ POST /api/v1/units/:id/publish
 POST /api/v1/units/:id/unpublish
 ```
 
-### Update Order
+### Update Order (Single)
 
 ```
 PATCH /api/v1/units/:id/order  body: { order: number }
 ```
+
+Update the order of a single unit. Use this for incremental changes or when only one unit needs adjustment.
+
+### Bulk Reorder
+
+```
+POST /api/v1/units/reorder  body: { academicTermId: string, orders: Record<string, number> }
+```
+
+Bulk-reorder all units within an academic term in a single atomic request.
+
+**Request body:**
+
+```json
+{
+  "academicTermId": "term-1",
+  "orders": {
+    "unit-id-1": 1,
+    "unit-id-2": 3,
+    "unit-id-3": 2,
+    "unit-id-4": 4
+  }
+}
+```
+
+**Behavior:**
+- Accepts a map of `unitId → order` for all units being reordered.
+- The `academicTermId` parameter ensures all units belong to the same term.
+- Executed inside a Firestore transaction for atomicity.
+- If any unit in the `orders` map does not belong to the specified term, the entire operation is rejected.
+- The server auto-assigns compact sequential integer values (1, 2, 3, ...) if the client provides non-sequential values — no gaps are preserved.
+- Returns the updated list of units with their new order values.
+
+**Validation rules:**
+- `academicTermId` is required and must reference an existing term.
+- `orders` must contain at least 2 entries (single-unit reorder should use PATCH).
+- Each value in `orders` must be a non-negative integer.
+- All unit IDs in `orders` must exist and belong to `academicTermId`.
+- Soft-deleted units in `orders` are rejected — restore them first.
 
 ## Ordering Rules
 
@@ -127,14 +167,13 @@ This uniqueness is enforced at the application layer (not Firestore) and must be
 
 ### Insertion in the Middle (Reordering Strategy)
 
-When a new unit is inserted between existing units, the caller must explicitly set the desired `order` value. The system DOES NOT auto-shift existing units. The recommended client-side workflow is:
+When a new unit is inserted between existing units, the caller must explicitly set the desired `order` value. The system DOES NOT auto-shift existing units.
 
-1. Fetch the current unit list sorted by `order` (ascending).
-2. Determine the target position.
-3. Assign the new unit an `order` value that falls between adjacent units (e.g., if units at order 1 and 2 exist, a new unit at order 1.5 is invalid — use integer values only, so assign `order: 2` and bump the existing `order: 2` unit to `order: 3` via `PATCH /:id/order` calls).
-4. For bulk reordering, the client should send sequential `PATCH /:id/order` requests for all affected units.
+**Recommended workflows:**
 
-A future bulk-reorder endpoint may be added if the need arises. For Phase 1, explicit per-unit ordering is the documented strategy.
+1. **Single unit insert:** Fetch the current unit list sorted by `order` (ascending). Determine the target position. Assign the new unit an `order` value that falls between adjacent units (e.g., if units at order 1 and 2 exist, a new unit at order 1.5 is invalid — use integer values only, so assign `order: 2` and bump the existing `order: 2` unit to `order: 3` via `PATCH /:id/order`).
+
+2. **Bulk reorder (multiple units affected):** Use `POST /api/v1/units/reorder` with all unit IDs and their desired order values in a single request. The server executes the entire operation atomically inside a Firestore transaction, ensuring no partial updates or race conditions.
 
 ### Deletion Behavior
 
@@ -158,18 +197,19 @@ Defined in `lib/repositories/validators/unit.validator.ts`:
 - `UpdateUnitInputSchema` — All fields optional
 - `UnitFilterSchema` — academicTermId, isActive, isPremium, published, search
 - `UnitIdSchema` — Validates non-empty ID
+- `BulkReorderSchema` — academicTermId (required), orders (Record<string, number> with min 2 entries)
 
 ## Test Coverage
 
 | Test Suite | File | Tests |
 |-----------|------|-------|
 | Mapper Unit | `unit-firestore-mapper.test.ts` | 4 tests |
-| Validator Unit | `unit.validator.test.ts` | 30+ tests |
-| Repository Unit | `unit.repository.test.ts` | 15+ tests |
-| Service Unit | `unit.service.test.ts` | 12+ tests |
-| Application Service Unit | `unit-application.service.test.ts` | 15+ tests |
-| Contract | `iunit-repository.contract.test.ts` | 20+ tests |
-| Integration | `unit.repository.integration.test.ts` | 18+ tests |
+| Validator Unit | `unit.validator.test.ts` | 35+ tests |
+| Repository Unit | `unit.repository.test.ts` | 18+ tests |
+| Service Unit | `unit.service.test.ts` | 15+ tests |
+| Application Service Unit | `unit-application.service.test.ts` | 20+ tests |
+| Contract | `iunit-repository.contract.test.ts` | 25+ tests |
+| Integration | `unit.repository.integration.test.ts` | 22+ tests |
 
 ## Soft Delete
 
