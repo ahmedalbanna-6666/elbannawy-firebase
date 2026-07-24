@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { authenticateRequest } from '@/lib/firebase/auth-helper';
 import { userCanAnswerSupport } from '@/lib/firebase/permission-checker';
-import { SupportTicketRepository, UserService } from '@el-bannawy/lib';
+import { SupportTicketRepository, UserService, NotificationDispatcher } from '@el-bannawy/lib';
 
 const supportRepo = new SupportTicketRepository();
 const userService = new UserService();
+const dispatcher = new NotificationDispatcher();
 
 export async function GET(
   _request: NextRequest,
@@ -91,6 +92,12 @@ export async function POST(
 
     if (ticket.value.status === 'OPEN' || ticket.value.status === 'WAITING') {
       await supportRepo.update(id, { status: 'IN_PROGRESS' } as any);
+    }
+
+    if (isSupport && ticket.value.userId !== decoded.uid) {
+      const supportUser = await userService.getUserById(decoded.uid);
+      const supportName = supportUser.ok && supportUser.value ? (supportUser.value as any).fullName || 'الدعم الفني' : 'الدعم الفني';
+      await dispatcher.supportTicketReplied(ticket.value.userId, id, supportName);
     }
 
     return NextResponse.json({ success: true, data: result.value }, { status: 201 });

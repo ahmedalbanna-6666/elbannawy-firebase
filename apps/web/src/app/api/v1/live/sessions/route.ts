@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { authenticateRequest } from '@/lib/firebase/auth-helper';
 import { getAdminDb } from '@/lib/firebase/admin';
-import { LiveRepository } from '@el-bannawy/lib';
+import { LiveRepository, NotificationDispatcher } from '@el-bannawy/lib';
 
 const liveRepo = new LiveRepository();
+const dispatcher = new NotificationDispatcher();
 
 function mapErrorCode(code: string): number {
   switch (code) {
@@ -72,6 +73,17 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     if (!result.ok) {
       return NextResponse.json({ success: false, error: result.error }, { status: mapErrorCode(result.error.code) });
+    }
+
+    try {
+      if (result.value?.gradeId) {
+        const gradeSnap = await db.collection('users').where('gradeId', '==', result.value.gradeId).where('role', '==', 'student').get();
+        const studentIds = gradeSnap.docs.map((d) => d.id);
+        for (const uid of studentIds) {
+          await dispatcher.liveSessionCreated(uid, result.value.title || 'حصّة مباشرة', result.value.gradeId);
+        }
+      }
+    } catch {
     }
 
     return NextResponse.json({ success: true, data: result.value }, { status: 201 });

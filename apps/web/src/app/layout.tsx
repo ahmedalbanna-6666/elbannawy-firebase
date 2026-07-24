@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, Cairo } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
+import { RootClient } from "@/components/root-client";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -31,7 +32,9 @@ export default function RootLayout({
   return (
     <html lang="ar" dir="rtl" className="dark" suppressHydrationWarning data-scroll-behavior="smooth">
       <body className={`${inter.variable} ${cairo.variable}`}>
-        <Providers>{children}</Providers>
+        <Providers>
+          <RootClient>{children}</RootClient>
+        </Providers>
       </body>
     </html>
   );

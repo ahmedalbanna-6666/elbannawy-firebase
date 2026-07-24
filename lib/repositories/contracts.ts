@@ -2214,6 +2214,81 @@ export interface INotificationRepository {
   upsertPreferences(input: INotificationPreference): Promise<RepositoryResult<INotificationPreference>>;
 }
 
+// ===== Device Token Contracts =====
+
+export interface IDeviceToken {
+  readonly id: string;
+  readonly userId: string;
+  readonly token: string;
+  readonly platform: 'web' | 'android' | 'ios';
+  readonly appVersion?: string;
+  readonly lastSeenAt: string;
+  readonly active: boolean;
+  readonly createdAt: string;
+  readonly updatedAt: string;
+}
+
+export interface IDeviceTokenFilter {
+  readonly userId?: string;
+  readonly active?: boolean;
+}
+
+export interface IDeviceTokenRepository {
+  create(input: IDeviceToken): Promise<RepositoryResult<IDeviceToken>>;
+  getById(id: string): Promise<RepositoryResult<IDeviceToken | null>>;
+  list(filter: IDeviceTokenFilter): Promise<RepositoryResult<IDeviceToken[]>>;
+  deactivate(id: string): Promise<RepositoryResult<void>>;
+  deactivateByUser(userId: string): Promise<RepositoryResult<void>>;
+  deactivateByToken(token: string): Promise<RepositoryResult<void>>;
+}
+
+// ===== Coin Purchase Request Contracts =====
+
+export interface ICoinPurchaseRequest {
+  readonly id: string;
+  readonly studentId: string;
+  readonly packageId: string;
+  readonly packageName: string;
+  readonly coinAmount: number;
+  readonly priceMinorUnits: number;
+  readonly currency: string;
+  readonly paymentMethod: string;
+  readonly status: 'PENDING' | 'APPROVED' | 'REJECTED';
+  readonly reviewedBy?: string;
+  readonly reviewedAt?: string;
+  readonly adminNote?: string;
+  readonly createdAt: string;
+  readonly updatedAt: string;
+}
+
+export interface ICoinPurchaseRequestFilter {
+  readonly studentId?: string;
+  readonly status?: string;
+}
+
+export interface ICoinPurchaseRequestRepository {
+  create(input: ICoinPurchaseRequest): Promise<RepositoryResult<ICoinPurchaseRequest>>;
+  getById(id: string): Promise<RepositoryResult<ICoinPurchaseRequest | null>>;
+  list(filter: ICoinPurchaseRequestFilter): Promise<RepositoryResult<ICoinPurchaseRequest[]>>;
+  update(id: string, input: Partial<ICoinPurchaseRequest>): Promise<RepositoryResult<ICoinPurchaseRequest>>;
+}
+
+// ===== Notification Dispatcher Interface =====
+
+export interface INotificationPayload {
+  readonly userId: string;
+  readonly title: string;
+  readonly message: string;
+  readonly type: string;
+  readonly priority: 'LOW' | 'NORMAL' | 'HIGH' | 'URGENT';
+  readonly link?: string;
+  readonly data?: Record<string, string>;
+}
+
+export interface INotificationDispatcher {
+  send(payload: INotificationPayload): Promise<void>;
+}
+
 // ===== Report Contracts =====
 
 export interface IReport {

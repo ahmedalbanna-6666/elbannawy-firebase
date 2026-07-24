@@ -1,7 +1,6 @@
 "use client";
 
 import { createContext, useContext, useEffect, useRef, type ReactNode, useCallback } from "react";
-import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   signInWithPopup,
@@ -70,7 +69,6 @@ function toEmail(identity: string): string {
 }
 
 export function AuthProvider({ children }: { children: ReactNode }): ReactNode {
-  const router = useRouter();
   const {
     user,
     isAuthenticated,
@@ -238,9 +236,9 @@ export function AuthProvider({ children }: { children: ReactNode }): ReactNode {
       clearStore();
       document.cookie = "auth_token=; path=/; max-age=0";
       queryClient.clear();
-      router.push("/login");
+      window.location.href = "/login";
     }
-  }, [clearStore, queryClient, router]);
+  }, [clearStore, queryClient]);
 
   return (
     <AuthContext.Provider

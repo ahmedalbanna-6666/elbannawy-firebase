@@ -10,12 +10,45 @@ interface ContextResponse {
   termManagementMode: string | null;
 }
 
+interface OptionsResponse {
+  stages: { id: string; name: string; grades: { id: string; name: string }[] }[];
+  terms: { id: string; name: string }[];
+}
+
 @Controller("academic-context")
 export class AcademicContextController {
   constructor(
     private readonly academicContextService: AcademicContextService,
     private readonly prisma: PrismaService,
   ) {}
+
+  @Get("options")
+  @UseGuards(JwtAuthGuard)
+  async getOptions(): Promise<ISuccessResponse<OptionsResponse>> {
+    const stages = await this.prisma.stage.findMany({
+      orderBy: { displayOrder: "asc" },
+      include: {
+        grades: {
+          orderBy: { displayOrder: "asc" },
+          select: { id: true, name: true },
+        },
+      },
+    });
+
+    const terms = await this.prisma.term.findMany({
+      orderBy: { displayOrder: "asc" },
+      select: { id: true, name: true },
+    });
+
+    return successResponse({
+      stages: stages.map((s) => ({
+        id: s.id,
+        name: s.name,
+        grades: s.grades.map((g) => ({ id: g.id, name: g.name })),
+      })),
+      terms,
+    });
+  }
 
   @Get()
   @UseGuards(JwtAuthGuard)

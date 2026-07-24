@@ -9,7 +9,9 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { ErrorState } from "@/components/ui/error-state";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Dialog, DialogContent, DialogFooter } from "@/components/ui/dialog";
+import { Switch } from "@/components/ui/switch";
+import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogHeader, DialogFooter } from "@/components/ui/dialog";
 import {
   Plus,
   Pencil,
@@ -20,8 +22,25 @@ import {
   Layers,
   CheckCircle2,
   Wrench,
-  UserPlus,
+  Sparkles,
+  Coins,
+  Gauge,
+  Save,
+  X,
 } from "lucide-react";
+import {
+  useAiConfig,
+  useUpdateAiConfig,
+  useAiLimits,
+  useUpdateAiLimits,
+  useAiPricingPlans,
+  useCreateAiPricingPlan,
+  useUpdateAiPricingPlan,
+  useDeleteAiPricingPlan,
+  type AiConfig,
+  type AiConsumptionLimits,
+  type AiTokenPricingPlan,
+} from "@/lib/ai/ai-admin-api";
 
 interface SystemSettings {
   termManagementMode: "AUTO" | "MANUAL";
@@ -280,6 +299,15 @@ export default function AdminSettingsPage(): ReactNode {
         </CardContent>
       </Card>
 
+      {/* AI Model Configuration */}
+      <AiConfigSection />
+
+      {/* AI Consumption Limits */}
+      <AiLimitsSection />
+
+      {/* AI Token Pricing */}
+      <AiPricingSection />
+
       {/* Current Active Context */}
       <Card>
         <CardHeader>
@@ -484,6 +512,444 @@ export default function AdminSettingsPage(): ReactNode {
         </DialogFooter>
       </Dialog>
     </div>
+  );
+}
+
+/* ───── AI Model Configuration ───── */
+function AiConfigSection(): ReactNode {
+  const { data: config, isLoading, isError } = useAiConfig();
+  const { mutateAsync: updateConfig, isPending: saving } = useUpdateAiConfig();
+  const [local, setLocal] = useState<Partial<AiConfig> | null>(null);
+
+  const vals = local ?? config;
+
+  if (isLoading) return <Skeleton className="h-64 rounded-xl" />;
+  if (isError) return <ErrorState title="فشل تحميل إعدادات الذكاء الاصطناعي" description="حدث خطأ أثناء تحميل الإعدادات" />;
+  if (!vals) return null;
+
+  const handleSave = async (): Promise<void> => {
+    if (!local) return;
+    try {
+      await updateConfig(local);
+      setLocal(null);
+    } catch { /* handled */ }
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Sparkles className="h-5 w-5 text-primary-500" />
+            <h2 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100">إعدادات نموذج الذكاء الاصطناعي</h2>
+          </div>
+          <div className="flex items-center gap-2">
+            {local && (
+              <>
+                <Button variant="outline" size="sm" onClick={() => { setLocal(null); }}>
+                  <X className="h-4 w-4" />
+                  إلغاء
+                </Button>
+                <Button size="sm" loading={saving} onClick={() => { void handleSave(); }}>
+                  <Save className="h-4 w-4" />
+                  حفظ
+                </Button>
+              </>
+            )}
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">مزود الخدمة</label>
+            <select
+              className="h-12 w-full rounded-xl border-2 border-neutral-300 bg-transparent px-4 text-base text-neutral-900 transition-all focus:border-primary-500 focus:outline-none dark:border-neutral-600 dark:text-neutral-100"
+              value={(vals as AiConfig).provider ?? "openai"}
+              onChange={(e) => { setLocal((p) => ({ ...p, ...config, provider: e.target.value })); }}
+            >
+              <option value="openai">OpenAI</option>
+              <option value="gemini">Google Gemini</option>
+              <option value="deepseek">DeepSeek</option>
+              <option value="claude">Anthropic Claude</option>
+              <option value="custom">مخصص (Custom)</option>
+            </select>
+          </div>
+          <Input
+            label="الموديل (Model)"
+            value={vals.model ?? ""}
+            onChange={(e) => { setLocal((p) => ({ ...p, ...config, model: e.target.value })); }}
+            placeholder="gpt-4o-mini"
+          />
+          <div className="md:col-span-2">
+            <Input
+              label="رابط API Endpoint"
+              value={vals.endpoint ?? ""}
+              onChange={(e) => { setLocal((p) => ({ ...p, ...config, endpoint: e.target.value })); }}
+              placeholder="https://api.openai.com/v1/chat/completions"
+            />
+          </div>
+          <div className="md:col-span-2">
+            <Input
+              label="مفتاح API"
+              type="password"
+              value={vals.apiKey ?? ""}
+              onChange={(e) => { setLocal((p) => ({ ...p, ...config, apiKey: e.target.value })); }}
+              placeholder="sk-..."
+            />
+          </div>
+          <Input
+            label="درجة الحرارة (Temperature)"
+            type="number"
+            step="0.1"
+            min="0"
+            max="2"
+            value={String(vals.temperature ?? 0.7)}
+            onChange={(e) => { setLocal((p) => ({ ...p, ...config, temperature: Number(e.target.value) })); }}
+          />
+          <Input
+            label="الحد الأقصى للتوكنز (Max Tokens)"
+            type="number"
+            min="1"
+            max="32000"
+            value={String(vals.maxTokens ?? 2048)}
+            onChange={(e) => { setLocal((p) => ({ ...p, ...config, maxTokens: Number(e.target.value) })); }}
+          />
+        </div>
+
+        <div className="mt-4 space-y-4">
+          <Switch
+            label="تفعيل نظام RAG (البحث في المصادر)"
+            helperText="عند التفعيل، سيتم البحث في المحتوى التعليمي قبل الرد على الطالب"
+            checked={vals.ragEnabled ?? true}
+            onChange={(e) => { setLocal((p) => ({ ...p, ...config, ragEnabled: e.target.checked })); }}
+          />
+          {vals.ragEnabled && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mr-8">
+              <Input
+                label="عدد النتائج القصوى (RAG Max Results)"
+                type="number"
+                min="1"
+                max="20"
+                value={String(vals.ragMaxResults ?? 5)}
+                onChange={(e) => { setLocal((p) => ({ ...p, ...config, ragMaxResults: Number(e.target.value) })); }}
+              />
+              <Input
+                label="حد التشابه (Similarity Threshold)"
+                type="number"
+                step="0.05"
+                min="0"
+                max="1"
+                value={String(vals.ragSimilarityThreshold ?? 0.7)}
+                onChange={(e) => { setLocal((p) => ({ ...p, ...config, ragSimilarityThreshold: Number(e.target.value) })); }}
+              />
+            </div>
+          )}
+        </div>
+
+        {!local && config && (
+          <div className="mt-4 flex justify-end">
+            <Button variant="outline" size="sm" onClick={() => { setLocal(config); }}>
+              <Pencil className="h-4 w-4" />
+              تعديل الإعدادات
+            </Button>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+/* ───── AI Consumption Limits ───── */
+function AiLimitsSection(): ReactNode {
+  const { data: limits, isLoading, isError } = useAiLimits();
+  const { mutateAsync: updateLimits, isPending: saving } = useUpdateAiLimits();
+  const [local, setLocal] = useState<Partial<AiConsumptionLimits> | null>(null);
+
+  const vals = local ?? limits;
+
+  if (isLoading) return <Skeleton className="h-64 rounded-xl" />;
+  if (isError) return <ErrorState title="فشل تحميل حدود الاستهلاك" description="حدث خطأ أثناء تحميل الحدود" />;
+  if (!vals) return null;
+
+  const handleSave = async (): Promise<void> => {
+    if (!local) return;
+    try {
+      await updateLimits(local);
+      setLocal(null);
+    } catch { /* handled */ }
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Gauge className="h-5 w-5 text-amber-500" />
+            <h2 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100">حدود استهلاك الذكاء الاصطناعي</h2>
+          </div>
+          <div className="flex items-center gap-2">
+            {local && (
+              <>
+                <Button variant="outline" size="sm" onClick={() => { setLocal(null); }}>
+                  <X className="h-4 w-4" />
+                  إلغاء
+                </Button>
+                <Button size="sm" loading={saving} onClick={() => { void handleSave(); }}>
+                  <Save className="h-4 w-4" />
+                  حفظ
+                </Button>
+              </>
+            )}
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">نوع الحد</label>
+            <select
+              className="h-12 w-full rounded-xl border-2 border-neutral-300 bg-transparent px-4 text-base text-neutral-900 transition-all focus:border-primary-500 focus:outline-none dark:border-neutral-600 dark:text-neutral-100"
+              value={vals.limitType ?? "messages"}
+              onChange={(e) => { setLocal((p) => ({ ...p, ...limits, limitType: e.target.value as "messages" | "tokens" })); }}
+            >
+              <option value="messages">عدد الرسائل</option>
+              <option value="tokens">عدد التوكنز</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">دورة إعادة التعيين</label>
+            <select
+              className="h-12 w-full rounded-xl border-2 border-neutral-300 bg-transparent px-4 text-base text-neutral-900 transition-all focus:border-primary-500 focus:outline-none dark:border-neutral-600 dark:text-neutral-100"
+              value={vals.resetPeriod ?? "daily"}
+              onChange={(e) => { setLocal((p) => ({ ...p, ...limits, resetPeriod: e.target.value as "daily" | "monthly" })); }}
+            >
+              <option value="daily">يومي</option>
+              <option value="monthly">شهري</option>
+            </select>
+          </div>
+
+          <div className="md:col-span-2 border-t border-neutral-200 dark:border-neutral-700 pt-4">
+            <h3 className="text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-3">حدود الطالب</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Input
+                label={vals.limitType === "tokens" ? "الحد اليومي للتوكنز" : "الحد اليومي للرسائل"}
+                type="number"
+                min="0"
+                value={String(vals.limitType === "tokens" ? vals.studentTokensPerDay ?? 10000 : vals.studentDailyLimit ?? 50)}
+                onChange={(e) => {
+                  const v = Number(e.target.value);
+                  setLocal((p) => ({ ...p, ...limits, ...(vals.limitType === "tokens" ? { studentTokensPerDay: v } : { studentDailyLimit: v }) }));
+                }}
+              />
+              <Input
+                label={vals.limitType === "tokens" ? "الحد الشهري للتوكنز" : "الحد الشهري للرسائل"}
+                type="number"
+                min="0"
+                value={String(vals.limitType === "tokens" ? vals.studentTokensPerMonth ?? 100000 : vals.studentMonthlyLimit ?? 500)}
+                onChange={(e) => {
+                  const v = Number(e.target.value);
+                  setLocal((p) => ({ ...p, ...limits, ...(vals.limitType === "tokens" ? { studentTokensPerMonth: v } : { studentMonthlyLimit: v }) }));
+                }}
+              />
+            </div>
+          </div>
+
+          <div className="md:col-span-2 border-t border-neutral-200 dark:border-neutral-700 pt-4">
+            <h3 className="text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-3">حدود المعلم</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Input
+                label="الحد اليومي للمعلم"
+                type="number"
+                min="0"
+                value={String(vals.teacherDailyLimit ?? 300)}
+                onChange={(e) => { setLocal((p) => ({ ...p, ...limits, teacherDailyLimit: Number(e.target.value) })); }}
+              />
+              <Input
+                label="الحد الشهري للمعلم"
+                type="number"
+                min="0"
+                value={String(vals.teacherMonthlyLimit ?? 3000)}
+                onChange={(e) => { setLocal((p) => ({ ...p, ...limits, teacherMonthlyLimit: Number(e.target.value) })); }}
+              />
+            </div>
+          </div>
+        </div>
+
+        {!local && limits && (
+          <div className="mt-4 flex justify-end">
+            <Button variant="outline" size="sm" onClick={() => { setLocal(limits); }}>
+              <Pencil className="h-4 w-4" />
+              تعديل الحدود
+            </Button>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+/* ───── AI Token Pricing ───── */
+function AiPricingSection(): ReactNode {
+  const { data: plans, isLoading, isError, refetch } = useAiPricingPlans();
+  const { mutateAsync: createPlan } = useCreateAiPricingPlan();
+  const { mutateAsync: updatePlan } = useUpdateAiPricingPlan();
+  const { mutateAsync: deletePlan } = useDeleteAiPricingPlan();
+
+  const [showForm, setShowForm] = useState(false);
+  const [editPlan, setEditPlan] = useState<AiTokenPricingPlan | null>(null);
+  const [formName, setFormName] = useState("");
+  const [formDesc, setFormDesc] = useState("");
+  const [formMin, setFormMin] = useState("");
+  const [formMax, setFormMax] = useState("");
+  const [formCoins, setFormCoins] = useState("");
+
+  if (isLoading) return <Skeleton className="h-64 rounded-xl" />;
+  if (isError) return <ErrorState title="فشل تحميل خطط الأسعار" description="حدث خطأ أثناء تحميل خطط الأسعار" />;
+
+  const openCreate = (): void => {
+    setEditPlan(null);
+    setFormName("");
+    setFormDesc("");
+    setFormMin("");
+    setFormMax("");
+    setFormCoins("");
+    setShowForm(true);
+  };
+
+  const openEdit = (plan: AiTokenPricingPlan): void => {
+    setEditPlan(plan);
+    setFormName(plan.name);
+    setFormDesc(plan.description ?? "");
+    setFormMin(String(plan.minTokens));
+    setFormMax(plan.maxTokens !== null ? String(plan.maxTokens) : "");
+    setFormCoins(String(plan.coinsPerToken));
+    setShowForm(true);
+  };
+
+  const handleSubmit = async (): Promise<void> => {
+    if (!formName.trim() || !formMin || !formCoins) return;
+    try {
+      if (editPlan) {
+        await updatePlan({
+          id: editPlan.id,
+          data: {
+            name: formName.trim(),
+            description: formDesc.trim() || null,
+            minTokens: Number(formMin),
+            maxTokens: formMax ? Number(formMax) : null,
+            coinsPerToken: Number(formCoins),
+          },
+        });
+      } else {
+        await createPlan({
+          name: formName.trim(),
+          description: formDesc.trim() || undefined,
+          minTokens: Number(formMin),
+          maxTokens: formMax ? Number(formMax) : undefined,
+          coinsPerToken: Number(formCoins),
+        });
+      }
+      setShowForm(false);
+      setEditPlan(null);
+      void refetch();
+    } catch { /* handled */ }
+  };
+
+  const handleDelete = async (id: string): Promise<void> => {
+    if (!confirm("هل أنت متأكد من حذف خطة السعر هذه؟")) return;
+    try {
+      await deletePlan(id);
+      void refetch();
+    } catch { /* handled */ }
+  };
+
+  const handleToggleActive = async (plan: AiTokenPricingPlan): Promise<void> => {
+    try {
+      await updatePlan({ id: plan.id, data: { active: !plan.active } });
+      void refetch();
+    } catch { /* handled */ }
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Coins className="h-5 w-5 text-amber-500" />
+            <h2 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100">أسعار التوكنز بالعملات</h2>
+          </div>
+          <Button size="sm" onClick={openCreate}>
+            <Plus className="h-4 w-4" />
+            إضافة خطة
+          </Button>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <p className="text-sm text-neutral-500 mb-4">
+          حدد أسعار باقات التوكنز بالعملات (Coins). بعد نفاد حد الاستهلاك اليومي، سيتم خصم العملات مقابل التوكنز حسب الخطة.
+        </p>
+
+        {!plans || plans.length === 0 ? (
+          <EmptyState title="لا توجد خطط أسعار" description="أضف خطة تسعير أولى للتوكنز" icon={<Coins className="h-12 w-12" />} />
+        ) : (
+          <div className="flex flex-col gap-3">
+            {plans.map((plan) => (
+              <div key={plan.id} className="flex items-center justify-between rounded-lg border border-neutral-200 dark:border-neutral-700 p-4">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <span className="font-semibold text-neutral-900 dark:text-neutral-100">{plan.name}</span>
+                    <Badge variant={plan.active ? "success" : "secondary"}>
+                      {plan.active ? "نشط" : "معطل"}
+                    </Badge>
+                  </div>
+                  {plan.description && (
+                    <p className="text-sm text-neutral-500 mt-1">{plan.description}</p>
+                  )}
+                  <div className="flex items-center gap-4 mt-2 text-sm text-neutral-600 dark:text-neutral-400">
+                    <span>الحد الأدنى: <strong>{plan.minTokens.toLocaleString()}</strong> توكن</span>
+                    <span>الحد الأقصى: <strong>{plan.maxTokens ? plan.maxTokens.toLocaleString() : "غير محدود"}</strong> توكن</span>
+                    <span className="text-amber-500 font-semibold">{plan.coinsPerToken} عملة / توكن</span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 mr-4">
+                  <Button variant="outline" size="xs" onClick={() => { void handleToggleActive(plan); }}>
+                    {plan.active ? "تعطيل" : "تفعيل"}
+                  </Button>
+                  <Button variant="outline" size="xs" onClick={() => { openEdit(plan); }}>
+                    <Pencil className="h-3 w-3" />
+                  </Button>
+                  <Button variant="danger" size="xs" onClick={() => { void handleDelete(plan.id); }}>
+                    <Trash2 className="h-3 w-3" />
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <Dialog open={showForm} onClose={() => { setShowForm(false); setEditPlan(null); }}>
+          <DialogContent>
+            <DialogHeader>
+              <h2 className="text-lg font-semibold">{editPlan ? "تعديل خطة السعر" : "إضافة خطة سعر جديدة"}</h2>
+            </DialogHeader>
+            <div className="flex flex-col gap-4 py-4">
+              <Input label="اسم الخطة" value={formName} onChange={(e) => { setFormName(e.target.value); }} required />
+              <Input label="الوصف" value={formDesc} onChange={(e) => { setFormDesc(e.target.value); }} />
+              <Input label="الحد الأدنى للتوكنز" type="number" min="0" value={formMin} onChange={(e) => { setFormMin(e.target.value); }} required />
+              <Input label="الحد الأقصى للتوكنز (اختياري)" type="number" min="0" value={formMax} onChange={(e) => { setFormMax(e.target.value); }} />
+              <Input label="عدد العملات لكل توكن" type="number" step="0.01" min="0" value={formCoins} onChange={(e) => { setFormCoins(e.target.value); }} required />
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => { setShowForm(false); setEditPlan(null); }}>إلغاء</Button>
+              <Button onClick={() => { void handleSubmit(); }} disabled={!formName.trim() || !formMin || !formCoins}>
+                {editPlan ? "حفظ التغييرات" : "إضافة"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </CardContent>
+    </Card>
   );
 }
 

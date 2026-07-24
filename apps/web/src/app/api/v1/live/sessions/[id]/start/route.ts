@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { authenticateRequest } from '@/lib/firebase/auth-helper';
 import { getAdminDb } from '@/lib/firebase/admin';
-import { LiveRepository } from '@el-bannawy/lib';
+import { LiveRepository, NotificationDispatcher } from '@el-bannawy/lib';
 
 const liveRepo = new LiveRepository();
+const dispatcher = new NotificationDispatcher();
 
 export async function POST(
   request: NextRequest,
@@ -31,6 +32,15 @@ export async function POST(
 
     if (!result.ok) {
       return NextResponse.json({ success: false, error: result.error }, { status: 500 });
+    }
+
+    try {
+      const bookingsSnap = await db.collection('liveBookings').where('liveSessionId', '==', id).where('status', '==', 'CONFIRMED').get();
+      const bookedUserIds = bookingsSnap.docs.map((d) => (d.data() as any).studentId);
+      if (bookedUserIds.length > 0) {
+        await dispatcher.liveSessionStarted(bookedUserIds, result.value?.title || 'حصّة مباشرة', id);
+      }
+    } catch {
     }
 
     return NextResponse.json({ success: true, data: result.value });

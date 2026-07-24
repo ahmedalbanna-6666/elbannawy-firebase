@@ -145,6 +145,13 @@ service cloud.firestore {
       allow write: if request.auth != null && request.auth.token.isAdmin == true;
     }
 
+    match /deviceTokens/{doc} {
+      allow read: if request.auth != null && request.auth.uid == resource.data.userId;
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
+      allow update: if request.auth != null && request.auth.uid == resource.data.userId;
+      allow delete: if request.auth != null && request.auth.uid == resource.data.userId;
+    }
+
     // ── AI ──────────────────────────────────────────────────────
     match /conversations/{conversationId} {
       allow read, write: if request.auth != null && request.auth.uid == resource.data.userId;
@@ -293,6 +300,13 @@ service cloud.firestore {
     match /contentEntitlements/{doc} {
       allow read: if request.auth != null && request.auth.uid == resource.data.studentId;
       allow write: if false;
+    }
+
+    match /coinPurchaseRequests/{doc} {
+      allow read: if request.auth != null && (request.auth.uid == resource.data.studentId || request.auth.token.isAdmin == true);
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.studentId;
+      allow update: if request.auth != null && request.auth.token.isAdmin == true;
+      allow delete: if false;
     }
 
     // ── Grade Support Contacts ──────────────────────────────────

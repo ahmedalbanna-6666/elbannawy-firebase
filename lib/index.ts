@@ -40,6 +40,8 @@ export * from './question-import';
 export type { RepositoryResult, RepositoryError, IQueryFilter } from './shared/types/repository.types';
 export type { Page, PageQuery, IPaginationMeta, IPaginatedResponse } from './shared/types/pagination.types';
 export * from './services/teacher';
+export { FcmNotificationService } from './services/fcm-notification.service';
+export { NotificationDispatcher } from './services/notification-dispatcher.service';
 
 export type { ICursor, ICursorPagination, ICursorBuilder, IQueryOptions } from './shared/types/cursor.types';
 export type { IFilter, IFilterCondition, IQueryFilterBuilder, FilterOperator } from './shared/types/filter.types';

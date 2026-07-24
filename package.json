@@ -24,13 +24,13 @@
     "dev:web": "pnpm --filter @el-bannawy/web dev"
   },
   "dependencies": {
+    "@nestjs/common": "^11.0.0",
+    "@nestjs/core": "^11.0.0",
+    "@nestjs/platform-express": "^11.0.0",
+    "express": "^4.21.0",
     "next": "^15.0.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "@nestjs/core": "^11.0.0",
-    "@nestjs/common": "^11.0.0",
-    "@nestjs/platform-express": "^11.0.0",
-    "express": "^4.21.0",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.0"
   },
@@ -44,7 +44,9 @@
     "@vitest/coverage-v8": "^4.1.10",
     "eslint": "^9.0.0",
     "eslint-config-prettier": "^10.0.0",
+    "jimp": "^1.6.1",
     "jsdom": "^29.1.1",
+    "potrace": "^2.1.8",
     "prettier": "^3.5.0",
     "rimraf": "^6.0.0",
     "turbo": "^2.5.0",
