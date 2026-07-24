@@ -282,54 +282,6 @@ export interface ICurrentAcademicContext {
   readonly academicTerm: IAcademicTerm | null;
 }
 
-export interface CreateEducationalSystemInput {
-  readonly id: string;
-  readonly name: string;
-  readonly nameAr: string;
-  readonly description?: string;
-  readonly isActive?: boolean;
-}
-
-export interface UpdateEducationalSystemInput {
-  readonly name?: string;
-  readonly nameAr?: string;
-  readonly description?: string;
-  readonly isActive?: boolean;
-}
-
-export interface CreateStageInput {
-  readonly id: string;
-  readonly educationalSystemId: string;
-  readonly name: string;
-  readonly nameAr: string;
-  readonly order: number;
-  readonly isActive?: boolean;
-}
-
-export interface UpdateStageInput {
-  readonly name?: string;
-  readonly nameAr?: string;
-  readonly order?: number;
-  readonly isActive?: boolean;
-}
-
-export interface CreateGradeInput {
-  readonly id: string;
-  readonly educationalSystemId: string;
-  readonly stageId: string;
-  readonly name: string;
-  readonly nameAr: string;
-  readonly order: number;
-  readonly isActive?: boolean;
-}
-
-export interface UpdateGradeInput {
-  readonly name?: string;
-  readonly nameAr?: string;
-  readonly order?: number;
-  readonly isActive?: boolean;
-}
-
 export interface CreateAcademicYearInput {
   readonly id: string;
   readonly educationalSystemId: string;
@@ -383,33 +335,16 @@ export interface CurriculumFilter {
 }
 
 export type CurriculumCollection =
-  | "educationalSystems"
-  | "stages"
-  | "grades"
   | "academicYears"
   | "academicTerms";
 
 export interface ICurriculumRepository {
-  createEducationalSystem(
-    input: CreateEducationalSystemInput,
-  ): Promise<RepositoryResult<IEducationalSystem>>;
-  updateEducationalSystem(
-    id: string,
-    input: UpdateEducationalSystemInput,
-    expectedVersion: number,
-  ): Promise<RepositoryResult<IEducationalSystem>>;
   getEducationalSystemById(id: string): Promise<RepositoryResult<IEducationalSystem>>;
   listEducationalSystems(
     filter: CurriculumFilter,
     page: PageQuery,
   ): Promise<RepositoryResult<Page<IEducationalSystemSummary>>>;
 
-  createStage(input: CreateStageInput): Promise<RepositoryResult<IStage>>;
-  updateStage(
-    id: string,
-    input: UpdateStageInput,
-    expectedVersion: number,
-  ): Promise<RepositoryResult<IStage>>;
   getStageById(id: string): Promise<RepositoryResult<IStage>>;
   listStages(
     filter: CurriculumFilter,
@@ -417,12 +352,6 @@ export interface ICurriculumRepository {
   ): Promise<RepositoryResult<Page<IStageSummary>>>;
   getStagesBySystem(systemId: string): Promise<RepositoryResult<IStage[]>>;
 
-  createGrade(input: CreateGradeInput): Promise<RepositoryResult<IGrade>>;
-  updateGrade(
-    id: string,
-    input: UpdateGradeInput,
-    expectedVersion: number,
-  ): Promise<RepositoryResult<IGrade>>;
   getGradeById(id: string): Promise<RepositoryResult<IGrade>>;
   listGrades(
     filter: CurriculumFilter,

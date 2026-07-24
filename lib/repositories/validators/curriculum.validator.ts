@@ -1,53 +1,5 @@
 import { z } from 'zod';
 
-export const CreateEducationalSystemInputSchema = z.object({
-  id: z.string().min(1, 'Educational system ID is required'),
-  name: z.string().min(1, 'Name is required').max(200),
-  nameAr: z.string().min(1, 'Arabic name is required').max(200),
-  description: z.string().max(2000).optional(),
-  isActive: z.boolean().optional().default(true),
-});
-
-export const UpdateEducationalSystemInputSchema = z.object({
-  name: z.string().min(1).max(200).optional(),
-  nameAr: z.string().min(1).max(200).optional(),
-  description: z.string().max(2000).optional(),
-  isActive: z.boolean().optional(),
-});
-
-export const CreateStageInputSchema = z.object({
-  id: z.string().min(1, 'Stage ID is required'),
-  educationalSystemId: z.string().min(1, 'Educational system ID is required'),
-  name: z.string().min(1, 'Name is required').max(200),
-  nameAr: z.string().min(1, 'Arabic name is required').max(200),
-  order: z.number().int().min(0),
-  isActive: z.boolean().optional().default(true),
-});
-
-export const UpdateStageInputSchema = z.object({
-  name: z.string().min(1).max(200).optional(),
-  nameAr: z.string().min(1).max(200).optional(),
-  order: z.number().int().min(0).optional(),
-  isActive: z.boolean().optional(),
-});
-
-export const CreateGradeInputSchema = z.object({
-  id: z.string().min(1, 'Grade ID is required'),
-  educationalSystemId: z.string().min(1, 'Educational system ID is required'),
-  stageId: z.string().min(1, 'Stage ID is required'),
-  name: z.string().min(1, 'Name is required').max(200),
-  nameAr: z.string().min(1, 'Arabic name is required').max(200),
-  order: z.number().int().min(0),
-  isActive: z.boolean().optional().default(true),
-});
-
-export const UpdateGradeInputSchema = z.object({
-  name: z.string().min(1).max(200).optional(),
-  nameAr: z.string().min(1).max(200).optional(),
-  order: z.number().int().min(0).optional(),
-  isActive: z.boolean().optional(),
-});
-
 export const CreateAcademicYearInputSchema = z.object({
   id: z.string().min(1, 'Academic year ID is required'),
   educationalSystemId: z.string().min(1, 'Educational system ID is required'),

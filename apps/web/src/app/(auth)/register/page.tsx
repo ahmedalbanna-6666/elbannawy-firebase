@@ -382,17 +382,17 @@ export default function RegisterPage(): ReactNode {
           <div className="flex flex-col gap-3">
             {(GRADES[educationalStage] ?? []).map((g) => (
               <button
-                key={g}
+                key={g.id}
                 type="button"
-                onClick={(): void => { setGrade(g); }}
+                onClick={(): void => { setGrade(g.id); }}
                 className={`flex items-center gap-3 rounded-xl border-2 p-4 transition-all ${
-                  grade === g
+                  grade === g.id
                     ? "border-primary-500 bg-primary-500/10 text-primary-600 dark:text-primary-400"
                     : "border-neutral-200 text-neutral-700 hover:border-primary-500/50 dark:border-neutral-700 dark:text-neutral-300"
                 }`}
               >
                 <BookOpen className="h-5 w-5 shrink-0" />
-                <span className="text-sm font-bold">{g}</span>
+                <span className="text-sm font-bold">{g.label}</span>
               </button>
             ))}
             {educationalStage === "" && (

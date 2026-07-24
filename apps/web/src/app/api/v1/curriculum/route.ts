@@ -214,27 +214,6 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
   try {
     switch (collection) {
-      case 'educational-systems': {
-        const result = await applicationService.createEducationalSystem(body);
-        if (!result.ok) {
-          return NextResponse.json({ success: false, error: result.error, timestamp: new Date().toISOString() }, { status: mapErrorCode(result.error.code) });
-        }
-        return NextResponse.json({ success: true, data: result.value, timestamp: new Date().toISOString() }, { status: 201 });
-      }
-      case 'stages': {
-        const result = await applicationService.createStage(body);
-        if (!result.ok) {
-          return NextResponse.json({ success: false, error: result.error, timestamp: new Date().toISOString() }, { status: mapErrorCode(result.error.code) });
-        }
-        return NextResponse.json({ success: true, data: result.value, timestamp: new Date().toISOString() }, { status: 201 });
-      }
-      case 'grades': {
-        const result = await applicationService.createGrade(body);
-        if (!result.ok) {
-          return NextResponse.json({ success: false, error: result.error, timestamp: new Date().toISOString() }, { status: mapErrorCode(result.error.code) });
-        }
-        return NextResponse.json({ success: true, data: result.value, timestamp: new Date().toISOString() }, { status: 201 });
-      }
       case 'academic-years': {
         const result = await applicationService.createAcademicYear(body);
         if (!result.ok) {

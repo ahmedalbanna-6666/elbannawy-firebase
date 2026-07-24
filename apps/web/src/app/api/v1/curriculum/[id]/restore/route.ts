@@ -5,9 +5,6 @@ const curriculumService = new CurriculumService();
 const applicationService = new CurriculumApplicationService(curriculumService);
 
 const COLLECTION_MAP: Record<string, string> = {
-  'educational-systems': 'educationalSystems',
-  'stages': 'stages',
-  'grades': 'grades',
   'academic-years': 'academicYears',
   'academic-terms': 'academicTerms',
 };
@@ -17,11 +14,11 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> },
 ): Promise<NextResponse> {
   const { searchParams } = new URL(_request.url);
-  const collectionParam = searchParams.get('collection') ?? 'educational-systems';
+  const collectionParam = searchParams.get('collection') ?? '';
   const collection = COLLECTION_MAP[collectionParam];
   if (!collection) {
     return NextResponse.json(
-      { success: false, error: { code: 'INVALID_INPUT', message: `Invalid collection: ${collectionParam}` }, timestamp: new Date().toISOString() },
+      { success: false, error: { code: 'INVALID_INPUT', message: `Collection does not support restore: ${collectionParam}` }, timestamp: new Date().toISOString() },
       { status: 400 },
     );
   }
@@ -30,7 +27,7 @@ export async function POST(
   const requestId = `restore-${id}-${String(Date.now())}`;
 
   try {
-    const result = await applicationService.restoreCurriculum(id, collection as 'educationalSystems' | 'stages' | 'grades' | 'academicYears' | 'academicTerms', requestId);
+    const result = await applicationService.restoreCurriculum(id, collection as 'academicYears' | 'academicTerms', requestId);
     if (!result.ok) {
       return NextResponse.json(
         { success: false, error: result.error, timestamp: new Date().toISOString() },

@@ -1,15 +1,8 @@
 import { Timestamp } from 'firebase-admin/firestore';
-import { getFirestoreInstance } from '../firestore/firestore.service';
+import { getFirestoreInstance, toRepositoryError } from '../firestore/firestore.service';
 import { RepositoryResult } from '../../shared/types/repository.types';
 import { Page, PageQuery } from '../../shared/types/pagination.types';
-import { CurriculumFirestoreMapper } from './curriculum-firestore-mapper';
-import {
-  EducationalSystemFirestoreDoc,
-  StageFirestoreDoc,
-  GradeFirestoreDoc,
-  AcademicYearFirestoreDoc,
-  AcademicTermFirestoreDoc,
-} from './curriculum-firestore-mapper';
+import { CurriculumFirestoreMapper, AcademicYearFirestoreDoc, AcademicTermFirestoreDoc } from './curriculum-firestore-mapper';
 import type {
   ICurriculumRepository,
   IEducationalSystem,
@@ -23,12 +16,6 @@ import type {
   IAcademicYearSummary,
   IAcademicTermSummary,
   ICurrentAcademicContext,
-  CreateEducationalSystemInput,
-  UpdateEducationalSystemInput,
-  CreateStageInput,
-  UpdateStageInput,
-  CreateGradeInput,
-  UpdateGradeInput,
   CreateAcademicYearInput,
   UpdateAcademicYearInput,
   CreateAcademicTermInput,
@@ -36,19 +23,18 @@ import type {
   CurriculumFilter,
   CurriculumCollection,
 } from '../contracts';
+import { EDUCATIONAL_SYSTEMS } from '../../domain/curriculum/constants/educational-systems';
+import { STAGES } from '../../domain/curriculum/constants/stages';
+import { GRADES } from '../../domain/curriculum/constants/grades';
 import { QueryBuilder } from '../query-builder';
 import { TransactionManager } from '../transactions/transaction-manager';
-import { toRepositoryError } from '../firestore/firestore.service';
 
-const COLLECTION_EDUCATIONAL_SYSTEMS = 'educationalSystems';
-const COLLECTION_STAGES = 'stages';
-const COLLECTION_GRADES = 'grades';
 const COLLECTION_ACADEMIC_YEARS = 'academicYears';
 const COLLECTION_ACADEMIC_TERMS = 'academicTerms';
 
-function formatDoc<T>(snap: FirebaseFirestore.DocumentSnapshot): T | null {
+function formatDoc(snap: FirebaseFirestore.DocumentSnapshot): Record<string, unknown> | null {
   if (!snap.exists) return null;
-  return { ...snap.data(), id: snap.id } as unknown as T;
+  return { ...snap.data(), id: snap.id } as Record<string, unknown>;
 }
 
 export class CurriculumRepository implements ICurriculumRepository {
@@ -59,324 +45,115 @@ export class CurriculumRepository implements ICurriculumRepository {
     return getFirestoreInstance();
   }
 
-  // ========== Educational System ==========
-
-  async createEducationalSystem(input: CreateEducationalSystemInput): Promise<RepositoryResult<IEducationalSystem>> {
-    try {
-      const db = this.getDb();
-      const docRef = db.collection(COLLECTION_EDUCATIONAL_SYSTEMS).doc(input.id);
-      const existing = await docRef.get();
-      if (existing.exists) {
-        return { ok: false, error: { code: 'ALREADY_EXISTS', message: `Educational system already exists: ${input.id}`, retryable: false, requestId: '' } };
-      }
-      const now = Timestamp.now();
-      await docRef.set({
-        name: input.name,
-        nameAr: input.nameAr,
-        description: input.description ?? null,
-        isActive: input.isActive ?? true,
-        createdAt: now,
-        updatedAt: now,
-        schemaVersion: CurriculumFirestoreMapper.SCHEMA_VERSION,
-        deletedAt: null,
-      });
-      const saved = await docRef.get();
-      const doc = formatDoc<EducationalSystemFirestoreDoc>(saved);
-      if (!doc) return { ok: false, error: { code: 'INTERNAL', message: 'Failed to read back created document', retryable: false, requestId: '' } };
-      return { ok: true, value: this.mapper.educationalSystemToDomain(doc) };
-    } catch (error) {
-      const err = toRepositoryError(error);
-      return { ok: false, error: { ...err } };
-    }
-  }
-
-  async updateEducationalSystem(id: string, input: UpdateEducationalSystemInput, _expectedVersion: number): Promise<RepositoryResult<IEducationalSystem>> {
-    try {
-      const db = this.getDb();
-      const docRef = db.collection(COLLECTION_EDUCATIONAL_SYSTEMS).doc(id);
-      const existing = await docRef.get();
-      if (!existing.exists) {
-        return { ok: false, error: { code: 'NOT_FOUND', message: `Educational system not found: ${id}`, retryable: false, requestId: '' } };
-      }
-      const updateData: Record<string, unknown> = { updatedAt: Timestamp.now() };
-      if (input.name !== undefined) updateData.name = input.name;
-      if (input.nameAr !== undefined) updateData.nameAr = input.nameAr;
-      if (input.description !== undefined) updateData.description = input.description ?? null;
-      if (input.isActive !== undefined) updateData.isActive = input.isActive;
-      await docRef.update(updateData);
-      const saved = await docRef.get();
-      const doc = formatDoc<EducationalSystemFirestoreDoc>(saved);
-      if (!doc) return { ok: false, error: { code: 'NOT_FOUND', message: `Educational system not found after update: ${id}`, retryable: false, requestId: '' } };
-      return { ok: true, value: this.mapper.educationalSystemToDomain(doc) };
-    } catch (error) {
-      const err = toRepositoryError(error);
-      return { ok: false, error: { ...err } };
-    }
-  }
+  // ========== Educational System (Static) ==========
 
   async getEducationalSystemById(id: string): Promise<RepositoryResult<IEducationalSystem>> {
-    try {
-      const db = this.getDb();
-      const docRef = db.collection(COLLECTION_EDUCATIONAL_SYSTEMS).doc(id);
-      const snap = await docRef.get();
-      if (!snap.exists) {
-        return { ok: false, error: { code: 'NOT_FOUND', message: `Educational system not found: ${id}`, retryable: false, requestId: '' } };
-      }
-      const doc = formatDoc<EducationalSystemFirestoreDoc>(snap);
-      if (!doc) return { ok: false, error: { code: 'NOT_FOUND', message: `Educational system not found: ${id}`, retryable: false, requestId: '' } };
-      if (doc.deletedAt) return { ok: false, error: { code: 'NOT_FOUND', message: `Educational system not found: ${id}`, retryable: false, requestId: '' } };
-      return { ok: true, value: this.mapper.educationalSystemToDomain(doc) };
-    } catch (error) {
-      const err = toRepositoryError(error);
-      return { ok: false, error: { ...err } };
+    const system = EDUCATIONAL_SYSTEMS.find((s) => s.id === id);
+    if (!system) {
+      return { ok: false, error: { code: 'NOT_FOUND', message: `Educational system not found: ${id}`, retryable: false, requestId: '' } };
     }
+    return { ok: true, value: system };
   }
 
-  async listEducationalSystems(filter: CurriculumFilter, page: PageQuery): Promise<RepositoryResult<Page<IEducationalSystemSummary>>> {
-    try {
-      const query = new QueryBuilder<EducationalSystemFirestoreDoc>(this.transactionManager);
-      query.withFilter('deletedAt', 'eq', null);
-      if (filter.isActive !== undefined) query.withFilter('isActive', 'eq', filter.isActive);
-      query.withOrderBy('name', 'asc');
-      query.withLimit(page.limit);
-      if (page.cursor) {
-        try { query.withCursor(JSON.parse(page.cursor)); } catch { return { ok: false, error: { code: 'INVALID_INPUT', message: 'Invalid cursor', retryable: false, requestId: '' } }; }
-      }
-      const result = await query.execute(COLLECTION_EDUCATIONAL_SYSTEMS);
-      if (!result.ok) return result as unknown as RepositoryResult<Page<IEducationalSystemSummary>>;
-      const items = result.value.items.map((d) => this.mapper.educationalSystemToSummary(d as unknown as EducationalSystemFirestoreDoc));
-      return { ok: true, value: { items, nextCursor: result.value.nextCursor } };
-    } catch (error) {
-      const err = toRepositoryError(error);
-      return { ok: false, error: { ...err } } as unknown as RepositoryResult<Page<IEducationalSystemSummary>>;
-    }
+  async listEducationalSystems(_filter: CurriculumFilter, page: PageQuery): Promise<RepositoryResult<Page<IEducationalSystemSummary>>> {
+    const items = EDUCATIONAL_SYSTEMS
+      .filter((s) => s.isActive)
+      .slice(0, page.limit)
+      .map((s): IEducationalSystemSummary => ({
+        id: s.id,
+        name: s.name,
+        nameAr: s.nameAr,
+        isActive: s.isActive,
+        createdAt: s.createdAt,
+      }));
+    return { ok: true, value: { items, nextCursor: null } };
   }
 
-  // ========== Stage ==========
-
-  async createStage(input: CreateStageInput): Promise<RepositoryResult<IStage>> {
-    try {
-      const db = this.getDb();
-      const docRef = db.collection(COLLECTION_STAGES).doc(input.id);
-      const existing = await docRef.get();
-      if (existing.exists) {
-        return { ok: false, error: { code: 'ALREADY_EXISTS', message: `Stage already exists: ${input.id}`, retryable: false, requestId: '' } };
-      }
-      const now = Timestamp.now();
-      await docRef.set({
-        educationalSystemId: input.educationalSystemId,
-        name: input.name,
-        nameAr: input.nameAr,
-        order: input.order,
-        isActive: input.isActive ?? true,
-        createdAt: now,
-        updatedAt: now,
-        schemaVersion: CurriculumFirestoreMapper.SCHEMA_VERSION,
-        deletedAt: null,
-      });
-      const saved = await docRef.get();
-      const doc = formatDoc<StageFirestoreDoc>(saved);
-      if (!doc) return { ok: false, error: { code: 'INTERNAL', message: 'Failed to read back created document', retryable: false, requestId: '' } };
-      return { ok: true, value: this.mapper.stageToDomain(doc) };
-    } catch (error) {
-      const err = toRepositoryError(error);
-      return { ok: false, error: { ...err } };
-    }
-  }
-
-  async updateStage(id: string, input: UpdateStageInput, _expectedVersion: number): Promise<RepositoryResult<IStage>> {
-    try {
-      const db = this.getDb();
-      const docRef = db.collection(COLLECTION_STAGES).doc(id);
-      const existing = await docRef.get();
-      if (!existing.exists) {
-        return { ok: false, error: { code: 'NOT_FOUND', message: `Stage not found: ${id}`, retryable: false, requestId: '' } };
-      }
-      const updateData: Record<string, unknown> = { updatedAt: Timestamp.now() };
-      if (input.name !== undefined) updateData.name = input.name;
-      if (input.nameAr !== undefined) updateData.nameAr = input.nameAr;
-      if (input.order !== undefined) updateData.order = input.order;
-      if (input.isActive !== undefined) updateData.isActive = input.isActive;
-      await docRef.update(updateData);
-      const saved = await docRef.get();
-      const doc = formatDoc<StageFirestoreDoc>(saved);
-      if (!doc) return { ok: false, error: { code: 'NOT_FOUND', message: `Stage not found after update: ${id}`, retryable: false, requestId: '' } };
-      return { ok: true, value: this.mapper.stageToDomain(doc) };
-    } catch (error) {
-      const err = toRepositoryError(error);
-      return { ok: false, error: { ...err } };
-    }
-  }
+  // ========== Stage (Static) ==========
 
   async getStageById(id: string): Promise<RepositoryResult<IStage>> {
-    try {
-      const db = this.getDb();
-      const docRef = db.collection(COLLECTION_STAGES).doc(id);
-      const snap = await docRef.get();
-      if (!snap.exists) {
-        return { ok: false, error: { code: 'NOT_FOUND', message: `Stage not found: ${id}`, retryable: false, requestId: '' } };
-      }
-      const doc = formatDoc<StageFirestoreDoc>(snap);
-      if (!doc) return { ok: false, error: { code: 'NOT_FOUND', message: `Stage not found: ${id}`, retryable: false, requestId: '' } };
-      if (doc.deletedAt) return { ok: false, error: { code: 'NOT_FOUND', message: `Stage not found: ${id}`, retryable: false, requestId: '' } };
-      return { ok: true, value: this.mapper.stageToDomain(doc) };
-    } catch (error) {
-      const err = toRepositoryError(error);
-      return { ok: false, error: { ...err } };
+    const stage = STAGES.find((s) => s.id === id);
+    if (!stage) {
+      return { ok: false, error: { code: 'NOT_FOUND', message: `Stage not found: ${id}`, retryable: false, requestId: '' } };
     }
+    return { ok: true, value: stage };
   }
 
   async listStages(filter: CurriculumFilter, page: PageQuery): Promise<RepositoryResult<Page<IStageSummary>>> {
-    try {
-      const query = new QueryBuilder<StageFirestoreDoc>(this.transactionManager);
-      query.withFilter('deletedAt', 'eq', null);
-      if (filter.educationalSystemId) query.withFilter('educationalSystemId', 'eq', filter.educationalSystemId);
-      if (filter.isActive !== undefined) query.withFilter('isActive', 'eq', filter.isActive);
-      query.withOrderBy('order', 'asc');
-      query.withLimit(page.limit);
-      if (page.cursor) {
-        try { query.withCursor(JSON.parse(page.cursor)); } catch { return { ok: false, error: { code: 'INVALID_INPUT', message: 'Invalid cursor', retryable: false, requestId: '' } }; }
-      }
-      const result = await query.execute(COLLECTION_STAGES);
-      if (!result.ok) return result as unknown as RepositoryResult<Page<IStageSummary>>;
-      const items = result.value.items.map((d) => this.mapper.stageToSummary(d as unknown as StageFirestoreDoc));
-      return { ok: true, value: { items, nextCursor: result.value.nextCursor } };
-    } catch (error) {
-      const err = toRepositoryError(error);
-      return { ok: false, error: { ...err } } as unknown as RepositoryResult<Page<IStageSummary>>;
+    let filtered = [...STAGES];
+    if (filter.educationalSystemId) {
+      filtered = filtered.filter((s) => s.educationalSystemId === filter.educationalSystemId);
     }
+    if (filter.isActive !== undefined) {
+      filtered = filtered.filter((s) => s.isActive === filter.isActive);
+    }
+    const items = filtered
+      .sort((a, b) => a.order - b.order)
+      .slice(0, page.limit)
+      .map((s): IStageSummary => ({
+        id: s.id,
+        educationalSystemId: s.educationalSystemId,
+        name: s.name,
+        nameAr: s.nameAr,
+        order: s.order,
+        isActive: s.isActive,
+        createdAt: s.createdAt,
+      }));
+    return { ok: true, value: { items, nextCursor: null } };
   }
 
   async getStagesBySystem(systemId: string): Promise<RepositoryResult<IStage[]>> {
-    try {
-      const query = new QueryBuilder<StageFirestoreDoc>(this.transactionManager);
-      query.withFilter('educationalSystemId', 'eq', systemId);
-      query.withFilter('deletedAt', 'eq', null);
-      query.withOrderBy('order', 'asc');
-      const result = await query.execute(COLLECTION_STAGES);
-      if (!result.ok) return result as unknown as RepositoryResult<IStage[]>;
-      const items = result.value.items.map((d) => this.mapper.stageToDomain(d as unknown as StageFirestoreDoc));
-      return { ok: true, value: items };
-    } catch (error) {
-      const err = toRepositoryError(error);
-      return { ok: false, error: { ...err } } as unknown as RepositoryResult<IStage[]>;
-    }
+    const items = STAGES
+      .filter((s) => s.educationalSystemId === systemId && s.isActive)
+      .sort((a, b) => a.order - b.order);
+    return { ok: true, value: items };
   }
 
-  // ========== Grade ==========
-
-  async createGrade(input: CreateGradeInput): Promise<RepositoryResult<IGrade>> {
-    try {
-      const db = this.getDb();
-      const docRef = db.collection(COLLECTION_GRADES).doc(input.id);
-      const existing = await docRef.get();
-      if (existing.exists) {
-        return { ok: false, error: { code: 'ALREADY_EXISTS', message: `Grade already exists: ${input.id}`, retryable: false, requestId: '' } };
-      }
-      const now = Timestamp.now();
-      await docRef.set({
-        educationalSystemId: input.educationalSystemId,
-        stageId: input.stageId,
-        name: input.name,
-        nameAr: input.nameAr,
-        order: input.order,
-        isActive: input.isActive ?? true,
-        createdAt: now,
-        updatedAt: now,
-        schemaVersion: CurriculumFirestoreMapper.SCHEMA_VERSION,
-        deletedAt: null,
-      });
-      const saved = await docRef.get();
-      const doc = formatDoc<GradeFirestoreDoc>(saved);
-      if (!doc) return { ok: false, error: { code: 'INTERNAL', message: 'Failed to read back created document', retryable: false, requestId: '' } };
-      return { ok: true, value: this.mapper.gradeToDomain(doc) };
-    } catch (error) {
-      const err = toRepositoryError(error);
-      return { ok: false, error: { ...err } };
-    }
-  }
-
-  async updateGrade(id: string, input: UpdateGradeInput, _expectedVersion: number): Promise<RepositoryResult<IGrade>> {
-    try {
-      const db = this.getDb();
-      const docRef = db.collection(COLLECTION_GRADES).doc(id);
-      const existing = await docRef.get();
-      if (!existing.exists) {
-        return { ok: false, error: { code: 'NOT_FOUND', message: `Grade not found: ${id}`, retryable: false, requestId: '' } };
-      }
-      const updateData: Record<string, unknown> = { updatedAt: Timestamp.now() };
-      if (input.name !== undefined) updateData.name = input.name;
-      if (input.nameAr !== undefined) updateData.nameAr = input.nameAr;
-      if (input.order !== undefined) updateData.order = input.order;
-      if (input.isActive !== undefined) updateData.isActive = input.isActive;
-      await docRef.update(updateData);
-      const saved = await docRef.get();
-      const doc = formatDoc<GradeFirestoreDoc>(saved);
-      if (!doc) return { ok: false, error: { code: 'NOT_FOUND', message: `Grade not found after update: ${id}`, retryable: false, requestId: '' } };
-      return { ok: true, value: this.mapper.gradeToDomain(doc) };
-    } catch (error) {
-      const err = toRepositoryError(error);
-      return { ok: false, error: { ...err } };
-    }
-  }
+  // ========== Grade (Static) ==========
 
   async getGradeById(id: string): Promise<RepositoryResult<IGrade>> {
-    try {
-      const db = this.getDb();
-      const docRef = db.collection(COLLECTION_GRADES).doc(id);
-      const snap = await docRef.get();
-      if (!snap.exists) {
-        return { ok: false, error: { code: 'NOT_FOUND', message: `Grade not found: ${id}`, retryable: false, requestId: '' } };
-      }
-      const doc = formatDoc<GradeFirestoreDoc>(snap);
-      if (!doc) return { ok: false, error: { code: 'NOT_FOUND', message: `Grade not found: ${id}`, retryable: false, requestId: '' } };
-      if (doc.deletedAt) return { ok: false, error: { code: 'NOT_FOUND', message: `Grade not found: ${id}`, retryable: false, requestId: '' } };
-      return { ok: true, value: this.mapper.gradeToDomain(doc) };
-    } catch (error) {
-      const err = toRepositoryError(error);
-      return { ok: false, error: { ...err } };
+    const grade = GRADES.find((g) => g.id === id);
+    if (!grade) {
+      return { ok: false, error: { code: 'NOT_FOUND', message: `Grade not found: ${id}`, retryable: false, requestId: '' } };
     }
+    return { ok: true, value: grade };
   }
 
   async listGrades(filter: CurriculumFilter, page: PageQuery): Promise<RepositoryResult<Page<IGradeSummary>>> {
-    try {
-      const query = new QueryBuilder<GradeFirestoreDoc>(this.transactionManager);
-      query.withFilter('deletedAt', 'eq', null);
-      if (filter.stageId) query.withFilter('stageId', 'eq', filter.stageId);
-      if (filter.educationalSystemId) query.withFilter('educationalSystemId', 'eq', filter.educationalSystemId);
-      if (filter.isActive !== undefined) query.withFilter('isActive', 'eq', filter.isActive);
-      query.withOrderBy('order', 'asc');
-      query.withLimit(page.limit);
-      if (page.cursor) {
-        try { query.withCursor(JSON.parse(page.cursor)); } catch { return { ok: false, error: { code: 'INVALID_INPUT', message: 'Invalid cursor', retryable: false, requestId: '' } }; }
-      }
-      const result = await query.execute(COLLECTION_GRADES);
-      if (!result.ok) return result as unknown as RepositoryResult<Page<IGradeSummary>>;
-      const items = result.value.items.map((d) => this.mapper.gradeToSummary(d as unknown as GradeFirestoreDoc));
-      return { ok: true, value: { items, nextCursor: result.value.nextCursor } };
-    } catch (error) {
-      const err = toRepositoryError(error);
-      return { ok: false, error: { ...err } } as unknown as RepositoryResult<Page<IGradeSummary>>;
+    let filtered = [...GRADES];
+    if (filter.stageId) {
+      filtered = filtered.filter((g) => g.stageId === filter.stageId);
     }
+    if (filter.educationalSystemId) {
+      filtered = filtered.filter((g) => g.educationalSystemId === filter.educationalSystemId);
+    }
+    if (filter.isActive !== undefined) {
+      filtered = filtered.filter((g) => g.isActive === filter.isActive);
+    }
+    const items = filtered
+      .sort((a, b) => a.order - b.order)
+      .slice(0, page.limit)
+      .map((g): IGradeSummary => ({
+        id: g.id,
+        educationalSystemId: g.educationalSystemId,
+        stageId: g.stageId,
+        name: g.name,
+        nameAr: g.nameAr,
+        order: g.order,
+        isActive: g.isActive,
+        createdAt: g.createdAt,
+      }));
+    return { ok: true, value: { items, nextCursor: null } };
   }
 
   async getGradesByStage(stageId: string): Promise<RepositoryResult<IGrade[]>> {
-    try {
-      const query = new QueryBuilder<GradeFirestoreDoc>(this.transactionManager);
-      query.withFilter('stageId', 'eq', stageId);
-      query.withFilter('deletedAt', 'eq', null);
-      query.withOrderBy('order', 'asc');
-      const result = await query.execute(COLLECTION_GRADES);
-      if (!result.ok) return result as unknown as RepositoryResult<IGrade[]>;
-      const items = result.value.items.map((d) => this.mapper.gradeToDomain(d as unknown as GradeFirestoreDoc));
-      return { ok: true, value: items };
-    } catch (error) {
-      const err = toRepositoryError(error);
-      return { ok: false, error: { ...err } } as unknown as RepositoryResult<IGrade[]>;
-    }
+    const items = GRADES
+      .filter((g) => g.stageId === stageId && g.isActive)
+      .sort((a, b) => a.order - b.order);
+    return { ok: true, value: items };
   }
 
-  // ========== Academic Year ==========
+  // ========== Academic Year (Dynamic) ==========
 
   async createAcademicYear(input: CreateAcademicYearInput): Promise<RepositoryResult<IAcademicYear>> {
     try {
@@ -401,9 +178,9 @@ export class CurriculumRepository implements ICurriculumRepository {
         deletedAt: null,
       });
       const saved = await docRef.get();
-      const doc = formatDoc<AcademicYearFirestoreDoc>(saved);
+      const doc = formatDoc(saved);
       if (!doc) return { ok: false, error: { code: 'INTERNAL', message: 'Failed to read back created document', retryable: false, requestId: '' } };
-      return { ok: true, value: this.mapper.academicYearToDomain(doc) };
+      return { ok: true, value: this.mapper.academicYearToDomain(doc as unknown as AcademicYearFirestoreDoc) };
     } catch (error) {
       const err = toRepositoryError(error);
       return { ok: false, error: { ...err } };
@@ -427,9 +204,9 @@ export class CurriculumRepository implements ICurriculumRepository {
       if (input.isActive !== undefined) updateData.isActive = input.isActive;
       await docRef.update(updateData);
       const saved = await docRef.get();
-      const doc = formatDoc<AcademicYearFirestoreDoc>(saved);
+      const doc = formatDoc(saved);
       if (!doc) return { ok: false, error: { code: 'NOT_FOUND', message: `Academic year not found after update: ${id}`, retryable: false, requestId: '' } };
-      return { ok: true, value: this.mapper.academicYearToDomain(doc) };
+      return { ok: true, value: this.mapper.academicYearToDomain(doc as unknown as AcademicYearFirestoreDoc) };
     } catch (error) {
       const err = toRepositoryError(error);
       return { ok: false, error: { ...err } };
@@ -444,10 +221,11 @@ export class CurriculumRepository implements ICurriculumRepository {
       if (!snap.exists) {
         return { ok: false, error: { code: 'NOT_FOUND', message: `Academic year not found: ${id}`, retryable: false, requestId: '' } };
       }
-      const doc = formatDoc<AcademicYearFirestoreDoc>(snap);
+      const doc = formatDoc(snap);
       if (!doc) return { ok: false, error: { code: 'NOT_FOUND', message: `Academic year not found: ${id}`, retryable: false, requestId: '' } };
-      if (doc.deletedAt) return { ok: false, error: { code: 'NOT_FOUND', message: `Academic year not found: ${id}`, retryable: false, requestId: '' } };
-      return { ok: true, value: this.mapper.academicYearToDomain(doc) };
+      const firestoreDoc = doc as unknown as AcademicYearFirestoreDoc;
+      if (firestoreDoc.deletedAt) return { ok: false, error: { code: 'NOT_FOUND', message: `Academic year not found: ${id}`, retryable: false, requestId: '' } };
+      return { ok: true, value: this.mapper.academicYearToDomain(firestoreDoc) };
     } catch (error) {
       const err = toRepositoryError(error);
       return { ok: false, error: { ...err } };
@@ -476,7 +254,7 @@ export class CurriculumRepository implements ICurriculumRepository {
     }
   }
 
-  // ========== Academic Term ==========
+  // ========== Academic Term (Dynamic) ==========
 
   async createAcademicTerm(input: CreateAcademicTermInput): Promise<RepositoryResult<IAcademicTerm>> {
     try {
@@ -502,9 +280,9 @@ export class CurriculumRepository implements ICurriculumRepository {
         deletedAt: null,
       });
       const saved = await docRef.get();
-      const doc = formatDoc<AcademicTermFirestoreDoc>(saved);
+      const doc = formatDoc(saved);
       if (!doc) return { ok: false, error: { code: 'INTERNAL', message: 'Failed to read back created document', retryable: false, requestId: '' } };
-      return { ok: true, value: this.mapper.academicTermToDomain(doc) };
+      return { ok: true, value: this.mapper.academicTermToDomain(doc as unknown as AcademicTermFirestoreDoc) };
     } catch (error) {
       const err = toRepositoryError(error);
       return { ok: false, error: { ...err } };
@@ -529,9 +307,9 @@ export class CurriculumRepository implements ICurriculumRepository {
       if (input.isActive !== undefined) updateData.isActive = input.isActive;
       await docRef.update(updateData);
       const saved = await docRef.get();
-      const doc = formatDoc<AcademicTermFirestoreDoc>(saved);
+      const doc = formatDoc(saved);
       if (!doc) return { ok: false, error: { code: 'NOT_FOUND', message: `Academic term not found after update: ${id}`, retryable: false, requestId: '' } };
-      return { ok: true, value: this.mapper.academicTermToDomain(doc) };
+      return { ok: true, value: this.mapper.academicTermToDomain(doc as unknown as AcademicTermFirestoreDoc) };
     } catch (error) {
       const err = toRepositoryError(error);
       return { ok: false, error: { ...err } };
@@ -546,10 +324,11 @@ export class CurriculumRepository implements ICurriculumRepository {
       if (!snap.exists) {
         return { ok: false, error: { code: 'NOT_FOUND', message: `Academic term not found: ${id}`, retryable: false, requestId: '' } };
       }
-      const doc = formatDoc<AcademicTermFirestoreDoc>(snap);
+      const doc = formatDoc(snap);
       if (!doc) return { ok: false, error: { code: 'NOT_FOUND', message: `Academic term not found: ${id}`, retryable: false, requestId: '' } };
-      if (doc.deletedAt) return { ok: false, error: { code: 'NOT_FOUND', message: `Academic term not found: ${id}`, retryable: false, requestId: '' } };
-      return { ok: true, value: this.mapper.academicTermToDomain(doc) };
+      const firestoreDoc = doc as unknown as AcademicTermFirestoreDoc;
+      if (firestoreDoc.deletedAt) return { ok: false, error: { code: 'NOT_FOUND', message: `Academic term not found: ${id}`, retryable: false, requestId: '' } };
+      return { ok: true, value: this.mapper.academicTermToDomain(firestoreDoc) };
     } catch (error) {
       const err = toRepositoryError(error);
       return { ok: false, error: { ...err } };
@@ -649,16 +428,13 @@ export class CurriculumRepository implements ICurriculumRepository {
             const stageId = userData.stageId;
             const gradeId = userData.gradeId;
             if (esId) {
-              const esSnap = await db.collection('educationalSystems').doc(esId).get();
-              if (esSnap.exists) educationalSystem = esSnap.data() as IEducationalSystem;
+              educationalSystem = EDUCATIONAL_SYSTEMS.find((s) => s.id === esId) ?? null;
             }
             if (stageId) {
-              const stageSnap = await db.collection('stages').doc(stageId).get();
-              if (stageSnap.exists) stage = stageSnap.data() as IStage;
+              stage = STAGES.find((s) => s.id === stageId) ?? null;
             }
             if (gradeId) {
-              const gradeSnap = await db.collection('grades').doc(gradeId).get();
-              if (gradeSnap.exists) grade = gradeSnap.data() as IGrade;
+              grade = GRADES.find((g) => g.id === gradeId) ?? null;
             }
           }
         } catch {
@@ -680,7 +456,7 @@ export class CurriculumRepository implements ICurriculumRepository {
     }
   }
 
-  // ========== Soft Delete / Restore ==========
+  // ========== Soft Delete / Restore (Academic Years & Terms only) ==========
 
   async softDeleteCurriculum(id: string, collection: CurriculumCollection, requestId: string): Promise<RepositoryResult<void>> {
     if (!requestId) {

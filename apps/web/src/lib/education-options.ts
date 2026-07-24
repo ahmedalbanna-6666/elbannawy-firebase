@@ -7,6 +7,12 @@ export interface EducationOption {
   readonly icon?: LucideIcon;
 }
 
+export interface GradeOption {
+  readonly id: string;
+  readonly label: string;
+  readonly stageId: string;
+}
+
 export const EDUCATIONAL_SYSTEMS: EducationOption[] = [
   { id: "GENERAL", label: "عام", icon: BookOpen },
   { id: "LANGUAGE", label: "لغات", icon: Globe },
@@ -19,24 +25,24 @@ export const EDUCATIONAL_STAGES: EducationOption[] = [
   { id: "SECONDARY", label: "ثانوي" },
 ];
 
-export const GRADES: Record<string, readonly string[]> = {
+export const GRADES: Record<string, readonly GradeOption[]> = {
   PRIMARY: [
-    "الصف الأول الابتدائي",
-    "الصف الثاني الابتدائي",
-    "الصف الثالث الابتدائي",
-    "الصف الرابع الابتدائي",
-    "الصف الخامس الابتدائي",
-    "الصف السادس الابتدائي",
+    { id: "GRADE_1", label: "الصف الأول الابتدائي", stageId: "PRIMARY" },
+    { id: "GRADE_2", label: "الصف الثاني الابتدائي", stageId: "PRIMARY" },
+    { id: "GRADE_3", label: "الصف الثالث الابتدائي", stageId: "PRIMARY" },
+    { id: "GRADE_4", label: "الصف الرابع الابتدائي", stageId: "PRIMARY" },
+    { id: "GRADE_5", label: "الصف الخامس الابتدائي", stageId: "PRIMARY" },
+    { id: "GRADE_6", label: "الصف السادس الابتدائي", stageId: "PRIMARY" },
   ] as const,
   PREPARATORY: [
-    "الصف الأول الإعدادي",
-    "الصف الثاني الإعدادي",
-    "الصف الثالث الإعدادي",
+    { id: "GRADE_7", label: "الصف الأول الإعدادي", stageId: "PREPARATORY" },
+    { id: "GRADE_8", label: "الصف الثاني الإعدادي", stageId: "PREPARATORY" },
+    { id: "GRADE_9", label: "الصف الثالث الإعدادي", stageId: "PREPARATORY" },
   ] as const,
   SECONDARY: [
-    "الصف الأول الثانوي",
-    "الصف الثاني الثانوي",
-    "الصف الثالث الثانوي",
+    { id: "GRADE_10", label: "الصف الأول الثانوي", stageId: "SECONDARY" },
+    { id: "GRADE_11", label: "الصف الثاني الثانوي", stageId: "SECONDARY" },
+    { id: "GRADE_12", label: "الصف الثالث الثانوي", stageId: "SECONDARY" },
   ] as const,
 };
 
@@ -79,10 +85,9 @@ export function getDefaultAcademicYear(): string {
 }
 
 export function getGradeOptions(stageId: string): SelectOption[] {
-  return (GRADES[stageId] ?? []).map((g): SelectOption => ({ value: g, label: g }));
+  return (GRADES[stageId] ?? []).map((g): SelectOption => ({ value: g.id, label: g.label }));
 }
 
 export function stageLabelToKey(label: string): string | undefined {
   return EDUCATIONAL_STAGES.find((s) => s.label === label)?.id;
 }
-

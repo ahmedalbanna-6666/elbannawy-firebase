@@ -5,9 +5,6 @@ const curriculumService = new CurriculumService();
 const applicationService = new CurriculumApplicationService(curriculumService);
 
 const COLLECTION_MAP: Record<string, string> = {
-  'educational-systems': 'educationalSystems',
-  'stages': 'stages',
-  'grades': 'grades',
   'academic-years': 'academicYears',
   'academic-terms': 'academicTerms',
 };
@@ -84,7 +81,7 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> },
 ): Promise<NextResponse> {
   const { searchParams } = new URL(request.url);
-  const collection = searchParams.get('collection') ?? 'educational-systems';
+  const collection = searchParams.get('collection') ?? 'academic-years';
   const { id } = await params;
 
   let body: Record<string, unknown>;
@@ -98,27 +95,6 @@ export async function PATCH(
 
   try {
     switch (collection) {
-      case 'educational-systems': {
-        const result = await applicationService.updateEducationalSystem(id, body, expectedVersion);
-        if (!result.ok) {
-          return NextResponse.json({ success: false, error: result.error, timestamp: new Date().toISOString() }, { status: mapErrorCode(result.error.code) });
-        }
-        return NextResponse.json({ success: true, data: result.value, timestamp: new Date().toISOString() }, { status: 200 });
-      }
-      case 'stages': {
-        const result = await applicationService.updateStage(id, body, expectedVersion);
-        if (!result.ok) {
-          return NextResponse.json({ success: false, error: result.error, timestamp: new Date().toISOString() }, { status: mapErrorCode(result.error.code) });
-        }
-        return NextResponse.json({ success: true, data: result.value, timestamp: new Date().toISOString() }, { status: 200 });
-      }
-      case 'grades': {
-        const result = await applicationService.updateGrade(id, body, expectedVersion);
-        if (!result.ok) {
-          return NextResponse.json({ success: false, error: result.error, timestamp: new Date().toISOString() }, { status: mapErrorCode(result.error.code) });
-        }
-        return NextResponse.json({ success: true, data: result.value, timestamp: new Date().toISOString() }, { status: 200 });
-      }
       case 'academic-years': {
         const result = await applicationService.updateAcademicYear(id, body, expectedVersion);
         if (!result.ok) {
@@ -134,7 +110,7 @@ export async function PATCH(
         return NextResponse.json({ success: true, data: result.value, timestamp: new Date().toISOString() }, { status: 200 });
       }
       default:
-        return NextResponse.json({ success: false, error: { code: 'INVALID_INPUT', message: `Invalid collection: ${collection}` }, timestamp: new Date().toISOString() }, { status: 400 });
+        return NextResponse.json({ success: false, error: { code: 'INVALID_INPUT', message: `Collection does not support updates: ${collection}` }, timestamp: new Date().toISOString() }, { status: 400 });
     }
   } catch (error) {
     return NextResponse.json({ success: false, error: { code: 'INTERNAL', message: error instanceof Error ? error.message : 'Unknown error' }, timestamp: new Date().toISOString() }, { status: 500 });
@@ -146,17 +122,17 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> },
 ): Promise<NextResponse> {
   const { searchParams } = new URL(_request.url);
-  const collectionParam = searchParams.get('collection') ?? 'educational-systems';
+  const collectionParam = searchParams.get('collection') ?? '';
   const collection = COLLECTION_MAP[collectionParam];
   if (!collection) {
-    return NextResponse.json({ success: false, error: { code: 'INVALID_INPUT', message: `Invalid collection: ${collectionParam}` }, timestamp: new Date().toISOString() }, { status: 400 });
+    return NextResponse.json({ success: false, error: { code: 'INVALID_INPUT', message: `Collection does not support deletion: ${collectionParam}` }, timestamp: new Date().toISOString() }, { status: 400 });
   }
 
   const { id } = await params;
   const requestId = `delete-${id}-${String(Date.now())}`;
 
   try {
-    const result = await applicationService.softDeleteCurriculum(id, collection as 'educationalSystems' | 'stages' | 'grades' | 'academicYears' | 'academicTerms', requestId);
+    const result = await applicationService.softDeleteCurriculum(id, collection as 'academicYears' | 'academicTerms', requestId);
     if (!result.ok) {
       return NextResponse.json({ success: false, error: result.error, timestamp: new Date().toISOString() }, { status: mapErrorCode(result.error.code) });
     }

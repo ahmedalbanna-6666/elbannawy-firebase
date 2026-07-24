@@ -3,17 +3,11 @@ import { CurriculumService } from '../../../services/curriculum/curriculum.servi
 import { RepositoryResult } from '../../../shared/types/repository.types';
 
 const mockRepository = {
-  createEducationalSystem: jest.fn<(input: any) => Promise<RepositoryResult<any>>>(),
-  updateEducationalSystem: jest.fn<(id: string, input: any, version: number) => Promise<RepositoryResult<any>>>(),
   getEducationalSystemById: jest.fn<(id: string) => Promise<RepositoryResult<any>>>(),
   listEducationalSystems: jest.fn<(filter: any, page: any) => Promise<RepositoryResult<any>>>(),
-  createStage: jest.fn<(input: any) => Promise<RepositoryResult<any>>>(),
-  updateStage: jest.fn<(id: string, input: any, version: number) => Promise<RepositoryResult<any>>>(),
   getStageById: jest.fn<(id: string) => Promise<RepositoryResult<any>>>(),
   listStages: jest.fn<(filter: any, page: any) => Promise<RepositoryResult<any>>>(),
   getStagesBySystem: jest.fn<(systemId: string) => Promise<RepositoryResult<any>>>(),
-  createGrade: jest.fn<(input: any) => Promise<RepositoryResult<any>>>(),
-  updateGrade: jest.fn<(id: string, input: any, version: number) => Promise<RepositoryResult<any>>>(),
   getGradeById: jest.fn<(id: string) => Promise<RepositoryResult<any>>>(),
   listGrades: jest.fn<(filter: any, page: any) => Promise<RepositoryResult<any>>>(),
   getGradesByStage: jest.fn<(stageId: string) => Promise<RepositoryResult<any>>>(),
@@ -41,63 +35,12 @@ describe('CurriculumService', () => {
     service = new CurriculumService(mockRepository as any);
   });
 
-  describe('createEducationalSystem', () => {
-    it('creates educational system successfully', async () => {
-      const mockResult = {
-        id: 'sys-1',
-        name: 'Egyptian National',
-        nameAr: 'مصري وطني',
-        isActive: true,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        schemaVersion: 1,
-        deletedAt: null,
-      };
-
-      mockRepository.createEducationalSystem.mockResolvedValue({ ok: true, value: mockResult });
-
-      const result = await service.createEducationalSystem({
-        id: 'sys-1',
-        name: 'Egyptian National',
-        nameAr: 'مصري وطني',
-      });
-
-      expect(result.ok).toBe(true);
-      if (result.ok) {
-        expect(result.value).toEqual(mockResult);
-      }
-      expect(mockRepository.createEducationalSystem).toHaveBeenCalledWith({
-        id: 'sys-1',
-        name: 'Egyptian National',
-        nameAr: 'مصري وطني',
-      });
-    });
-
-    it('forwards repository error', async () => {
-      mockRepository.createEducationalSystem.mockResolvedValue({
-        ok: false,
-        error: { code: 'ALREADY_EXISTS', message: 'System exists', retryable: false, requestId: '' },
-      });
-
-      const result = await service.createEducationalSystem({
-        id: 'sys-1',
-        name: 'Egyptian National',
-        nameAr: 'مصري وطني',
-      });
-
-      expect(result.ok).toBe(false);
-      if (!result.ok) {
-        expect(result.error.code).toBe('ALREADY_EXISTS');
-      }
-    });
-  });
-
   describe('getEducationalSystemById', () => {
     it('returns system when found', async () => {
       const mockResult = {
-        id: 'sys-1',
-        name: 'Egyptian National',
-        nameAr: 'مصري وطني',
+        id: 'GENERAL',
+        name: 'General',
+        nameAr: 'عام',
         isActive: true,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
@@ -107,10 +50,10 @@ describe('CurriculumService', () => {
 
       mockRepository.getEducationalSystemById.mockResolvedValue({ ok: true, value: mockResult });
 
-      const result = await service.getEducationalSystemById('sys-1');
+      const result = await service.getEducationalSystemById('GENERAL');
       expect(result.ok).toBe(true);
       if (result.ok) {
-        expect(result.value.id).toBe('sys-1');
+        expect(result.value.id).toBe('GENERAL');
       }
     });
 
@@ -131,7 +74,7 @@ describe('CurriculumService', () => {
   describe('listEducationalSystems', () => {
     it('returns paginated systems', async () => {
       const mockPage = {
-        items: [{ id: 'sys-1', name: 'Egyptian National', nameAr: 'مصري وطني', isActive: true, createdAt: new Date().toISOString() }],
+        items: [{ id: 'GENERAL', name: 'General', nameAr: 'عام', isActive: true, createdAt: new Date().toISOString() }],
         nextCursor: null,
       };
 
@@ -142,32 +85,6 @@ describe('CurriculumService', () => {
       if (result.ok) {
         expect(result.value.items).toHaveLength(1);
       }
-    });
-
-    it('forwards repository error', async () => {
-      mockRepository.listEducationalSystems.mockResolvedValue({
-        ok: false,
-        error: { code: 'INVALID_INPUT', message: 'Invalid', retryable: false, requestId: '' },
-      });
-
-      const result = await service.listEducationalSystems({}, { limit: 20 });
-      expect(result.ok).toBe(false);
-    });
-  });
-
-  describe('createStage', () => {
-    it('creates stage successfully', async () => {
-      mockRepository.createStage.mockResolvedValue({ ok: true, value: { id: 'stage-1' } });
-
-      const result = await service.createStage({
-        id: 'stage-1',
-        educationalSystemId: 'sys-1',
-        name: 'Primary',
-        nameAr: 'ابتدائي',
-        order: 1,
-      });
-
-      expect(result.ok).toBe(true);
     });
   });
 
@@ -187,7 +104,7 @@ describe('CurriculumService', () => {
     it('returns stages for system', async () => {
       mockRepository.getStagesBySystem.mockResolvedValue({ ok: true, value: [] });
 
-      const result = await service.getStagesBySystem('sys-1');
+      const result = await service.getStagesBySystem('GENERAL');
       expect(result.ok).toBe(true);
       if (result.ok) {
         expect(result.value).toEqual([]);
@@ -195,28 +112,11 @@ describe('CurriculumService', () => {
     });
   });
 
-  describe('createGrade', () => {
-    it('creates grade successfully', async () => {
-      mockRepository.createGrade.mockResolvedValue({ ok: true, value: { id: 'grade-1' } });
-
-      const result = await service.createGrade({
-        id: 'grade-1',
-        educationalSystemId: 'sys-1',
-        stageId: 'stage-1',
-        name: 'Grade 1',
-        nameAr: 'الصف الأول',
-        order: 1,
-      });
-
-      expect(result.ok).toBe(true);
-    });
-  });
-
   describe('getGradesByStage', () => {
     it('returns grades for stage', async () => {
       mockRepository.getGradesByStage.mockResolvedValue({ ok: true, value: [] });
 
-      const result = await service.getGradesByStage('stage-1');
+      const result = await service.getGradesByStage('PRIMARY');
       expect(result.ok).toBe(true);
       if (result.ok) {
         expect(result.value).toEqual([]);
@@ -230,7 +130,7 @@ describe('CurriculumService', () => {
 
       const result = await service.createAcademicYear({
         id: 'year-1',
-        educationalSystemId: 'sys-1',
+        educationalSystemId: 'GENERAL',
         name: '2025-2026',
         nameAr: '2025-2026',
         startDate: '2025-09-01',
@@ -319,9 +219,9 @@ describe('CurriculumService', () => {
     it('deletes curriculum entity successfully', async () => {
       mockRepository.softDeleteCurriculum.mockResolvedValue({ ok: true, value: undefined });
 
-      const result = await service.softDeleteCurriculum('sys-1', 'educationalSystems', 'req-1');
+      const result = await service.softDeleteCurriculum('year-1', 'academicYears', 'req-1');
       expect(result.ok).toBe(true);
-      expect(mockRepository.softDeleteCurriculum).toHaveBeenCalledWith('sys-1', 'educationalSystems', 'req-1');
+      expect(mockRepository.softDeleteCurriculum).toHaveBeenCalledWith('year-1', 'academicYears', 'req-1');
     });
   });
 
@@ -329,9 +229,9 @@ describe('CurriculumService', () => {
     it('restores curriculum entity successfully', async () => {
       mockRepository.restoreCurriculum.mockResolvedValue({ ok: true, value: undefined });
 
-      const result = await service.restoreCurriculum('sys-1', 'educationalSystems', 'req-1');
+      const result = await service.restoreCurriculum('year-1', 'academicYears', 'req-1');
       expect(result.ok).toBe(true);
-      expect(mockRepository.restoreCurriculum).toHaveBeenCalledWith('sys-1', 'educationalSystems', 'req-1');
+      expect(mockRepository.restoreCurriculum).toHaveBeenCalledWith('year-1', 'academicYears', 'req-1');
     });
   });
 

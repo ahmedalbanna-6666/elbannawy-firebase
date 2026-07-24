@@ -16,33 +16,3 @@ export async function GET(
     return NextResponse.json({ success: false, error: { code: 'INTERNAL', message: 'Failed to fetch stage' } }, { status: 500 });
   }
 }
-
-export async function PATCH(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-): Promise<NextResponse> {
-  const { id } = await params;
-  try {
-    const body = await request.json() as { name?: string; nameAr?: string; order?: number; isActive?: boolean };
-    const result = await curriculumService.updateStage(id, body, 0);
-    if (!result.ok) return NextResponse.json({ success: false, error: result.error }, { status: 400 });
-    return NextResponse.json({ success: true, data: result.value });
-  } catch {
-    return NextResponse.json({ success: false, error: { code: 'INTERNAL', message: 'Failed to update stage' } }, { status: 500 });
-  }
-}
-
-export async function DELETE(
-  _request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-): Promise<NextResponse> {
-  const { id } = await params;
-  try {
-    const requestId = `del-stage-${String(Date.now())}`;
-    const result = await curriculumService.softDeleteCurriculum(id, 'stages', requestId);
-    if (!result.ok) return NextResponse.json({ success: false, error: result.error }, { status: 400 });
-    return NextResponse.json({ success: true, data: null });
-  } catch {
-    return NextResponse.json({ success: false, error: { code: 'INTERNAL', message: 'Failed to delete stage' } }, { status: 500 });
-  }
-}

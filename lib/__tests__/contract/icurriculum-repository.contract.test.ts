@@ -22,16 +22,6 @@ export function runCurriculumRepositoryContractTests(
     });
 
     describe('Contract Method Signatures', () => {
-      it('implements createEducationalSystem', () => {
-        expect(repository.createEducationalSystem).toBeDefined();
-        expect(repository.createEducationalSystem.length).toBe(1);
-      });
-
-      it('implements updateEducationalSystem', () => {
-        expect(repository.updateEducationalSystem).toBeDefined();
-        expect(repository.updateEducationalSystem.length).toBe(3);
-      });
-
       it('implements getEducationalSystemById', () => {
         expect(repository.getEducationalSystemById).toBeDefined();
         expect(repository.getEducationalSystemById.length).toBe(1);
@@ -40,16 +30,6 @@ export function runCurriculumRepositoryContractTests(
       it('implements listEducationalSystems', () => {
         expect(repository.listEducationalSystems).toBeDefined();
         expect(repository.listEducationalSystems.length).toBe(2);
-      });
-
-      it('implements createStage', () => {
-        expect(repository.createStage).toBeDefined();
-        expect(repository.createStage.length).toBe(1);
-      });
-
-      it('implements updateStage', () => {
-        expect(repository.updateStage).toBeDefined();
-        expect(repository.updateStage.length).toBe(3);
       });
 
       it('implements getStageById', () => {
@@ -65,16 +45,6 @@ export function runCurriculumRepositoryContractTests(
       it('implements getStagesBySystem', () => {
         expect(repository.getStagesBySystem).toBeDefined();
         expect(repository.getStagesBySystem.length).toBe(1);
-      });
-
-      it('implements createGrade', () => {
-        expect(repository.createGrade).toBeDefined();
-        expect(repository.createGrade.length).toBe(1);
-      });
-
-      it('implements updateGrade', () => {
-        expect(repository.updateGrade).toBeDefined();
-        expect(repository.updateGrade.length).toBe(3);
       });
 
       it('implements getGradeById', () => {
@@ -164,31 +134,21 @@ export function runCurriculumRepositoryContractTests(
     });
 
     describe('RepositoryResult Type Contract', () => {
-      it('createEducationalSystem returns RepositoryResult with id, name, nameAr, isActive', async () => {
-        const result = await repository.createEducationalSystem({
-          id: generateUniqueId(),
-          name: 'Contract Test System',
-          nameAr: 'نظام اختبار',
-        });
-
+      it('getEducationalSystemById returns known system', async () => {
+        const result = await repository.getEducationalSystemById('GENERAL');
         expect(result).toHaveProperty('ok');
         if (result.ok) {
           expect(result.value).toHaveProperty('id');
           expect(result.value).toHaveProperty('name');
           expect(result.value).toHaveProperty('nameAr');
           expect(result.value).toHaveProperty('isActive');
-          expect(result.value).toHaveProperty('createdAt');
-          expect(result.value).toHaveProperty('updatedAt');
-        } else {
-          expect(result.error).toHaveProperty('code');
-          expect(result.error).toHaveProperty('message');
-          expect(result.error).toHaveProperty('retryable');
         }
       });
 
       it('getEducationalSystemById returns ok false for non-existent', async () => {
         const result = await repository.getEducationalSystemById('non-existent');
         expect(result).toHaveProperty('ok');
+        expect(result.ok).toBe(false);
       });
 
       it('listEducationalSystems returns page type with items and nextCursor', async () => {
@@ -202,22 +162,8 @@ export function runCurriculumRepositoryContractTests(
         }
       });
 
-      it('createStage returns RepositoryResult with educationalSystemId, name, order', async () => {
-        const sysId = generateUniqueId();
-        await repository.createEducationalSystem({
-          id: sysId,
-          name: 'System for Stage',
-          nameAr: 'نظام',
-        });
-
-        const result = await repository.createStage({
-          id: generateUniqueId(),
-          educationalSystemId: sysId,
-          name: 'Primary',
-          nameAr: 'ابتدائي',
-          order: 1,
-        });
-
+      it('getStageById returns known stage', async () => {
+        const result = await repository.getStageById('PRIMARY');
         expect(result).toHaveProperty('ok');
         if (result.ok) {
           expect(result.value).toHaveProperty('educationalSystemId');
@@ -225,20 +171,8 @@ export function runCurriculumRepositoryContractTests(
         }
       });
 
-      it('createGrade returns RepositoryResult with educationalSystemId, stageId', async () => {
-        const sysId = generateUniqueId();
-        const stageId = generateUniqueId();
-        await repository.createEducationalSystem({ id: sysId, name: 'Sys', nameAr: 'نظام' });
-
-        const result = await repository.createGrade({
-          id: generateUniqueId(),
-          educationalSystemId: sysId,
-          stageId,
-          name: 'Grade 1',
-          nameAr: 'الصف الأول',
-          order: 1,
-        });
-
+      it('getGradeById returns known grade', async () => {
+        const result = await repository.getGradeById('GRADE_1');
         expect(result).toHaveProperty('ok');
         if (result.ok) {
           expect(result.value).toHaveProperty('educationalSystemId');
@@ -247,12 +181,9 @@ export function runCurriculumRepositoryContractTests(
       });
 
       it('createAcademicYear returns RepositoryResult with dates', async () => {
-        const sysId = generateUniqueId();
-        await repository.createEducationalSystem({ id: sysId, name: 'Sys', nameAr: 'نظام' });
-
         const result = await repository.createAcademicYear({
           id: generateUniqueId(),
-          educationalSystemId: sysId,
+          educationalSystemId: 'GENERAL',
           name: '2025-2026',
           nameAr: '2025-2026',
           startDate: '2025-09-01',
@@ -268,12 +199,10 @@ export function runCurriculumRepositoryContractTests(
       });
 
       it('createAcademicTerm returns RepositoryResult with academicYearId', async () => {
-        const sysId = generateUniqueId();
         const yearId = generateUniqueId();
-        await repository.createEducationalSystem({ id: sysId, name: 'Sys', nameAr: 'نظام' });
         await repository.createAcademicYear({
           id: yearId,
-          educationalSystemId: sysId,
+          educationalSystemId: 'GENERAL',
           name: '2025-2026',
           nameAr: '2025-2026',
           startDate: '2025-09-01',
@@ -299,9 +228,16 @@ export function runCurriculumRepositoryContractTests(
 
       it('softDeleteCurriculum returns RepositoryResult<void>', async () => {
         const id = generateUniqueId();
-        await repository.createEducationalSystem({ id, name: 'Delete Test', nameAr: 'حذف' });
+        await repository.createAcademicYear({
+          id,
+          educationalSystemId: 'GENERAL',
+          name: '2025-2026',
+          nameAr: '2025-2026',
+          startDate: '2025-09-01',
+          endDate: '2026-06-30',
+        });
 
-        const result = await repository.softDeleteCurriculum(id, 'educationalSystems', 'contract-delete');
+        const result = await repository.softDeleteCurriculum(id, 'academicYears', 'contract-delete');
         expect(result).toHaveProperty('ok');
         if (result.ok) {
           expect(result.value).toBeUndefined();
@@ -310,10 +246,17 @@ export function runCurriculumRepositoryContractTests(
 
       it('restoreCurriculum returns RepositoryResult<void>', async () => {
         const id = generateUniqueId();
-        await repository.createEducationalSystem({ id, name: 'Restore Test', nameAr: 'استعادة' });
-        await repository.softDeleteCurriculum(id, 'educationalSystems', 'prep-delete');
+        await repository.createAcademicYear({
+          id,
+          educationalSystemId: 'GENERAL',
+          name: '2025-2026',
+          nameAr: '2025-2026',
+          startDate: '2025-09-01',
+          endDate: '2026-06-30',
+        });
+        await repository.softDeleteCurriculum(id, 'academicYears', 'prep-delete');
 
-        const result = await repository.restoreCurriculum(id, 'educationalSystems', 'contract-restore');
+        const result = await repository.restoreCurriculum(id, 'academicYears', 'contract-restore');
         expect(result).toHaveProperty('ok');
         if (result.ok) {
           expect(result.value).toBeUndefined();
@@ -322,20 +265,10 @@ export function runCurriculumRepositoryContractTests(
     });
 
     describe('Error Contract', () => {
-      it('createEducationalSystem returns ALREADY_EXISTS for duplicate id', async () => {
-        const id = generateUniqueId();
-        await repository.createEducationalSystem({ id, name: 'Original', nameAr: 'أصلي' });
-
-        const result = await repository.createEducationalSystem({ id, name: 'Duplicate', nameAr: 'مكرر' });
-        expect(result.ok).toBe(false);
-        if (!result.ok) {
-          expect(result.error.code).toBe('ALREADY_EXISTS');
-        }
-      });
-
       it('getEducationalSystemById returns non-throwing result for empty id', async () => {
         const result = await repository.getEducationalSystemById('');
         expect(result).toBeDefined();
+        expect(result.ok).toBe(false);
       });
 
       it('listStages uses ICurriculumRepository return type', async () => {
@@ -349,7 +282,7 @@ export function runCurriculumRepositoryContractTests(
       });
 
       it('softDeleteCurriculum returns INVALID_INPUT for empty requestId', async () => {
-        const result = await repository.softDeleteCurriculum('any-id', 'educationalSystems', '');
+        const result = await repository.softDeleteCurriculum('any-id', 'academicYears', '');
         expect(result.ok).toBe(false);
         if (!result.ok) {
           expect(result.error.code).toBe('INVALID_INPUT');
@@ -357,7 +290,7 @@ export function runCurriculumRepositoryContractTests(
       });
 
       it('restoreCurriculum returns INVALID_INPUT for empty requestId', async () => {
-        const result = await repository.restoreCurriculum('any-id', 'educationalSystems', '');
+        const result = await repository.restoreCurriculum('any-id', 'academicYears', '');
         expect(result.ok).toBe(false);
         if (!result.ok) {
           expect(result.error.code).toBe('INVALID_INPUT');

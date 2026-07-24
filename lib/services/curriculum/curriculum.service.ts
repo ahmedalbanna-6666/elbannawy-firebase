@@ -11,12 +11,6 @@ import {
   IAcademicYearSummary,
   IAcademicTermSummary,
   ICurrentAcademicContext,
-  CreateEducationalSystemInput,
-  UpdateEducationalSystemInput,
-  CreateStageInput,
-  UpdateStageInput,
-  CreateGradeInput,
-  UpdateGradeInput,
   CreateAcademicYearInput,
   UpdateAcademicYearInput,
   CreateAcademicTermInput,
@@ -31,28 +25,12 @@ import { CurriculumRepository } from '../../repositories/curriculum/curriculum.r
 export class CurriculumService {
   constructor(private readonly curriculumRepository: ICurriculumRepository = new CurriculumRepository()) {}
 
-  async createEducationalSystem(input: CreateEducationalSystemInput): Promise<RepositoryResult<IEducationalSystem>> {
-    return this.curriculumRepository.createEducationalSystem(input);
-  }
-
-  async updateEducationalSystem(id: string, input: UpdateEducationalSystemInput, expectedVersion: number): Promise<RepositoryResult<IEducationalSystem>> {
-    return this.curriculumRepository.updateEducationalSystem(id, input, expectedVersion);
-  }
-
   async getEducationalSystemById(id: string): Promise<RepositoryResult<IEducationalSystem>> {
     return this.curriculumRepository.getEducationalSystemById(id);
   }
 
   async listEducationalSystems(filter: CurriculumFilter, page: PageQuery): Promise<RepositoryResult<Page<IEducationalSystemSummary>>> {
     return this.curriculumRepository.listEducationalSystems(filter, page);
-  }
-
-  async createStage(input: CreateStageInput): Promise<RepositoryResult<IStage>> {
-    return this.curriculumRepository.createStage(input);
-  }
-
-  async updateStage(id: string, input: UpdateStageInput, expectedVersion: number): Promise<RepositoryResult<IStage>> {
-    return this.curriculumRepository.updateStage(id, input, expectedVersion);
   }
 
   async getStageById(id: string): Promise<RepositoryResult<IStage>> {
@@ -65,14 +43,6 @@ export class CurriculumService {
 
   async getStagesBySystem(systemId: string): Promise<RepositoryResult<IStage[]>> {
     return this.curriculumRepository.getStagesBySystem(systemId);
-  }
-
-  async createGrade(input: CreateGradeInput): Promise<RepositoryResult<IGrade>> {
-    return this.curriculumRepository.createGrade(input);
-  }
-
-  async updateGrade(id: string, input: UpdateGradeInput, expectedVersion: number): Promise<RepositoryResult<IGrade>> {
-    return this.curriculumRepository.updateGrade(id, input, expectedVersion);
   }
 
   async getGradeById(id: string): Promise<RepositoryResult<IGrade>> {

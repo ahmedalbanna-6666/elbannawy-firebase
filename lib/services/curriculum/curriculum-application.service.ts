@@ -15,12 +15,6 @@ import {
 } from '../../repositories/contracts';
 import { RepositoryResult } from '../../shared/types/repository.types';
 import {
-  CreateEducationalSystemInputSchema,
-  UpdateEducationalSystemInputSchema,
-  CreateStageInputSchema,
-  UpdateStageInputSchema,
-  CreateGradeInputSchema,
-  UpdateGradeInputSchema,
   CreateAcademicYearInputSchema,
   UpdateAcademicYearInputSchema,
   CreateAcademicTermInputSchema,
@@ -185,39 +179,6 @@ function mapCurrentContext(context: ICurrentAcademicContext): CurrentAcademicCon
 export class CurriculumApplicationService {
   constructor(private readonly curriculumService: CurriculumService) {}
 
-  async createEducationalSystem(input: Record<string, unknown>): Promise<RepositoryResult<EducationalSystemOutput>> {
-    const parsed = CreateEducationalSystemInputSchema.safeParse(input);
-    if (!parsed.success) {
-      return {
-        ok: false,
-        error: { code: 'INVALID_INPUT', message: parsed.error.message, retryable: false, requestId: '' },
-      };
-    }
-    const result = await this.curriculumService.createEducationalSystem(parsed.data);
-    if (!result.ok) return result as RepositoryResult<EducationalSystemOutput>;
-    return { ok: true, value: mapEducationalSystem(result.value) };
-  }
-
-  async updateEducationalSystem(id: string, input: Record<string, unknown>, expectedVersion: number): Promise<RepositoryResult<EducationalSystemOutput>> {
-    const parsedId = CurriculumIdSchema.safeParse(id);
-    if (!parsedId.success) {
-      return {
-        ok: false,
-        error: { code: 'INVALID_INPUT', message: parsedId.error.message, retryable: false, requestId: '' },
-      };
-    }
-    const parsed = UpdateEducationalSystemInputSchema.safeParse(input);
-    if (!parsed.success) {
-      return {
-        ok: false,
-        error: { code: 'INVALID_INPUT', message: parsed.error.message, retryable: false, requestId: '' },
-      };
-    }
-    const result = await this.curriculumService.updateEducationalSystem(parsedId.data, parsed.data, expectedVersion);
-    if (!result.ok) return result as RepositoryResult<EducationalSystemOutput>;
-    return { ok: true, value: mapEducationalSystem(result.value) };
-  }
-
   async getEducationalSystemById(id: string): Promise<RepositoryResult<EducationalSystemOutput>> {
     const parsedId = CurriculumIdSchema.safeParse(id);
     if (!parsedId.success) {
@@ -255,39 +216,6 @@ export class CurriculumApplicationService {
         nextCursor: result.value.nextCursor,
       },
     };
-  }
-
-  async createStage(input: Record<string, unknown>): Promise<RepositoryResult<StageOutput>> {
-    const parsed = CreateStageInputSchema.safeParse(input);
-    if (!parsed.success) {
-      return {
-        ok: false,
-        error: { code: 'INVALID_INPUT', message: parsed.error.message, retryable: false, requestId: '' },
-      };
-    }
-    const result = await this.curriculumService.createStage(parsed.data);
-    if (!result.ok) return result as RepositoryResult<StageOutput>;
-    return { ok: true, value: mapStage(result.value) };
-  }
-
-  async updateStage(id: string, input: Record<string, unknown>, expectedVersion: number): Promise<RepositoryResult<StageOutput>> {
-    const parsedId = CurriculumIdSchema.safeParse(id);
-    if (!parsedId.success) {
-      return {
-        ok: false,
-        error: { code: 'INVALID_INPUT', message: parsedId.error.message, retryable: false, requestId: '' },
-      };
-    }
-    const parsed = UpdateStageInputSchema.safeParse(input);
-    if (!parsed.success) {
-      return {
-        ok: false,
-        error: { code: 'INVALID_INPUT', message: parsed.error.message, retryable: false, requestId: '' },
-      };
-    }
-    const result = await this.curriculumService.updateStage(parsedId.data, parsed.data, expectedVersion);
-    if (!result.ok) return result as RepositoryResult<StageOutput>;
-    return { ok: true, value: mapStage(result.value) };
   }
 
   async getStageById(id: string): Promise<RepositoryResult<StageOutput>> {
@@ -340,39 +268,6 @@ export class CurriculumApplicationService {
     const result = await this.curriculumService.getStagesBySystem(parsedId.data);
     if (!result.ok) return result as RepositoryResult<StageOutput[]>;
     return { ok: true, value: result.value.map(mapStage) };
-  }
-
-  async createGrade(input: Record<string, unknown>): Promise<RepositoryResult<GradeOutput>> {
-    const parsed = CreateGradeInputSchema.safeParse(input);
-    if (!parsed.success) {
-      return {
-        ok: false,
-        error: { code: 'INVALID_INPUT', message: parsed.error.message, retryable: false, requestId: '' },
-      };
-    }
-    const result = await this.curriculumService.createGrade(parsed.data);
-    if (!result.ok) return result as RepositoryResult<GradeOutput>;
-    return { ok: true, value: mapGrade(result.value) };
-  }
-
-  async updateGrade(id: string, input: Record<string, unknown>, expectedVersion: number): Promise<RepositoryResult<GradeOutput>> {
-    const parsedId = CurriculumIdSchema.safeParse(id);
-    if (!parsedId.success) {
-      return {
-        ok: false,
-        error: { code: 'INVALID_INPUT', message: parsedId.error.message, retryable: false, requestId: '' },
-      };
-    }
-    const parsed = UpdateGradeInputSchema.safeParse(input);
-    if (!parsed.success) {
-      return {
-        ok: false,
-        error: { code: 'INVALID_INPUT', message: parsed.error.message, retryable: false, requestId: '' },
-      };
-    }
-    const result = await this.curriculumService.updateGrade(parsedId.data, parsed.data, expectedVersion);
-    if (!result.ok) return result as RepositoryResult<GradeOutput>;
-    return { ok: true, value: mapGrade(result.value) };
   }
 
   async getGradeById(id: string): Promise<RepositoryResult<GradeOutput>> {

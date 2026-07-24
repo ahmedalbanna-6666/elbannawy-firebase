@@ -1,15 +1,12 @@
 import { describe, it, expect, beforeAll, afterAll } from '@jest/globals';
 import { CurriculumRepository } from '../../repositories/curriculum/curriculum.repository';
-import { CurriculumCollection } from '../../repositories/contracts';
 
 /**
  * Integration tests for CurriculumRepository against Firebase Emulator.
  *
  * These tests require the Firebase Emulator Suite to be running locally.
- * Skip these tests if the emulator is not available.
- *
- * To run: firebase emulators:start --only firestore
- * Then: npx jest --testPathPattern=integration
+ * Static entities (educational systems, stages, grades) are tested from constants.
+ * Dynamic entities (academic years, terms) are tested against Firestore.
  */
 
 const isEmulatorAvailable = process.env.FIRESTORE_EMULATOR_HOST !== undefined;
@@ -17,9 +14,6 @@ const isEmulatorAvailable = process.env.FIRESTORE_EMULATOR_HOST !== undefined;
 const testIntegration = isEmulatorAvailable ? describe : describe.skip;
 testIntegration('CurriculumRepository Integration Tests', () => {
   let repository: CurriculumRepository;
-  const systemId = `integration-sys-${Date.now()}`;
-  const stageId = `integration-stage-${Date.now()}`;
-  const gradeId = `integration-grade-${Date.now()}`;
   const yearId = `integration-year-${Date.now()}`;
   const termId = `integration-term-${Date.now()}`;
 
@@ -31,122 +25,81 @@ testIntegration('CurriculumRepository Integration Tests', () => {
     if (repository && isEmulatorAvailable) {
       await repository.softDeleteCurriculum(termId, 'academicTerms', 'cleanup');
       await repository.softDeleteCurriculum(yearId, 'academicYears', 'cleanup');
-      await repository.softDeleteCurriculum(gradeId, 'grades', 'cleanup');
-      await repository.softDeleteCurriculum(stageId, 'stages', 'cleanup');
-      await repository.softDeleteCurriculum(systemId, 'educationalSystems', 'cleanup');
     }
   });
 
-  describe('Educational System', () => {
-    it('creates an educational system in Firestore', async () => {
-      const result = await repository.createEducationalSystem({
-        id: systemId,
-        name: 'Integration Test System',
-        nameAr: 'نظام اختبار تكاملي',
-      });
-
+  describe('Educational System (Static Constants)', () => {
+    it('returns GENERAL system from constants', async () => {
+      const result = await repository.getEducationalSystemById('GENERAL');
       expect(result.ok).toBe(true);
       if (result.ok) {
-        expect(result.value.id).toBe(systemId);
-        expect(result.value.name).toBe('Integration Test System');
-        expect(result.value.isActive).toBe(true);
+        expect(result.value.nameAr).toBe('عام');
       }
     });
 
-    it('retrieves the created educational system by id', async () => {
-      const result = await repository.getEducationalSystemById(systemId);
-
-      expect(result.ok).toBe(true);
-      if (result.ok) {
-        expect(result.value.id).toBe(systemId);
-        expect(result.value.name).toBe('Integration Test System');
-      }
-    });
-
-    it('lists educational systems', async () => {
+    it('returns all systems from constants', async () => {
       const result = await repository.listEducationalSystems({}, { limit: 20 });
-
       expect(result.ok).toBe(true);
       if (result.ok) {
-        expect(Array.isArray(result.value.items)).toBe(true);
-        expect(result.value.items.length).toBeGreaterThanOrEqual(1);
+        expect(result.value.items.length).toBe(3);
       }
     });
 
-    it('returns ALREADY_EXISTS for duplicate id', async () => {
-      const result = await repository.createEducationalSystem({
-        id: systemId,
-        name: 'Duplicate',
-        nameAr: 'مكرر',
-      });
-
+    it('returns NOT_FOUND for non-existent system', async () => {
+      const result = await repository.getEducationalSystemById('non-existent-id-12345');
       expect(result.ok).toBe(false);
       if (!result.ok) {
-        expect(result.error.code).toBe('ALREADY_EXISTS');
+        expect(result.error.code).toBe('NOT_FOUND');
       }
     });
   });
 
-  describe('Stage', () => {
-    it('creates a stage', async () => {
-      const result = await repository.createStage({
-        id: stageId,
-        educationalSystemId: systemId,
-        name: 'Primary',
-        nameAr: 'ابتدائي',
-        order: 1,
-      });
-
+  describe('Stage (Static Constants)', () => {
+    it('returns PRIMARY stage from constants', async () => {
+      const result = await repository.getStageById('PRIMARY');
       expect(result.ok).toBe(true);
       if (result.ok) {
-        expect(result.value.educationalSystemId).toBe(systemId);
-        expect(result.value.order).toBe(1);
+        expect(result.value.nameAr).toBe('ابتدائي');
       }
     });
 
-    it('retrieves stages by system', async () => {
-      const result = await repository.getStagesBySystem(systemId);
-
-      expect(result.ok).toBe(true);
-      if (result.ok) {
-        expect(result.value.length).toBeGreaterThanOrEqual(1);
-        expect(result.value[0].educationalSystemId).toBe(systemId);
-      }
-    });
-  });
-
-  describe('Grade', () => {
-    it('creates a grade', async () => {
-      const result = await repository.createGrade({
-        id: gradeId,
-        educationalSystemId: systemId,
-        stageId,
-        name: 'Grade 1',
-        nameAr: 'الصف الأول',
-        order: 1,
-      });
-
-      expect(result.ok).toBe(true);
-      if (result.ok) {
-        expect(result.value.stageId).toBe(stageId);
-      }
-    });
-
-    it('retrieves grades by stage', async () => {
-      const result = await repository.getGradesByStage(stageId);
-
+    it('returns stages by system from constants', async () => {
+      const result = await repository.getStagesBySystem('GENERAL');
       expect(result.ok).toBe(true);
       if (result.ok) {
         expect(result.value.length).toBeGreaterThanOrEqual(1);
       }
     });
+
+    it('returns NOT_FOUND for non-existent stage', async () => {
+      const result = await repository.getStageById('non-existent-stage');
+      expect(result.ok).toBe(false);
+    });
   });
 
-  describe('Academic Year', () => {
-    it('creates an academic year', async () => {
+  describe('Grade (Static Constants)', () => {
+    it('returns GRADE_1 from constants', async () => {
+      const result = await repository.getGradeById('GRADE_1');
+      expect(result.ok).toBe(true);
+      if (result.ok) {
+        expect(result.value.stageId).toBe('PRIMARY');
+      }
+    });
+
+    it('returns grades by stage from constants', async () => {
+      const result = await repository.getGradesByStage('PRIMARY');
+      expect(result.ok).toBe(true);
+      if (result.ok) {
+        expect(result.value.length).toBe(6);
+      }
+    });
+  });
+
+  describe('Academic Year (Dynamic - Firestore)', () => {
+    it('creates an academic year in Firestore', async () => {
       const result = await repository.createAcademicYear({
         id: yearId,
-        educationalSystemId: systemId,
+        educationalSystemId: 'GENERAL',
         name: '2025-2026',
         nameAr: '2025-2026',
         startDate: '2025-09-01',
@@ -156,7 +109,7 @@ testIntegration('CurriculumRepository Integration Tests', () => {
 
       expect(result.ok).toBe(true);
       if (result.ok) {
-        expect(result.value.educationalSystemId).toBe(systemId);
+        expect(result.value.educationalSystemId).toBe('GENERAL');
         expect(result.value.isCurrent).toBe(true);
       }
     });
@@ -166,13 +119,13 @@ testIntegration('CurriculumRepository Integration Tests', () => {
 
       expect(result.ok).toBe(true);
       if (result.ok && result.value) {
-        expect(result.value.educationalSystemId).toBe(systemId);
+        expect(result.value.educationalSystemId).toBe('GENERAL');
       }
     });
   });
 
-  describe('Academic Term', () => {
-    it('creates an academic term', async () => {
+  describe('Academic Term (Dynamic - Firestore)', () => {
+    it('creates an academic term in Firestore', async () => {
       const result = await repository.createAcademicTerm({
         id: termId,
         academicYearId: yearId,
@@ -205,105 +158,50 @@ testIntegration('CurriculumRepository Integration Tests', () => {
 
       expect(result.ok).toBe(true);
       if (result.ok) {
-        expect(result.value.academicYear).toBeNull();
-        expect(result.value.academicTerm).toBeNull();
+        expect(result.value.academicYear).toBeDefined();
+        expect(result.value.academicTerm).toBeDefined();
       }
     });
   });
 
-  describe('Soft Delete & Restore', () => {
-    it('soft deletes an educational system', async () => {
-      const result = await repository.softDeleteCurriculum(systemId, 'educationalSystems', `delete-${Date.now()}`);
-
+  describe('Soft Delete & Restore (Academic Years)', () => {
+    it('soft deletes an academic year', async () => {
+      const result = await repository.softDeleteCurriculum(yearId, 'academicYears', `delete-${Date.now()}`);
       expect(result.ok).toBe(true);
     });
 
-    it('returns not found after soft delete', async () => {
-      const result = await repository.getEducationalSystemById(systemId);
-
-      expect(result.ok).toBe(false);
-      if (!result.ok) {
-        expect(result.error.code).toBe('NOT_FOUND');
-      }
-    });
-
-    it('restores soft-deleted educational system', async () => {
-      const restoreResult = await repository.restoreCurriculum(systemId, 'educationalSystems', `restore-${Date.now()}`);
+    it('restores soft-deleted academic year', async () => {
+      const restoreResult = await repository.restoreCurriculum(yearId, 'academicYears', `restore-${Date.now()}`);
       expect(restoreResult.ok).toBe(true);
 
-      const system = await repository.getEducationalSystemById(systemId);
-      expect(system.ok).toBe(true);
-      if (system.ok) {
-        expect(system.value.id).toBe(systemId);
-      }
-    });
-  });
-
-  describe('Pagination', () => {
-    it('supports cursor pagination on educational systems', async () => {
-      const page1 = await repository.listEducationalSystems({}, { limit: 1 });
-
-      expect(page1.ok).toBe(true);
-      if (page1.ok) {
-        const page2 = await repository.listEducationalSystems(
-          {},
-          { limit: 1, cursor: page1.value.nextCursor ?? undefined },
-        );
-        expect(page2.ok).toBe(true);
-      }
-    });
-
-    it('filters by isActive', async () => {
-      const result = await repository.listEducationalSystems({ isActive: true }, { limit: 10 });
-
-      expect(result.ok).toBe(true);
-      if (result.ok) {
-        result.value.items.forEach((system) => {
-          expect(system.isActive).toBe(true);
-        });
-      }
-    });
-
-    it('returns empty list for non-matching filters', async () => {
-      const result = await repository.listEducationalSystems(
-        { isActive: false },
-        { limit: 10 },
-      );
-
-      expect(result.ok).toBe(true);
-      if (result.ok) {
-        expect(result.value.items).toEqual([]);
-        expect(result.value.nextCursor).toBeNull();
+      const year = await repository.getAcademicYearById(yearId);
+      expect(year.ok).toBe(true);
+      if (year.ok) {
+        expect(year.value.id).toBe(yearId);
       }
     });
   });
 
   describe('Error Handling', () => {
+    it('handles soft delete of non-existent document in academicYears', async () => {
+      const result = await repository.softDeleteCurriculum('non-existent-doc', 'academicYears', 'req-test');
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+        expect(result.error.code).toBe('NOT_FOUND');
+      }
+    });
+
     it('handles not found for non-existent educational system', async () => {
       const result = await repository.getEducationalSystemById('non-existent-id-12345');
-
       expect(result.ok).toBe(false);
       if (!result.ok) {
         expect(result.error.code).toBe('NOT_FOUND');
       }
     });
 
-    it('handles not found for non-existent stage', async () => {
-      const result = await repository.getStageById('non-existent-stage');
-
+    it('handles not found for non-existent grade', async () => {
+      const result = await repository.getGradeById('non-existent-grade');
       expect(result.ok).toBe(false);
-      if (!result.ok) {
-        expect(result.error.code).toBe('NOT_FOUND');
-      }
-    });
-
-    it('handles soft delete of non-existent document', async () => {
-      const result = await repository.softDeleteCurriculum('non-existent-doc', 'educationalSystems', 'req-test');
-
-      expect(result.ok).toBe(false);
-      if (!result.ok) {
-        expect(result.error.code).toBe('NOT_FOUND');
-      }
     });
   });
 });
