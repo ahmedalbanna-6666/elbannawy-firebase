@@ -21,7 +21,9 @@ export async function POST(
     await docRef.set(termData);
     const saved = await docRef.get();
     return NextResponse.json({ success: true, data: { id: docRef.id, ...saved.data() } }, { status: 201 });
-  } catch {
-    return NextResponse.json({ success: false, error: { code: 'INTERNAL', message: 'Failed to create term' } }, { status: 500 });
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : 'Failed to create term';
+    console.error('Failed to create term:', msg);
+    return NextResponse.json({ success: false, error: { code: 'INTERNAL', message: msg } }, { status: 500 });
   }
 }
