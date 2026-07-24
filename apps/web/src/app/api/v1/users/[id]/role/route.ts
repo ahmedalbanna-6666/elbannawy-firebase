@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { UserService, UserApplicationService, ChangeRoleInputSchema } from '@el-bannawy/lib';
+import { requireAdmin, normalizeRole } from '@/lib/firebase/auth-helper';
+import { getAdminAuth } from '@/lib/firebase/admin';
 
 const userService = new UserService();
 const applicationService = new UserApplicationService(userService);
@@ -8,6 +10,9 @@ export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ): Promise<NextResponse> {
+  const auth = await requireAdmin(request);
+  if (auth instanceof Response) return auth;
+
   const { id } = await params;
 
   let body: Record<string, unknown>;
@@ -50,6 +55,13 @@ export async function PATCH(
       },
       { status: mapErrorCode(result.error.code) },
     );
+  }
+
+  try {
+    const normalizedRole = normalizeRole(parsed.data.role);
+    await getAdminAuth().setCustomUserClaims(id, { role: normalizedRole });
+  } catch {
+    // Firebase Auth user may not exist
   }
 
   return NextResponse.json(

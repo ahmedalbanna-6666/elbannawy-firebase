@@ -9,6 +9,7 @@ export interface Unit extends IBaseEntity {
   readonly order: number;
   readonly isActive: boolean;
   readonly isPremium: boolean;
+  readonly priceCoins?: number;
   readonly published: boolean;
 }
 
@@ -20,6 +21,7 @@ export interface UnitSummary {
   readonly order: number;
   readonly isActive: boolean;
   readonly isPremium: boolean;
+  readonly priceCoins?: number;
   readonly published: boolean;
   readonly createdAt: string;
 }

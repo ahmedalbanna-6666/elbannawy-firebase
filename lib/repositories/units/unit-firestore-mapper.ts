@@ -11,6 +11,7 @@ export interface UnitFirestoreDoc {
   order: number;
   isActive: boolean;
   isPremium: boolean;
+  priceCoins?: number;
   published: boolean;
   createdAt: Timestamp | string;
   updatedAt: Timestamp | string;
@@ -31,6 +32,7 @@ export class UnitFirestoreMapper {
       order: doc.order,
       isActive: doc.isActive,
       isPremium: doc.isPremium,
+      priceCoins: doc.priceCoins,
       published: doc.published,
       createdAt: formatFirestoreTimestamp(doc.createdAt),
       updatedAt: formatFirestoreTimestamp(doc.updatedAt),
@@ -48,6 +50,7 @@ export class UnitFirestoreMapper {
       order: doc.order,
       isActive: doc.isActive,
       isPremium: doc.isPremium,
+      priceCoins: doc.priceCoins,
       published: doc.published,
       createdAt: formatFirestoreTimestamp(doc.createdAt),
     };

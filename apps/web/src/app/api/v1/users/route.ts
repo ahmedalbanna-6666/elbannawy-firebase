@@ -1,10 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { UserService, UserApplicationService, CreateUserInputSchema, UserFilterSchema, PageQuerySchema } from '@el-bannawy/lib';
+import { requireAdmin } from '@/lib/firebase/auth-helper';
 
 const userService = new UserService();
 const applicationService = new UserApplicationService(userService);
 
 export async function GET(request: NextRequest): Promise<NextResponse> {
+  const auth = await requireAdmin(request);
+  if (!auth.authorized) return auth.response;
   const { searchParams } = new URL(request.url);
 
   const limit = Math.min(Math.max(Number(searchParams.get('limit')) || 20, 1), 100);
@@ -74,6 +77,9 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 }
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
+  const auth = await requireAdmin(request);
+  if (!auth.authorized) return auth.response;
+
   let body: Record<string, unknown>;
   try {
     body = await request.json() as Record<string, unknown>;

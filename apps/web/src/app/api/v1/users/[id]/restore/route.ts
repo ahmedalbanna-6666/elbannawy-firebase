@@ -1,13 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { UserService, UserApplicationService } from '@el-bannawy/lib';
+import { requireAdmin } from '@/lib/firebase/auth-helper';
+import { getAdminAuth } from '@/lib/firebase/admin';
 
 const userService = new UserService();
 const applicationService = new UserApplicationService(userService);
 
 export async function POST(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ): Promise<NextResponse> {
+  const auth = await requireAdmin(request);
+  if (auth instanceof Response) return auth;
+
   const { id } = await params;
   const requestId = `restore-${id}-${Date.now()}`;
 
@@ -22,6 +27,12 @@ export async function POST(
       },
       { status: mapErrorCode(result.error.code) },
     );
+  }
+
+  try {
+    await getAdminAuth().updateUser(id, { disabled: false });
+  } catch {
+    // Firebase Auth user may not exist
   }
 
   return NextResponse.json(

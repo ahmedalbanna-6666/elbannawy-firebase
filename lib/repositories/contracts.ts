@@ -413,6 +413,7 @@ export interface IUnit {
   readonly order: number;
   readonly isActive: boolean;
   readonly isPremium: boolean;
+  readonly priceCoins?: number;
   readonly published: boolean;
   readonly createdAt: string;
   readonly updatedAt: string;
@@ -428,6 +429,7 @@ export interface IUnitSummary {
   readonly order: number;
   readonly isActive: boolean;
   readonly isPremium: boolean;
+  readonly priceCoins?: number;
   readonly published: boolean;
   readonly createdAt: string;
 }
@@ -441,6 +443,7 @@ export interface CreateUnitInput {
   readonly order: number;
   readonly isActive?: boolean;
   readonly isPremium?: boolean;
+  readonly priceCoins?: number;
   readonly published?: boolean;
 }
 
@@ -451,6 +454,7 @@ export interface UpdateUnitInput {
   readonly order?: number;
   readonly isActive?: boolean;
   readonly isPremium?: boolean;
+  readonly priceCoins?: number;
   readonly published?: boolean;
 }
 
@@ -1754,6 +1758,28 @@ export interface IContentEntitlementRepository {
   getByStudentAndContent(studentId: string, contentType: string, contentId: string): Promise<RepositoryResult<IContentEntitlement | null>>;
   listByStudent(studentId: string): Promise<RepositoryResult<IContentEntitlement[]>>;
   create(input: IContentEntitlement): Promise<RepositoryResult<IContentEntitlement>>;
+}
+
+// ===== Coupon / Redeem Code Contracts =====
+
+export interface ICoupon {
+  readonly id: string;
+  readonly code: string;
+  readonly contentType: string;
+  readonly contentId: string;
+  readonly maxUses: number;
+  readonly useCount: number;
+  readonly active: boolean;
+  readonly expiresAt: string | null;
+  readonly createdAt: string;
+  readonly updatedAt: string;
+}
+
+export interface ICouponRepository {
+  getByCode(code: string): Promise<RepositoryResult<ICoupon | null>>;
+  incrementUseCount(id: string): Promise<RepositoryResult<void>>;
+  create(input: ICoupon): Promise<RepositoryResult<ICoupon>>;
+  list(): Promise<RepositoryResult<ICoupon[]>>;
 }
 
 // ===== Live Class Contracts =====

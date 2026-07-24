@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAdminAuth } from '@/lib/firebase/admin';
+import { normalizeRole } from '@/lib/firebase/auth-helper';
 
 const FIREBASE_API_KEY = process.env.NEXT_PUBLIC_FIREBASE_API_KEY ?? '';
 
@@ -42,9 +43,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const adminAuth = getAdminAuth();
     const userRecord = await adminAuth.getUser(data.localId);
     const claims = userRecord.customClaims ?? {};
-    const rawRole = ((claims as Record<string, string>).role ?? 'student').toLowerCase();
-    const roleMap: Record<string, string> = { admin: 'administrator' };
-    const role = roleMap[rawRole] ?? rawRole;
+    const rawRole = (claims as Record<string, string>).role ?? 'student';
+    const role = normalizeRole(rawRole);
 
     const expiresIn = 60 * 60 * 24 * 5; // 5 days in seconds
 

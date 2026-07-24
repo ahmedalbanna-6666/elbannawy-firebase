@@ -1,10 +1,16 @@
 import "server-only";
-import { type NextRequest } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { getAdminAuth } from "./admin";
 
 const FIREBASE_API_KEY = process.env.NEXT_PUBLIC_FIREBASE_API_KEY ?? "";
 
-export async function authenticateRequest(request: NextRequest): Promise<{ uid: string; email?: string } | null> {
+export interface AuthUser {
+  uid: string;
+  email?: string;
+  role?: string;
+}
+
+export async function authenticateRequest(request: NextRequest): Promise<AuthUser | null> {
   let token = request.cookies.get("auth_token")?.value;
   const authHeader = request.headers.get("Authorization");
   if (!token && authHeader?.startsWith("Bearer ")) {
@@ -12,11 +18,10 @@ export async function authenticateRequest(request: NextRequest): Promise<{ uid: 
   }
   if (!token) return null;
 
-  // Try Admin SDK verifyIdToken first
   const adminAuth = getAdminAuth();
   try {
     const decoded = await adminAuth.verifyIdToken(token);
-    return { uid: decoded.uid, email: decoded.email };
+    return { uid: decoded.uid, email: decoded.email, role: decoded.role as string | undefined };
   } catch {}
 
   // Fallback: Identity Toolkit lookup API
@@ -51,11 +56,41 @@ export async function authenticateRequest(request: NextRequest): Promise<{ uid: 
       req.end();
     });
     if (result.ok) {
-      const lookupData = result.data as { users?: Array<{ localId: string; email?: string }> };
+      const lookupData = result.data as { users?: Array<{ localId: string; email?: string; providerUserInfo?: Array<{ providerId: string }> }> };
       const userInfo = lookupData.users?.[0];
       if (userInfo) return { uid: userInfo.localId, email: userInfo.email };
     }
   } catch {}
 
   return null;
+}
+
+const ADMIN_ROLES = new Set(['admin', 'administrator', 'ADMINISTRATOR']);
+
+export function isAdminRole(role?: string): boolean {
+  return !!role && ADMIN_ROLES.has(role.toLowerCase());
+}
+
+export type AuthResult = { authorized: true; user: AuthUser } | { authorized: false; response: NextResponse };
+
+export async function requireAdmin(request: NextRequest): Promise<AuthResult> {
+  const decoded = await authenticateRequest(request);
+  if (!decoded) {
+    return { authorized: false, response: NextResponse.json({ success: false, error: { code: 'UNAUTHORIZED', message: 'Authentication required' } }, { status: 401 }) };
+  }
+  if (!isAdminRole(decoded.role)) {
+    return { authorized: false, response: NextResponse.json({ success: false, error: { code: 'FORBIDDEN', message: 'Admin access required' } }, { status: 403 }) };
+  }
+  return { authorized: true, user: decoded };
+}
+
+export function normalizeRole(role: string): string {
+  const normalized = role.toLowerCase().trim();
+  if (normalized === 'admin' || normalized === 'administrator') return 'administrator';
+  if (normalized === 'teacher') return 'teacher';
+  if (normalized === 'staff') return 'staff';
+  if (normalized === 'secretary') return 'secretary';
+  if (normalized === 'support') return 'support';
+  if (normalized === 'student') return 'student';
+  return 'student';
 }

@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { UserService, UserApplicationService, ChangeStatusInputSchema } from '@el-bannawy/lib';
+import { requireAdmin } from '@/lib/firebase/auth-helper';
+import { getAdminAuth } from '@/lib/firebase/admin';
 
 const userService = new UserService();
 const applicationService = new UserApplicationService(userService);
@@ -8,6 +10,9 @@ export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ): Promise<NextResponse> {
+  const auth = await requireAdmin(request);
+  if (!auth.authorized) return auth.response;
+
   const { id } = await params;
 
   let body: Record<string, unknown>;
@@ -50,6 +55,13 @@ export async function PATCH(
       },
       { status: mapErrorCode(result.error.code) },
     );
+  }
+
+  try {
+    const isActive = parsed.data.status === 'active';
+    await getAdminAuth().updateUser(id, { disabled: !isActive });
+  } catch {
+    // User may not exist in Firebase Auth (e.g. legacy data)
   }
 
   return NextResponse.json(

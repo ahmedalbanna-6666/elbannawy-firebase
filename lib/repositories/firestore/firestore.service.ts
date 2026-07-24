@@ -31,14 +31,18 @@ export function getFirestoreInstance(): Firestore {
   let app = apps.length > 0 ? apps[0] : null;
   if (!app) {
     const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
-    const privateKey = process.env.FIREBASE_PRIVATE_KEY;
+    let privateKey = process.env.FIREBASE_PRIVATE_KEY;
     const projectId = process.env.FIREBASE_PROJECT_ID;
     if (clientEmail && privateKey && projectId) {
+      privateKey = privateKey.replace(/^["']|["']$/g, "");
+      if (!privateKey.includes("\n") && privateKey.includes("\\n")) {
+        privateKey = privateKey.replace(/\\n/g, "\n");
+      }
       app = initializeApp({
         credential: cert({
           projectId,
           clientEmail,
-          privateKey: privateKey.replace(/\\n/g, '\n'),
+          privateKey,
         }),
         projectId,
       });

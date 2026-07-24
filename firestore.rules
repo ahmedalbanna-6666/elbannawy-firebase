@@ -133,7 +133,7 @@ service cloud.firestore {
     // ── Payments & Wallet ───────────────────────────────────────
     match /wallets/{doc} {
       allow read: if request.auth != null && request.auth.uid == resource.data.userId;
-      allow write: if request.auth != null && request.auth.uid == resource.data.userId;
+      allow write: if false;
     }
 
     match /payments/{doc} {
@@ -314,6 +314,13 @@ service cloud.firestore {
     match /contentEntitlements/{doc} {
       allow read: if request.auth != null && request.auth.uid == resource.data.studentId;
       allow write: if false;
+    }
+
+    match /coupons/{doc} {
+      allow read: if isAdmin();
+      allow create: if isAdmin();
+      allow update: if isAdmin();
+      allow delete: if false;
     }
 
     match /coinPurchaseRequests/{doc} {

@@ -1,16 +1,11 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { getAdminAuth, getAdminDb } from '@/lib/firebase/admin';
+import { normalizeRole } from '@/lib/firebase/auth-helper';
 import { UserService } from '@el-bannawy/lib';
 
 const userService = new UserService();
 
 const FIREBASE_API_KEY = process.env.NEXT_PUBLIC_FIREBASE_API_KEY ?? '';
-
-function normalizeRole(role: string): string {
-  const normalized = role.toLowerCase();
-  const roleMap: Record<string, string> = { admin: 'administrator' };
-  return roleMap[normalized] ?? normalized;
-}
 
 async function verifyToken(token: string): Promise<{ uid: string; email?: string; displayName?: string } | null> {
   // Try Admin SDK verifyIdToken first (works for securetoken.google.com tokens)

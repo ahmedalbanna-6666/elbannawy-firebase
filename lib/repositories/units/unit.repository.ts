@@ -46,6 +46,7 @@ export class UnitRepository implements IUnitRepository {
         order: input.order,
         isActive: input.isActive ?? true,
         isPremium: input.isPremium ?? false,
+        priceCoins: input.priceCoins ?? null,
         published: input.published ?? false,
         createdAt: now,
         updatedAt: now,
@@ -77,6 +78,7 @@ export class UnitRepository implements IUnitRepository {
       if (input.order !== undefined) updateData.order = input.order;
       if (input.isActive !== undefined) updateData.isActive = input.isActive;
       if (input.isPremium !== undefined) updateData.isPremium = input.isPremium;
+      if (input.priceCoins !== undefined) updateData.priceCoins = input.priceCoins;
       if (input.published !== undefined) updateData.published = input.published;
       await docRef.update(updateData);
       const saved = await docRef.get();

@@ -36,9 +36,19 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     }
 
     const now = new Date().toISOString();
-    const paymentId = `pay_${Date.now()}`;
-    const idempotencyKey = body.idempotencyKey as string || `pk_${paymentId}`;
+    const idempotencyKey = body.idempotencyKey as string || `pk_${decoded.uid}_${packageId}_${Date.now()}`;
 
+    const existingPayments = await paymentRepo.listByStudent(decoded.uid);
+    if (existingPayments.ok) {
+      const duplicate = existingPayments.value.find(
+        (p) => p.idempotencyKey === idempotencyKey && p.status === 'COMPLETED'
+      );
+      if (duplicate) {
+        return NextResponse.json({ success: true, data: { payment: duplicate, coinsAdded: pkg.value.coinAmount, newBalance: 0, alreadyProcessed: true } }, { status: 200 });
+      }
+    }
+
+    const paymentId = `pay_${Date.now()}`;
     const payment = {
       id: paymentId,
       studentId: decoded.uid,

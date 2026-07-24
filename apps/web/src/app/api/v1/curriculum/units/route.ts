@@ -26,6 +26,7 @@ function toFrontendUnit(u: Record<string, unknown>): Record<string, unknown> {
     displayOrder: u.order ?? 0,
     published: u.published ?? false,
     isPremium: u.isPremium ?? false,
+    priceCoins: u.priceCoins ?? (u.isPremium ? 50 : 0),
     lockedOverride: null,
     createdAt: u.createdAt ?? new Date().toISOString(),
     updatedAt: u.updatedAt ?? new Date().toISOString(),
@@ -44,6 +45,7 @@ function fromFrontendUnit(body: Record<string, unknown>): Record<string, unknown
     academicTermId: body.termId ?? body.academicTermId ?? '',
     isActive: true,
     isPremium: body.isPremium ?? false,
+    priceCoins: body.priceCoins ?? (body.isPremium ? 50 : undefined),
     published: body.published ?? false,
   };
   if (body.isActive !== undefined) payload.isActive = body.isActive;
