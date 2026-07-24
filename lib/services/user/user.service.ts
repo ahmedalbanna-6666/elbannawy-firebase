@@ -88,6 +88,13 @@ export class UserService {
     return this.userRepository.listUsers(filter, page);
   }
 
+  async updateAcademicAssignment(
+    userId: string,
+    input: { educationalSystemId?: string; stageId?: string; gradeId?: string; academicYearId?: string; termId?: string },
+  ): Promise<RepositoryResult<IUser>> {
+    return this.userRepository.updateAcademicAssignment(userId, input as any);
+  }
+
   async changeAccountStatus(
     userId: string,
     input: ChangeStatusDomainInput,

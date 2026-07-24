@@ -116,10 +116,11 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       mobileNumber: user.mobileNumber,
       role: normalizeRole(user.role),
       status: 'active',
+      gradeId: user.gradeId ?? null,
+      educationalSystemId: user.educationalSystemId ?? null,
+      stageId: user.stageId ?? null,
+      effectivePermissions: effectivePermissions ?? [],
     };
-    if (effectivePermissions) {
-      responseData.effectivePermissions = effectivePermissions;
-    }
 
     return NextResponse.json({
       success: true,

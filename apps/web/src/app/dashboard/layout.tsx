@@ -66,12 +66,31 @@ export default function DashboardLayout({ children }: DashboardLayoutProps): Rea
       ?? "طالب")
     : (ROLE_LABELS[userRole] ?? "طالب");
 
+  const onboardingCheckDone = useRef(false);
+
   useEffect(() => {
     setMounted(true);
     if (!isAuthenticated) {
       router.push("/login");
     }
   }, [isAuthenticated, router]);
+
+  useEffect(() => {
+    if (!isAuthenticated || !userId || onboardingCheckDone.current) return;
+    onboardingCheckDone.current = true;
+    fetch("/api/v1/auth/me")
+      .then((r) => r.json())
+      .then((res) => {
+        if (res.success && res.data) {
+          const isStudent = (res.data.role ?? "").toLowerCase() === "student";
+          const hasGrade = !!res.data.gradeId;
+          if (isStudent && !hasGrade) {
+            router.push("/onboarding");
+          }
+        }
+      })
+      .catch(() => {});
+  }, [isAuthenticated, userId, router]);
 
   useEffect(() => {
     if (!sidebarOpen) return;
