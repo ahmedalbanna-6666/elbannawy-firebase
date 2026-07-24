@@ -145,7 +145,11 @@ export function UnitFormDialog({
   const resolvedAcademicYearId = useMemo(() => {
     if (academicYearIdFromStore) return academicYearIdFromStore;
     if (!academicYears || !academicYearFromStore) return null;
-    const year = academicYears.find((y) => y.name === academicYearFromStore);
+    const norm = (s: string) => s.replace(/[-\/]/g, "").trim().toLowerCase();
+    const normSelected = norm(academicYearFromStore);
+    const year = academicYears.find(
+      (y) => y.name === academicYearFromStore || norm(y.name) === normSelected,
+    );
     return year?.id ?? null;
   }, [academicYears, academicYearFromStore, academicYearIdFromStore]);
 

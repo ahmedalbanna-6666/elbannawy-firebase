@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, type ReactNode } from "react";
+import { useEffect, useMemo, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api-client";
 import { Select } from "@/components/ui/select";
@@ -94,6 +94,20 @@ export function AcademicContextBar({ className }: AcademicContextBarProps): Reac
     }
     return map;
   }, [isAdmin, academicYears, academicYear, yearToId]);
+
+  useEffect(() => {
+    if (!isAdmin || !Array.isArray(academicYears) || !academicYear) return;
+    const id = yearToId.get(academicYear);
+    if (id) setAcademicYearId(id);
+  }, [isAdmin, academicYears, academicYear, yearToId, setAcademicYearId]);
+
+  useEffect(() => {
+    if (!isAdmin || !Array.isArray(academicYears) || !academicYear || !term) return;
+    const termLabel = ACADEMIC_TERMS.find((t) => t.id === term)?.label;
+    if (!termLabel) return;
+    const id = termToId.get(termLabel);
+    if (id) setTermId(id);
+  }, [isAdmin, academicYears, academicYear, term, termToId, setTermId]);
 
   const { data: allStages } = useQuery({
     queryKey: ["curriculum-stages"],
