@@ -1757,6 +1757,7 @@ export interface ICoinPackageRepository {
 export interface IContentEntitlementRepository {
   getByStudentAndContent(studentId: string, contentType: string, contentId: string): Promise<RepositoryResult<IContentEntitlement | null>>;
   listByStudent(studentId: string): Promise<RepositoryResult<IContentEntitlement[]>>;
+  listBySource(sourceType: string, sourceId: string): Promise<RepositoryResult<IContentEntitlement[]>>;
   create(input: IContentEntitlement): Promise<RepositoryResult<IContentEntitlement>>;
 }
 

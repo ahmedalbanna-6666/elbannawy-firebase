@@ -18,6 +18,7 @@ export * from './repositories/coins';
 export * from './repositories/notifications';
 export * from './repositories/reports';
 export * from './repositories/payments';
+export * from './repositories/subscriptions';
 export * from './repositories/competitions';
 export * from './repositories/support';
 export * from './repositories/gamification';
@@ -40,6 +41,7 @@ export * from './question-import';
 export type { RepositoryResult, RepositoryError, IQueryFilter } from './shared/types/repository.types';
 export type { Page, PageQuery, IPaginationMeta, IPaginatedResponse } from './shared/types/pagination.types';
 export * from './services/teacher';
+export * from './services/subscriptions';
 export { FcmNotificationService } from './services/fcm-notification.service';
 export { NotificationDispatcher } from './services/notification-dispatcher.service';
 

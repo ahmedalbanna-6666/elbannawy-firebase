@@ -22,6 +22,16 @@ export class ContentEntitlementRepository implements IContentEntitlementReposito
     } catch (error) { return { ok: false, error: { ...toRepositoryError(error) } } as unknown as RepositoryResult<IContentEntitlement[]>; }
   }
 
+  async listBySource(sourceType: string, sourceId: string): Promise<RepositoryResult<IContentEntitlement[]>> {
+    try {
+      const snap = await this.db().collection(COLLECTION)
+        .where('sourceType', '==', sourceType)
+        .where('sourceId', '==', sourceId)
+        .get();
+      return { ok: true, value: snap.docs.map((d) => d.data() as IContentEntitlement) };
+    } catch (error) { return { ok: false, error: { ...toRepositoryError(error) } } as unknown as RepositoryResult<IContentEntitlement[]>; }
+  }
+
   async create(input: IContentEntitlement): Promise<RepositoryResult<IContentEntitlement>> {
     try {
       await this.db().collection(COLLECTION).doc(input.id).set(input);
