@@ -1,6 +1,7 @@
 # AI_OPERATIONS.md
 
 # El-bannawy Platform
+
 ## AI Operations
 
 Version: 2.0.0
@@ -71,21 +72,21 @@ CLOSED or OPEN (Depending on Recovery Result)
 
 ## Transition Rules
 
-| Transition | Condition | Action |
-|------------|-----------|--------|
-| CLOSED → OPEN | 5 consecutive failures OR latency > 10s threshold within 2min window | Block all requests to this provider. Start cooldown timer. |
-| OPEN → HALF_OPEN | Cooldown period expires (default: 30s) | Allow 1 probe request to test recovery. |
-| HALF_OPEN → CLOSED | Probe request succeeds within timeout | Resume normal traffic. Reset failure count. |
-| HALF_OPEN → OPEN | Probe request fails | Restart cooldown timer. Increment escalation level. |
+| Transition         | Condition                                                            | Action                                                     |
+| ------------------ | -------------------------------------------------------------------- | ---------------------------------------------------------- |
+| CLOSED → OPEN      | 5 consecutive failures OR latency > 10s threshold within 2min window | Block all requests to this provider. Start cooldown timer. |
+| OPEN → HALF_OPEN   | Cooldown period expires (default: 30s)                               | Allow 1 probe request to test recovery.                    |
+| HALF_OPEN → CLOSED | Probe request succeeds within timeout                                | Resume normal traffic. Reset failure count.                |
+| HALF_OPEN → OPEN   | Probe request fails                                                  | Restart cooldown timer. Increment escalation level.        |
 
 ## Failure Thresholds
 
-| Metric | Threshold | Window |
-|--------|-----------|--------|
+| Metric               | Threshold  | Window        |
+| -------------------- | ---------- | ------------- |
 | Consecutive HTTP 5xx | 5 failures | Rolling 2 min |
-| Consecutive Timeout | 5 failures | Rolling 2 min |
-| P50 Latency Exceeded | > 10s | Rolling 1 min |
-| P95 Latency Exceeded | > 30s | Rolling 1 min |
+| Consecutive Timeout  | 5 failures | Rolling 2 min |
+| P50 Latency Exceeded | > 10s      | Rolling 1 min |
+| P95 Latency Exceeded | > 30s      | Rolling 1 min |
 
 ## Escalation
 
@@ -108,14 +109,14 @@ Failure of one provider must never cascade to another provider.
 
 ## Layer Timeouts
 
-| Layer | Timeout | Behavior |
-|-------|---------|----------|
-| Network | 5s | Fail fast on connection issues |
-| LLM Request | 15s | Primary timeout for model inference |
-| Streaming First Token | 10s | Abort if first token not received |
-| RAG Retrieval | 3s | Fail RAG, fall back to prompt-only |
-| Context Building | 1s | Use partial context if timeout |
-| Validation | 2s | Skip validation if timeout |
+| Layer                 | Timeout | Behavior                            |
+| --------------------- | ------- | ----------------------------------- |
+| Network               | 5s      | Fail fast on connection issues      |
+| LLM Request           | 15s     | Primary timeout for model inference |
+| Streaming First Token | 10s     | Abort if first token not received   |
+| RAG Retrieval         | 3s      | Fail RAG, fall back to prompt-only  |
+| Context Building      | 1s      | Use partial context if timeout      |
+| Validation            | 2s      | Skip validation if timeout          |
 
 ## Timeout Hierarchy
 
@@ -155,12 +156,12 @@ Never let a child timeout exceed the parent timeout.
 
 ## Provider Retry
 
-| Attempt | Provider | Max Wait | Backoff |
-|---------|----------|----------|---------|
-| 1 | Primary | 15s | Immediate |
-| 2 | Primary | 20s | Exponential (2x) |
-| 3 | Secondary | 15s | Immediate |
-| 4 | Secondary | 20s | Exponential (2x) |
+| Attempt | Provider  | Max Wait | Backoff          |
+| ------- | --------- | -------- | ---------------- |
+| 1       | Primary   | 15s      | Immediate        |
+| 2       | Primary   | 20s      | Exponential (2x) |
+| 3       | Secondary | 15s      | Immediate        |
+| 4       | Secondary | 20s      | Exponential (2x) |
 
 Total maximum wait across all retries: 70s
 
@@ -168,15 +169,15 @@ Client-side timeout (30s) takes precedence — if client disconnects, stop all r
 
 ## Retryable Failures
 
-| Error Type | Retry? | Notes |
-|------------|--------|-------|
-| HTTP 429 (Rate Limited) | Yes | Wait for Retry-After header |
-| HTTP 500/502/503 | Yes | Provider-side error |
-| Network Error (ECONNRESET) | Yes | Transient |
-| Timeout | Yes | Circuit breaker tracks it |
-| HTTP 400 (Bad Request) | No | Client error, fail immediately |
-| HTTP 401 (Unauthorized) | No | Configuration issue, alert ops |
-| Empty Response | No | Treat as model failure, try secondary |
+| Error Type                 | Retry? | Notes                                 |
+| -------------------------- | ------ | ------------------------------------- |
+| HTTP 429 (Rate Limited)    | Yes    | Wait for Retry-After header           |
+| HTTP 500/502/503           | Yes    | Provider-side error                   |
+| Network Error (ECONNRESET) | Yes    | Transient                             |
+| Timeout                    | Yes    | Circuit breaker tracks it             |
+| HTTP 400 (Bad Request)     | No     | Client error, fail immediately        |
+| HTTP 401 (Unauthorized)    | No     | Configuration issue, alert ops        |
+| Empty Response             | No     | Treat as model failure, try secondary |
 
 ## Retry Budget
 
@@ -365,13 +366,13 @@ Never show an error page or stack trace to the student.
 
 ## Degradation Levels
 
-| Level | Condition | User Experience |
-|-------|-----------|-----------------|
-| 0 — Full Service | All systems normal | Normal AI response with streaming |
-| 1 — Degraded RAG | RAG retrieval > 3s or fails | Response without knowledge citations. Log "RAG_FAILED" |
-| 2 — Secondary Provider | Primary provider circuit open | Same quality, potentially higher latency. Notify user: "Taking a bit longer..." |
-| 3 — Cached Only | All providers fail | Serve semantically similar cached response if available. Notify user: "Using saved answer..." |
-| 4 — Graceful Message | No response possible | Show: "I'm having trouble right now. Please try again in a few minutes." Hide AI panel — do not break the page |
+| Level                  | Condition                     | User Experience                                                                                                |
+| ---------------------- | ----------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| 0 — Full Service       | All systems normal            | Normal AI response with streaming                                                                              |
+| 1 — Degraded RAG       | RAG retrieval > 3s or fails   | Response without knowledge citations. Log "RAG_FAILED"                                                         |
+| 2 — Secondary Provider | Primary provider circuit open | Same quality, potentially higher latency. Notify user: "Taking a bit longer..."                                |
+| 3 — Cached Only        | All providers fail            | Serve semantically similar cached response if available. Notify user: "Using saved answer..."                  |
+| 4 — Graceful Message   | No response possible          | Show: "I'm having trouble right now. Please try again in a few minutes." Hide AI panel — do not break the page |
 
 ## Degradation Escalation
 

@@ -14,13 +14,13 @@ Each Unit is a group of lessons within a specific academic term.
 
 ### Clean Architecture Layers
 
-| Layer | Component | Location |
-|-------|-----------|----------|
-| Domain | Entity interfaces | `lib/domain/units/entities/` |
-| Repository | UnitRepository | `lib/repositories/units/` |
-| Service | UnitService | `lib/services/units/` |
-| Application | UnitApplicationService | `lib/services/units/` |
-| API | Next.js Route Handlers | `apps/web/src/app/api/v1/units/` |
+| Layer       | Component              | Location                         |
+| ----------- | ---------------------- | -------------------------------- |
+| Domain      | Entity interfaces      | `lib/domain/units/entities/`     |
+| Repository  | UnitRepository         | `lib/repositories/units/`        |
+| Service     | UnitService            | `lib/services/units/`            |
+| Application | UnitApplicationService | `lib/services/units/`            |
+| API         | Next.js Route Handlers | `apps/web/src/app/api/v1/units/` |
 
 ### Domain Entities
 
@@ -68,9 +68,9 @@ apps/web/src/app/api/v1/units/
 
 ## Firestore Collection
 
-| Collection | Document ID | Key Fields |
-|-----------|-------------|------------|
-| `units` | custom ID | academicTermId, name, nameAr, order, isActive, isPremium, published |
+| Collection | Document ID | Key Fields                                                          |
+| ---------- | ----------- | ------------------------------------------------------------------- |
+| `units`    | custom ID   | academicTermId, name, nameAr, order, isActive, isPremium, published |
 
 ## API Endpoints
 
@@ -139,6 +139,7 @@ Bulk-reorder all units within an academic term in a single atomic request.
 ```
 
 **Behavior:**
+
 - Accepts a map of `unitId → order` for all units being reordered.
 - The `academicTermId` parameter ensures all units belong to the same term.
 - Executed inside a Firestore transaction for atomicity.
@@ -147,6 +148,7 @@ Bulk-reorder all units within an academic term in a single atomic request.
 - Returns the updated list of units with their new order values.
 
 **Validation rules:**
+
 - `academicTermId` is required and must reference an existing term.
 - `orders` must contain at least 2 entries (single-unit reorder should use PATCH).
 - Each value in `orders` must be a non-negative integer.
@@ -201,15 +203,15 @@ Defined in `lib/repositories/validators/unit.validator.ts`:
 
 ## Test Coverage
 
-| Test Suite | File | Tests |
-|-----------|------|-------|
-| Mapper Unit | `unit-firestore-mapper.test.ts` | 4 tests |
-| Validator Unit | `unit.validator.test.ts` | 35+ tests |
-| Repository Unit | `unit.repository.test.ts` | 18+ tests |
-| Service Unit | `unit.service.test.ts` | 15+ tests |
-| Application Service Unit | `unit-application.service.test.ts` | 20+ tests |
-| Contract | `iunit-repository.contract.test.ts` | 25+ tests |
-| Integration | `unit.repository.integration.test.ts` | 22+ tests |
+| Test Suite               | File                                  | Tests     |
+| ------------------------ | ------------------------------------- | --------- |
+| Mapper Unit              | `unit-firestore-mapper.test.ts`       | 4 tests   |
+| Validator Unit           | `unit.validator.test.ts`              | 35+ tests |
+| Repository Unit          | `unit.repository.test.ts`             | 18+ tests |
+| Service Unit             | `unit.service.test.ts`                | 15+ tests |
+| Application Service Unit | `unit-application.service.test.ts`    | 20+ tests |
+| Contract                 | `iunit-repository.contract.test.ts`   | 25+ tests |
+| Integration              | `unit.repository.integration.test.ts` | 22+ tests |
 
 ## Soft Delete
 

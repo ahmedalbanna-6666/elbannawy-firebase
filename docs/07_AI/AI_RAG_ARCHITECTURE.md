@@ -1,6 +1,7 @@
 # AI_RAG_ARCHITECTURE.md
 
 # El-bannawy Platform
+
 ## Retrieval-Augmented Generation (RAG)
 
 Version: 2.0.0
@@ -169,21 +170,21 @@ Confidence
 
 ## Retrieval Quality Metrics
 
-| Metric | Definition | Target | Measured |
-|--------|-----------|--------|----------|
-| Hit Rate | % of queries where top-K contains at least one relevant chunk | > 90% | Weekly |
-| Mean Reciprocal Rank (MRR) | Average reciprocal rank of the first relevant result | > 0.85 | Weekly |
-| Normalized Discounted Cumulative Gain (NDCG) | Ranking quality weighted by relevance position | > 0.80 | Weekly |
-| Precision@K | % of retrieved chunks that are relevant | > 70% | Weekly |
-| Recall@K | % of all relevant chunks that were retrieved | > 80% | Weekly |
+| Metric                                       | Definition                                                    | Target | Measured |
+| -------------------------------------------- | ------------------------------------------------------------- | ------ | -------- |
+| Hit Rate                                     | % of queries where top-K contains at least one relevant chunk | > 90%  | Weekly   |
+| Mean Reciprocal Rank (MRR)                   | Average reciprocal rank of the first relevant result          | > 0.85 | Weekly   |
+| Normalized Discounted Cumulative Gain (NDCG) | Ranking quality weighted by relevance position                | > 0.80 | Weekly   |
+| Precision@K                                  | % of retrieved chunks that are relevant                       | > 70%  | Weekly   |
+| Recall@K                                     | % of all relevant chunks that were retrieved                  | > 80%  | Weekly   |
 
 ## Retrieval Latency Metrics
 
-| Metric | Target | P95 Target |
-|--------|--------|-----------|
-| P50 Embedding Time | < 200ms | < 500ms |
-| P50 Vector Search | < 100ms | < 300ms |
-| P50 Total Retrieval | < 500ms | < 1s |
+| Metric              | Target  | P95 Target |
+| ------------------- | ------- | ---------- |
+| P50 Embedding Time  | < 200ms | < 500ms    |
+| P50 Vector Search   | < 100ms | < 300ms    |
+| P50 Total Retrieval | < 500ms | < 1s       |
 
 ## Quality Assurance Pipeline
 
@@ -215,13 +216,13 @@ After each AI response, the student may rate it:
 
 The system automatically detects:
 
-| Signal | Detection | Action |
-|--------|-----------|--------|
-| Student rephrases question | Same intent, new question within 30s | Log as "retrieval miss" |
-| Student abandons conversation | No response for > 5min after AI answer | Log as "likely unhelpful" |
-| Student asks follow-up clarification | "I don't understand", "Can you explain more" | Log as "insufficient explanation" |
-| Student switches to different topic | Immediately after response | Log as "off-topic retrieval" |
-| Student repeats same mistake after AI advice | Same error in homework/quiz | Log as "ineffective recommendation" |
+| Signal                                       | Detection                                    | Action                              |
+| -------------------------------------------- | -------------------------------------------- | ----------------------------------- |
+| Student rephrases question                   | Same intent, new question within 30s         | Log as "retrieval miss"             |
+| Student abandons conversation                | No response for > 5min after AI answer       | Log as "likely unhelpful"           |
+| Student asks follow-up clarification         | "I don't understand", "Can you explain more" | Log as "insufficient explanation"   |
+| Student switches to different topic          | Immediately after response                   | Log as "off-topic retrieval"        |
+| Student repeats same mistake after AI advice | Same error in homework/quiz                  | Log as "ineffective recommendation" |
 
 ## Review Queue
 

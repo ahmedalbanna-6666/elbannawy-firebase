@@ -1,6 +1,7 @@
 # ADMIN_UI.md
 
 # El-bannawy Platform
+
 ## Administrator Dashboard UI
 
 Version: 2.0.0
@@ -69,16 +70,17 @@ Active section is highlighted. Collapsed state shows icons only with tooltip.
 
 First row: 4-6 metric cards with color-coded trends.
 
-| Card | Data | Trend Indicator | Click Action |
-|------|------|-----------------|-------------|
-| Total Students | 12,054 | +12% this month | Navigate to Students list |
-| Active Teachers | 24 | +2 this week | Navigate to Teachers list |
-| Active Users (24h) | 3,485 | -5% vs yesterday | Navigate to Analytics |
-| Today Revenue | 15,600 EGP | +8% vs same day last week | Navigate to Payments |
-| AI Conversations | 1,204 | +22% this week | Navigate to AI Analytics |
-| Platform Health | Healthy | All systems operational | Expand health details |
+| Card               | Data       | Trend Indicator           | Click Action              |
+| ------------------ | ---------- | ------------------------- | ------------------------- |
+| Total Students     | 12,054     | +12% this month           | Navigate to Students list |
+| Active Teachers    | 24         | +2 this week              | Navigate to Teachers list |
+| Active Users (24h) | 3,485      | -5% vs yesterday          | Navigate to Analytics     |
+| Today Revenue      | 15,600 EGP | +8% vs same day last week | Navigate to Payments      |
+| AI Conversations   | 1,204      | +22% this week            | Navigate to AI Analytics  |
+| Platform Health    | Healthy    | All systems operational   | Expand health details     |
 
 Each card shows:
+
 - Icon (left)
 - Label (small text)
 - Value (large bold)
@@ -96,10 +98,12 @@ Horizontal bar below stats with outlined icon buttons:
 Two-column layout for medium+ screens, single column on mobile:
 
 ### Left Column
+
 - **Revenue Chart**: Line chart, 30-day view, toggleable by month/quarter/year
 - **User Growth**: Area chart showing student/teacher growth over time
 
 ### Right Column
+
 - **AI Usage**: Stacked bar chart showing conversations by type (grammar, vocab, homework, etc.)
 - **System Health Gauge**: Circular gauges for API, DB, Redis, Queue, Storage, AI Provider
 
@@ -114,6 +118,7 @@ Scrollable list showing last 20 actions:
 ```
 
 Each entry has:
+
 - User avatar (or system icon for automated actions)
 - Action description
 - Relative timestamp
@@ -123,12 +128,12 @@ Each entry has:
 
 Color-coded alert cards at bottom of home screen:
 
-| Level | Example | Frequency |
-|-------|---------|-----------|
-| Critical (Red) | AI provider down, DB connection lost | Immediate |
-| Warning (Yellow) | High latency, storage > 80% | Every 15 min |
-| Info (Blue) | New teacher registered, daily backup complete | Once |
-| Success (Green) | All systems healthy, deployment successful | Once |
+| Level            | Example                                       | Frequency    |
+| ---------------- | --------------------------------------------- | ------------ |
+| Critical (Red)   | AI provider down, DB connection lost          | Immediate    |
+| Warning (Yellow) | High latency, storage > 80%                   | Every 15 min |
+| Info (Blue)      | New teacher registered, daily backup complete | Once         |
+| Success (Green)  | All systems healthy, deployment successful    | Once         |
 
 Alerts auto-dismiss after configurable timeout. Critical alerts persist until acknowledged.
 
@@ -156,18 +161,21 @@ Every data table across the admin dashboard must follow this pattern:
 ## Table Features
 
 ### Sorting
+
 - All sortable columns show a sort icon (▲/▼) on hover
 - Click to toggle: asc → desc → none
 - Multi-column sort: hold Shift + click secondary column
 - Default sort specified per table (e.g., Users: by createdAt desc)
 
 ### Search
+
 - Global search input (top right of table)
 - Debounced (300ms) to avoid excessive requests
 - Searches across name, email, ID
 - Advanced search: click magnifier icon to expand filter panel
 
 ### Advanced Filters
+
 Expandable filter panel (drawer or dropdown):
 
 ```
@@ -180,6 +188,7 @@ Grade: [▼] Any       Date: [DatePicker] to [DatePicker]
 ```
 
 Supported filter types:
+
 - Dropdown (single/multi-select)
 - Date range picker
 - Text input (exact match, contains)
@@ -187,6 +196,7 @@ Supported filter types:
 - Number range (min/max)
 
 ### Bulk Actions
+
 Checkbox column on the left of each row.
 
 Select-all checkbox in header (selects only current page, with option "Select all N items across all pages").
@@ -200,6 +210,7 @@ When items selected, bulk action toolbar appears:
 Bulk actions are specific to each table context.
 
 ### Row Actions
+
 Last column: "⋮" (three-dot) menu with:
 
 - Edit (opens form modal or navigates to edit page)
@@ -210,6 +221,7 @@ Last column: "⋮" (three-dot) menu with:
 - Additional options per entity type
 
 ### Inline Editing
+
 For simple fields (status, role), show an inline edit icon on hover.
 
 Click → show inline dropdown/switch without leaving the table.
@@ -218,22 +230,22 @@ Changes are auto-saved on blur with optimistic update and undo toast.
 
 ### Pagination Options
 
-| Option | Values |
-|--------|--------|
-| Page size | 15, 30, 50, 100 (default: 15 per business rule) |
-| Navigation | Previous, page numbers (with ellipsis for large sets), Next |
-| Total count | "Showing 1-15 of 234" |
-| Max page size | 100 (enforced server-side) |
+| Option        | Values                                                      |
+| ------------- | ----------------------------------------------------------- |
+| Page size     | 15, 30, 50, 100 (default: 15 per business rule)             |
+| Navigation    | Previous, page numbers (with ellipsis for large sets), Next |
+| Total count   | "Showing 1-15 of 234"                                       |
+| Max page size | 100 (enforced server-side)                                  |
 
 Cursor-based pagination may be used for very large datasets (>10K rows).
 
 ### Export
 
-| Format | Button | Behavior |
-|--------|--------|----------|
-| CSV | [📥 CSV] | Immediate download (≤10K rows) |
-| XLSX | [📥 Excel] | Background job (>10K rows), email link |
-| PDF | [📥 PDF] | Background job, email link |
+| Format | Button     | Behavior                               |
+| ------ | ---------- | -------------------------------------- |
+| CSV    | [📥 CSV]   | Immediate download (≤10K rows)         |
+| XLSX   | [📥 Excel] | Background job (>10K rows), email link |
+| PDF    | [📥 PDF]   | Background job, email link             |
 
 Export includes all items matching current filters (not just current page).
 
@@ -265,18 +277,19 @@ For complex entities (lessons, units):
 
 ## Form Standards
 
-| Element | Spec |
-|---------|------|
-| Label | Above field, bold, with optional "required" asterisk |
-| Input | Full width, min 40px height, clear border |
-| Validation | Inline error message below field on blur |
-| Submit | Primary button: "Save", secondary: "Cancel" |
-| Loading | Spinner replaces button text during submission |
-| Confirmation | "Are you sure?" dialog for destructive actions |
+| Element      | Spec                                                 |
+| ------------ | ---------------------------------------------------- |
+| Label        | Above field, bold, with optional "required" asterisk |
+| Input        | Full width, min 40px height, clear border            |
+| Validation   | Inline error message below field on blur             |
+| Submit       | Primary button: "Save", secondary: "Cancel"          |
+| Loading      | Spinner replaces button text during submission       |
+| Confirmation | "Are you sure?" dialog for destructive actions       |
 
 ## Form Types
 
 ### Create Form
+
 Opens in a modal dialog (medium size, 640px).
 
 - Title: "Create [Entity Type]"
@@ -286,6 +299,7 @@ Opens in a modal dialog (medium size, 640px).
 - On error: show error message inline, keep form open
 
 ### Edit Form
+
 Same pattern as create, but pre-filled with existing data.
 
 - Title: "Edit [Entity Name]"
@@ -309,15 +323,15 @@ For permanent deletion (if enabled), require admin password confirmation.
 
 ## Chart Types
 
-| Chart | Use Case | Data Points |
-|-------|----------|-------------|
-| Line Chart | Revenue, users over time | Up to 365 points |
-| Area Chart | Growth, cumulative metrics | Up to 365 points |
-| Bar Chart | Comparisons (by grade, by month) | Up to 50 bars |
-| Stacked Bar | Composition (AI usage by type) | Up to 10 segments per bar |
-| Pie Chart | Distribution (user roles, payment methods) | Up to 10 slices |
-| Gauge | System health, storage usage | Single percentage |
-| Heatmap | Activity by hour/day | 24×7 grid |
+| Chart       | Use Case                                   | Data Points               |
+| ----------- | ------------------------------------------ | ------------------------- |
+| Line Chart  | Revenue, users over time                   | Up to 365 points          |
+| Area Chart  | Growth, cumulative metrics                 | Up to 365 points          |
+| Bar Chart   | Comparisons (by grade, by month)           | Up to 50 bars             |
+| Stacked Bar | Composition (AI usage by type)             | Up to 10 segments per bar |
+| Pie Chart   | Distribution (user roles, payment methods) | Up to 10 slices           |
+| Gauge       | System health, storage usage               | Single percentage         |
+| Heatmap     | Activity by hour/day                       | 24×7 grid                 |
 
 ## Chart Interactions
 
@@ -331,61 +345,61 @@ For permanent deletion (if enabled), require admin password confirmation.
 
 # Dialog & Confirmation Standards
 
-| Type | Visual | Behavior |
-|------|--------|----------|
-| Success Toast | Green, check icon | Auto-dismiss after 3s |
-| Error Toast | Red, X icon | Persist until dismissed |
-| Warning Dialog | Yellow, ⚠ icon, [Cancel] [Confirm] | Blocking, requires action |
-| Info Dialog | Blue, ℹ icon, [Got it] | Non-blocking auto-dismiss |
-| Confirm Delete | Red, 🗑 icon, type entity name to confirm | Prevents accidental deletion |
-| Unsaved Changes | Yellow, blocks navigation, [Leave] [Stay] | Detects dirty forms |
+| Type            | Visual                                    | Behavior                     |
+| --------------- | ----------------------------------------- | ---------------------------- |
+| Success Toast   | Green, check icon                         | Auto-dismiss after 3s        |
+| Error Toast     | Red, X icon                               | Persist until dismissed      |
+| Warning Dialog  | Yellow, ⚠ icon, [Cancel] [Confirm]        | Blocking, requires action    |
+| Info Dialog     | Blue, ℹ icon, [Got it]                    | Non-blocking auto-dismiss    |
+| Confirm Delete  | Red, 🗑 icon, type entity name to confirm | Prevents accidental deletion |
+| Unsaved Changes | Yellow, blocks navigation, [Leave] [Stay] | Detects dirty forms          |
 
 ---
 
 # Loading States
 
-| State | Visual |
-|-------|--------|
-| Page Load | Skeleton layout (matching page structure, animated pulse) |
-| Table Load | Skeleton rows (5 rows of animated gray bars) |
-| Form Submit | Spinner on submit button, fields disabled |
-| Async Action | Inline spinner on the action button |
-| Background Job | Progress bar with percentage |
-| File Upload | Progress bar with filename and speed |
+| State          | Visual                                                    |
+| -------------- | --------------------------------------------------------- |
+| Page Load      | Skeleton layout (matching page structure, animated pulse) |
+| Table Load     | Skeleton rows (5 rows of animated gray bars)              |
+| Form Submit    | Spinner on submit button, fields disabled                 |
+| Async Action   | Inline spinner on the action button                       |
+| Background Job | Progress bar with percentage                              |
+| File Upload    | Progress bar with filename and speed                      |
 
 ---
 
 # Empty States
 
-| Scenario | Visual |
-|----------|--------|
-| No items in list | Illustration + "No [items] found" + [Create First] CTA |
-| No search results | "No results for "{query}". Try different keywords." |
-| No data for chart | "No data available for this period." |
-| Empty filter | "No items match your filters. [Clear Filters]" |
+| Scenario          | Visual                                                 |
+| ----------------- | ------------------------------------------------------ |
+| No items in list  | Illustration + "No [items] found" + [Create First] CTA |
+| No search results | "No results for "{query}". Try different keywords."    |
+| No data for chart | "No data available for this period."                   |
+| Empty filter      | "No items match your filters. [Clear Filters]"         |
 
 ---
 
 # Error States
 
-| Scenario | Visual |
-|----------|--------|
-| API Error | "Something went wrong." + error detail + [Retry] button |
-| Network Offline | Banner at top: "No internet connection" |
-| Rate Limited | "Too many requests. Please wait N seconds." |
-| Permission Denied | "You don't have permission to perform this action." |
-| 404 | "Page not found" illustration + [Back to Dashboard] |
+| Scenario          | Visual                                                  |
+| ----------------- | ------------------------------------------------------- |
+| API Error         | "Something went wrong." + error detail + [Retry] button |
+| Network Offline   | Banner at top: "No internet connection"                 |
+| Rate Limited      | "Too many requests. Please wait N seconds."             |
+| Permission Denied | "You don't have permission to perform this action."     |
+| 404               | "Page not found" illustration + [Back to Dashboard]     |
 
 ---
 
 # Responsive Behavior
 
-| Breakpoint | Layout |
-|------------|--------|
-| >1200px | Full sidebar + 2-column charts + full table |
+| Breakpoint | Layout                                                               |
+| ---------- | -------------------------------------------------------------------- |
+| >1200px    | Full sidebar + 2-column charts + full table                          |
 | 768-1200px | Collapsed sidebar (icons) + single-column + table with fewer columns |
-| <768px | Bottom nav bar + stacked cards + table in card view (rows as cards) |
-| <480px | Single column, minimal data, horizontal scroll for tables |
+| <768px     | Bottom nav bar + stacked cards + table in card view (rows as cards)  |
+| <480px     | Single column, minimal data, horizontal scroll for tables            |
 
 ## Card View (Mobile Table Alternative)
 
@@ -410,32 +424,32 @@ On screens < 768px, data tables transform into card list:
 
 # Accessibility
 
-| Requirement | Implementation |
-|-------------|---------------|
-| Keyboard Navigation | All actions accessible via Tab, Enter, Escape, Arrow keys |
-| Screen Readers | ARIA labels on all interactive elements, role attributes on custom components |
-| Focus Indicators | Visible focus ring (2px, offset 2px) on all focusable elements |
-| Color Contrast | WCAG AA minimum (4.5:1 for text, 3:1 for large text) |
-| Motion Reduction | Respect prefers-reduced-motion: disable animations |
-| RTL Support | Full RTL layout mirroring for Arabic interface |
-| Skip Navigation | "Skip to main content" link at top of page |
+| Requirement         | Implementation                                                                |
+| ------------------- | ----------------------------------------------------------------------------- |
+| Keyboard Navigation | All actions accessible via Tab, Enter, Escape, Arrow keys                     |
+| Screen Readers      | ARIA labels on all interactive elements, role attributes on custom components |
+| Focus Indicators    | Visible focus ring (2px, offset 2px) on all focusable elements                |
+| Color Contrast      | WCAG AA minimum (4.5:1 for text, 3:1 for large text)                          |
+| Motion Reduction    | Respect prefers-reduced-motion: disable animations                            |
+| RTL Support         | Full RTL layout mirroring for Arabic interface                                |
+| Skip Navigation     | "Skip to main content" link at top of page                                    |
 
 ---
 
 # Performance Targets
 
-| Action | Target |
-|--------|--------|
-| Dashboard Initial Load | <500ms |
-| Table Page Load | <500ms (first page) |
-| Search Response | <300ms (after debounce) |
-| Filter Apply | <500ms |
-| Form Submit | <800ms |
-| Bulk Action | <2s |
-| Export (≤10K rows) | <5s |
-| Export (>10K rows) | Background, email within 5 min |
-| Chart Render | <500ms |
-| Page Navigation | Instant (client-side routing) |
+| Action                 | Target                         |
+| ---------------------- | ------------------------------ |
+| Dashboard Initial Load | <500ms                         |
+| Table Page Load        | <500ms (first page)            |
+| Search Response        | <300ms (after debounce)        |
+| Filter Apply           | <500ms                         |
+| Form Submit            | <800ms                         |
+| Bulk Action            | <2s                            |
+| Export (≤10K rows)     | <5s                            |
+| Export (>10K rows)     | Background, email within 5 min |
+| Chart Render           | <500ms                         |
+| Page Navigation        | Instant (client-side routing)  |
 
 ---
 

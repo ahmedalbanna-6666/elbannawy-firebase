@@ -1,6 +1,7 @@
 # AUDIT_LOGS_API.md
 
 # El-bannawy Platform
+
 ## Audit Logs API Specification
 
 Version: 1.0.0
@@ -54,7 +55,9 @@ Read-only access for Support Lead (Limited).
 ---
 
 # ==========================
+
 # AUDIT LOGS
+
 # ==========================
 
 GET
@@ -79,22 +82,24 @@ Response
 
 ```json
 [
-    {
-        "id":"",
-        "timestamp":"",
-        "userId":"",
-        "module":"Lessons",
-        "action":"UPDATE",
-        "resourceId":"",
-        "status":"SUCCESS"
-    }
+  {
+    "id": "",
+    "timestamp": "",
+    "userId": "",
+    "module": "Lessons",
+    "action": "UPDATE",
+    "resourceId": "",
+    "status": "SUCCESS"
+  }
 ]
 ```
 
 ---
 
 # ==========================
+
 # SINGLE LOG
+
 # ==========================
 
 GET
@@ -119,7 +124,9 @@ Includes
 ---
 
 # ==========================
+
 # USER ACTIVITY
+
 # ==========================
 
 GET
@@ -141,7 +148,9 @@ Filters
 ---
 
 # ==========================
+
 # MODULE HISTORY
+
 # ==========================
 
 GET
@@ -167,7 +176,9 @@ Examples
 ---
 
 # ==========================
+
 # SECURITY EVENTS
+
 # ==========================
 
 GET
@@ -193,7 +204,9 @@ Examples
 ---
 
 # ==========================
+
 # EXPORT
+
 # ==========================
 
 GET
@@ -213,7 +226,9 @@ Supported Formats
 ---
 
 # ==========================
+
 # SEARCH
+
 # ==========================
 
 GET
@@ -237,27 +252,100 @@ Supported Parameters
 ---
 
 # ==========================
+
 # RETENTION
+
 # ==========================
 
-GET
+## Policy Tiers
 
-/audit-logs/retention
+| Tier    | Duration      | Storage                                              | Queryable                        | Includes                                                        |
+| ------- | ------------- | ---------------------------------------------------- | -------------------------------- | --------------------------------------------------------------- |
+| Hot     | 90 days       | Primary DB (Firestore)                               | Full search, all filters         | All audit events                                                |
+| Warm    | 1 year        | Archive DB (Firestore export to BigQuery or similar) | Aggregated search, date-filtered | All audit events                                                |
+| Cold    | 7 years       | Compressed JSON in Cloud Storage                     | Export only, no live query       | All audit events (without request/response bodies after 1 year) |
+| Deleted | After 7 years | Permanently deleted                                  | None                             | N/A                                                             |
 
-Return retention policy.
+## Aggregation Strategy
 
-Default
+After 90 days, old logs are automatically aggregated into daily summaries:
 
-7 Years
+```
+Summary document structure:
+{
+  "date": "2026-07-22",
+  "module": "Users",
+  "actions": {
+    "CREATE": 45,
+    "UPDATE": 123,
+    "DELETE": 3
+  },
+  "uniqueUsers": 28,
+  "uniqueIPs": 15,
+  "averageResponseTime": 340,
+  "errorCount": 2
+}
+```
 
-Future
+Raw log details are preserved in Warm/Cold storage but only daily summaries remain in Hot storage.
 
-Configurable.
+## Retention API
+
+GET /audit-logs/retention
+
+Return current retention policy and storage statistics.
+
+Response:
+
+```json
+{
+  "hotDays": 90,
+  "warmDays": 365,
+  "coldDays": 2555,
+  "totalSize": "4.2 GB",
+  "hotSize": "1.8 GB",
+  "warmSize": "1.5 GB",
+  "coldSize": "0.9 GB",
+  "estimatedDailyGrowth": "20 MB",
+  "nextArchivalDate": "2026-10-20",
+  "nextDeletionDate": "2033-07-22"
+}
+```
+
+## Storage Estimation
+
+| Factor                       | Estimate       |
+| ---------------------------- | -------------- |
+| Average log entry size       | 1.2 KB         |
+| Daily log volume (current)   | 15,000 entries |
+| Daily storage growth         | ~18-20 MB      |
+| Year 1 storage               | ~6.5 GB        |
+| Year 7 storage (total)       | ~45 GB         |
+| Hot storage cost (Firestore) | ~$2-4/month    |
+| Cold storage cost (GCS)      | ~$0.50/month   |
+
+## Deletion Policy
+
+- Hot data: automatically moved to Warm after 90 days via scheduled job
+- Warm data: automatically moved to Cold after 1 year
+- Cold data: permanently deleted after 7 years
+- Deletion is irreversible — no grace period
+- Before deletion, generate final export and notify administrators
+
+## Compliance
+
+Retention policy complies with:
+
+- Egyptian data protection law
+- GDPR (if EU students)
+- Educational record retention requirements
 
 ---
 
 # ==========================
+
 # SYSTEM EVENTS
+
 # ==========================
 
 GET
@@ -279,7 +367,9 @@ Return
 ---
 
 # ==========================
+
 # VALIDATION
+
 # ==========================
 
 Validate
@@ -295,7 +385,9 @@ Validate
 ---
 
 # ==========================
+
 # SECURITY
+
 # ==========================
 
 Audit Logs are immutable.
@@ -313,7 +405,9 @@ Every privileged action must generate an audit log.
 ---
 
 # ==========================
+
 # RATE LIMIT
+
 # ==========================
 
 Audit Search
@@ -327,7 +421,9 @@ Export
 ---
 
 # ==========================
+
 # STATUS CODES
+
 # ==========================
 
 200 OK
@@ -349,7 +445,9 @@ Export
 ---
 
 # ==========================
+
 # PERFORMANCE
+
 # ==========================
 
 Search
@@ -367,7 +465,9 @@ Background Processing
 ---
 
 # ==========================
+
 # AUTOMATIC EVENTS
+
 # ==========================
 
 Automatically record
@@ -409,7 +509,9 @@ Automatically record
 ---
 
 # ==========================
+
 # ACCEPTANCE CRITERIA
+
 # ==========================
 
 ✓ Audit logs are generated automatically.
