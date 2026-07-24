@@ -45,7 +45,7 @@ export function AdminDashboard(): ReactNode {
     refetchInterval: 60_000,
   });
 
-  const modules = getDashboardModules(can);
+  const modules = getDashboardModules(can) ?? [];
   const primaryModules = modules.filter((m) => m.category === "content");
   const moreModules = modules.filter((m) => m.category !== "content");
 

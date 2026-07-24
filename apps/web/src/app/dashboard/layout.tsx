@@ -116,7 +116,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps): Rea
 
   const sidebarItems: SidebarContent = useMemo(
     () => {
-      const modules = getSidebarModules(can);
+      const modules = getSidebarModules(can) ?? [];
       const items: SidebarContent = [];
       let lastCategory: NavModule["category"] = null;
       let dividerCount = 0;

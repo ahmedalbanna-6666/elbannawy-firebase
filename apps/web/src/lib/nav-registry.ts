@@ -415,14 +415,16 @@ export const NAV_REGISTRY: readonly NavModule[] = [
   },
 ] as const;
 
-export function getSidebarModules(can: (p: Permission) => boolean): readonly NavModule[] {
+export function getSidebarModules(can: ((p: Permission) => boolean) | null | undefined): readonly NavModule[] {
+  const fn = typeof can === "function" ? can : () => false;
   return NAV_REGISTRY.filter(
-    (m) => m.sidebar && (m.permission === null || can(m.permission)),
+    (m) => m.sidebar && (m.permission === null || fn(m.permission)),
   );
 }
 
-export function getDashboardModules(can: (p: Permission) => boolean): readonly NavModule[] {
+export function getDashboardModules(can: ((p: Permission) => boolean) | null | undefined): readonly NavModule[] {
+  const fn = typeof can === "function" ? can : () => false;
   return NAV_REGISTRY.filter(
-    (m) => m.dashboard && m.permission !== null && can(m.permission),
+    (m) => m.dashboard && m.permission !== null && fn(m.permission),
   );
 }
