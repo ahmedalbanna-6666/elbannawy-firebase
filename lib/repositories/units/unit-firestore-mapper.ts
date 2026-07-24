@@ -5,6 +5,9 @@ import { formatFirestoreTimestamp } from '../firestore/firestore.service';
 export interface UnitFirestoreDoc {
   id: string;
   academicTermId: string;
+  gradeId?: string | null;
+  academicYearId?: string | null;
+  educationalSystemId?: string | null;
   name: string;
   nameAr: string;
   description?: string | null;
@@ -26,6 +29,9 @@ export class UnitFirestoreMapper {
     return {
       id: doc.id,
       academicTermId: doc.academicTermId,
+      gradeId: doc.gradeId ?? undefined,
+      academicYearId: doc.academicYearId ?? undefined,
+      educationalSystemId: doc.educationalSystemId ?? undefined,
       name: doc.name,
       nameAr: doc.nameAr,
       description: doc.description ?? undefined,
@@ -45,6 +51,9 @@ export class UnitFirestoreMapper {
     return {
       id: doc.id,
       academicTermId: doc.academicTermId,
+      gradeId: doc.gradeId ?? undefined,
+      academicYearId: doc.academicYearId ?? undefined,
+      educationalSystemId: doc.educationalSystemId ?? undefined,
       name: doc.name,
       nameAr: doc.nameAr,
       order: doc.order,

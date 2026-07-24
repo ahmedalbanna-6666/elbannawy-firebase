@@ -25,7 +25,7 @@ export async function DELETE(
   const { id } = await params;
   try {
     const db = getAdminDb();
-    await db.collection(COLLECTION).doc(id).delete();
+    await db.collection(COLLECTION).doc(id).update({ deletedAt: new Date().toISOString(), updatedAt: new Date().toISOString() });
     return NextResponse.json({ success: true, data: null });
   } catch {
     return NextResponse.json({ success: false, error: { code: 'INTERNAL', message: 'Failed to delete term' } }, { status: 500 });

@@ -160,6 +160,7 @@ export function UnitFormDialog({
   }, [academicYears, academicYearFromStore, termFromStore, termIdFromStore]);
 
   const resolvedGradeId = useMemo(() => {
+    if (ctx.gradeId) return ctx.gradeId;
     if (!gradeFromStore) return null;
     if (stages && stages.length > 0) {
       for (const stage of stages) {
@@ -172,7 +173,7 @@ export function UnitFormDialog({
       if (grade) return grade.id;
     }
     return null;
-  }, [stages, myGrades, gradeFromStore]);
+  }, [stages, myGrades, gradeFromStore, ctx.gradeId]);
 
   const academicContextResolved =
     isEdit ||

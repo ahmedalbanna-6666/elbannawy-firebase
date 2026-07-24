@@ -131,8 +131,8 @@ export class CurriculumService {
     return this.curriculumRepository.getCurrentAcademicTerm(academicYearId);
   }
 
-  async getCurrentAcademicContext(): Promise<RepositoryResult<ICurrentAcademicContext>> {
-    return this.curriculumRepository.getCurrentAcademicContext();
+  async getCurrentAcademicContext(userId?: string): Promise<RepositoryResult<ICurrentAcademicContext>> {
+    return this.curriculumRepository.getCurrentAcademicContext(userId);
   }
 
   async softDeleteCurriculum(id: string, collection: CurriculumCollection, requestId: string): Promise<RepositoryResult<void>> {

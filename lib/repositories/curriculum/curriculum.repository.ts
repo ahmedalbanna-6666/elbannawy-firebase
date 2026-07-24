@@ -622,7 +622,7 @@ export class CurriculumRepository implements ICurriculumRepository {
     }
   }
 
-  async getCurrentAcademicContext(): Promise<RepositoryResult<ICurrentAcademicContext>> {
+  async getCurrentAcademicContext(userId?: string): Promise<RepositoryResult<ICurrentAcademicContext>> {
     try {
       const currentYearResult = await this.getCurrentAcademicYear();
       if (!currentYearResult.ok) return currentYearResult as unknown as RepositoryResult<ICurrentAcademicContext>;
@@ -635,10 +635,41 @@ export class CurriculumRepository implements ICurriculumRepository {
         }
       }
 
+      let educationalSystem: IEducationalSystem | null = null;
+      let stage: IStage | null = null;
+      let grade: IGrade | null = null;
+
+      if (userId) {
+        try {
+          const db = this.getDb();
+          const userDoc = await db.collection('users').doc(userId).get();
+          if (userDoc.exists) {
+            const userData = userDoc.data() as Record<string, string | undefined>;
+            const esId = userData.educationalSystemId;
+            const stageId = userData.stageId;
+            const gradeId = userData.gradeId;
+            if (esId) {
+              const esSnap = await db.collection('educationalSystems').doc(esId).get();
+              if (esSnap.exists) educationalSystem = esSnap.data() as IEducationalSystem;
+            }
+            if (stageId) {
+              const stageSnap = await db.collection('stages').doc(stageId).get();
+              if (stageSnap.exists) stage = stageSnap.data() as IStage;
+            }
+            if (gradeId) {
+              const gradeSnap = await db.collection('grades').doc(gradeId).get();
+              if (gradeSnap.exists) grade = gradeSnap.data() as IGrade;
+            }
+          }
+        } catch {
+          // User lookup failed, return context without user-specific data
+        }
+      }
+
       const context: ICurrentAcademicContext = {
-        educationalSystem: null,
-        stage: null,
-        grade: null,
+        educationalSystem,
+        stage,
+        grade,
         academicYear: currentYearResult.value,
         academicTerm,
       };

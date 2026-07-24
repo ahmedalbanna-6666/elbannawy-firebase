@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAdminDb } from '@/lib/firebase/admin';
+import { requireAdmin } from '@/lib/firebase/auth-helper';
 
 export async function GET(request: NextRequest): Promise<NextResponse> {
+  const auth = await requireAdmin(request);
+  if (!auth.authorized) return auth.response;
+
   const { searchParams } = new URL(request.url);
   const page = Math.max(Number(searchParams.get('page')) || 1, 1);
   const limit = Math.min(Math.max(Number(searchParams.get('limit')) || 20, 1), 100);
@@ -111,18 +115,43 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 }
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
+  const auth = await requireAdmin(request);
+  if (!auth.authorized) return auth.response;
+
   try {
     const body = await request.json() as Record<string, unknown>;
+    const adminAuth = (await import('@/lib/firebase/admin')).getAdminAuth();
     const db = getAdminDb();
-    const id = body.id as string ?? `teacher-${String(Date.now())}`;
     const now = new Date().toISOString();
+    const id = body.id as string ?? `teacher-${String(Date.now())}`;
+    const mobile = body.mobileNumber as string ?? '';
+    const email = body.email as string || (mobile ? `${mobile.replace(/[^0-9]/g, '')}@el-bannawy.app` : `teacher-${id}@el-bannawy.app`);
+    const password = body.password as string || 'teacher123456';
+
+    try {
+      await adminAuth.createUser({
+        uid: id,
+        email,
+        password,
+        displayName: body.fullName as string ?? '',
+      });
+      await adminAuth.setCustomUserClaims(id, { role: 'teacher' });
+    } catch (authError) {
+      // User may already exist in Firebase Auth, try to update claims
+      try {
+        await adminAuth.setCustomUserClaims(id, { role: 'teacher' });
+      } catch {
+        // Firebase Auth user creation failed
+      }
+    }
+
     const userData = {
       id,
       role: { role: 'teacher', grantedAt: now },
       fullName: body.fullName as string ?? '',
       englishName: (body.englishName as string) ?? null,
-      email: (body.email as string) ?? null,
-      mobileNumber: (body.mobileNumber as string) ?? '',
+      email,
+      mobileNumber: mobile,
       governorate: (body.governorate as string) ?? null,
       school: (body.school as string) ?? null,
       status: { status: 'active' },

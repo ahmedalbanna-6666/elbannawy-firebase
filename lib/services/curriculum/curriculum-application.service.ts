@@ -603,8 +603,8 @@ export class CurriculumApplicationService {
     return { ok: true, value: result.value ? mapAcademicTerm(result.value) : null };
   }
 
-  async getCurrentAcademicContext(): Promise<RepositoryResult<CurrentAcademicContextOutput>> {
-    const result = await this.curriculumService.getCurrentAcademicContext();
+  async getCurrentAcademicContext(userId?: string): Promise<RepositoryResult<CurrentAcademicContextOutput>> {
+    const result = await this.curriculumService.getCurrentAcademicContext(userId);
     if (!result.ok) return result as RepositoryResult<CurrentAcademicContextOutput>;
     return { ok: true, value: mapCurrentContext(result.value) };
   }

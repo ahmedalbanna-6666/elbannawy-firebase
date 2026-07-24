@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAdminDb } from '@/lib/firebase/admin';
+import { requireAdmin } from '@/lib/firebase/auth-helper';
 
-export async function GET(): Promise<NextResponse> {
+export async function GET(request: NextRequest): Promise<NextResponse> {
+  const auth = await requireAdmin(request);
+  if (!auth.authorized) return auth.response;
   try {
     const db = getAdminDb();
     const [stagesSnap, gradesSnap] = await Promise.all([
@@ -43,6 +46,9 @@ export async function GET(): Promise<NextResponse> {
 }
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
+  const auth = await requireAdmin(request);
+  if (!auth.authorized) return auth.response;
+
   try {
     const body = await request.json() as { name?: string; nameAr?: string; educationalSystemId?: string; order?: number; id?: string };
     if (!body.name || !body.nameAr || !body.educationalSystemId) {

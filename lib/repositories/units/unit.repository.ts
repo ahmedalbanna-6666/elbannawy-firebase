@@ -40,6 +40,9 @@ export class UnitRepository implements IUnitRepository {
       const now = Timestamp.now();
       await docRef.set({
         academicTermId: input.academicTermId,
+        gradeId: input.gradeId ?? null,
+        academicYearId: input.academicYearId ?? null,
+        educationalSystemId: input.educationalSystemId ?? null,
         name: input.name,
         nameAr: input.nameAr,
         description: input.description ?? null,
@@ -79,6 +82,9 @@ export class UnitRepository implements IUnitRepository {
       if (input.isActive !== undefined) updateData.isActive = input.isActive;
       if (input.isPremium !== undefined) updateData.isPremium = input.isPremium;
       if (input.priceCoins !== undefined) updateData.priceCoins = input.priceCoins;
+      if (input.gradeId !== undefined) updateData.gradeId = input.gradeId ?? null;
+      if (input.academicYearId !== undefined) updateData.academicYearId = input.academicYearId ?? null;
+      if (input.educationalSystemId !== undefined) updateData.educationalSystemId = input.educationalSystemId ?? null;
       if (input.published !== undefined) updateData.published = input.published;
       await docRef.update(updateData);
       const saved = await docRef.get();

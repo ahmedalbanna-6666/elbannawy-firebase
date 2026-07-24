@@ -457,7 +457,7 @@ export interface ICurriculumRepository {
 
   getCurrentAcademicYear(): Promise<RepositoryResult<IAcademicYear | null>>;
   getCurrentAcademicTerm(academicYearId: string): Promise<RepositoryResult<IAcademicTerm | null>>;
-  getCurrentAcademicContext(): Promise<RepositoryResult<ICurrentAcademicContext>>;
+  getCurrentAcademicContext(userId?: string): Promise<RepositoryResult<ICurrentAcademicContext>>;
 
   softDeleteCurriculum(
     id: string,
@@ -476,6 +476,9 @@ export interface ICurriculumRepository {
 export interface IUnit {
   readonly id: string;
   readonly academicTermId: string;
+  readonly gradeId?: string;
+  readonly academicYearId?: string;
+  readonly educationalSystemId?: string;
   readonly name: string;
   readonly nameAr: string;
   readonly description?: string;
@@ -493,6 +496,9 @@ export interface IUnit {
 export interface IUnitSummary {
   readonly id: string;
   readonly academicTermId: string;
+  readonly gradeId?: string;
+  readonly academicYearId?: string;
+  readonly educationalSystemId?: string;
   readonly name: string;
   readonly nameAr: string;
   readonly order: number;
@@ -506,6 +512,9 @@ export interface IUnitSummary {
 export interface CreateUnitInput {
   readonly id: string;
   readonly academicTermId: string;
+  readonly gradeId?: string;
+  readonly academicYearId?: string;
+  readonly educationalSystemId?: string;
   readonly name: string;
   readonly nameAr: string;
   readonly description?: string;
@@ -524,6 +533,9 @@ export interface UpdateUnitInput {
   readonly isActive?: boolean;
   readonly isPremium?: boolean;
   readonly priceCoins?: number;
+  readonly gradeId?: string;
+  readonly academicYearId?: string;
+  readonly educationalSystemId?: string;
   readonly published?: boolean;
 }
 

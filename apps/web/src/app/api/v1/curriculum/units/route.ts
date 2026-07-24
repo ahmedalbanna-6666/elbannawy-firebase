@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { UnitService, UnitApplicationService } from '@el-bannawy/lib';
+import { UnitService, UnitApplicationService, LessonRepository } from '@el-bannawy/lib';
 
 const unitService = new UnitService();
 const applicationService = new UnitApplicationService(unitService);
+const lessonRepo = new LessonRepository();
 
 function mapErrorCode(code: string): number {
   switch (code) {
@@ -28,10 +29,13 @@ function toFrontendUnit(u: Record<string, unknown>): Record<string, unknown> {
     isPremium: u.isPremium ?? false,
     priceCoins: u.priceCoins ?? (u.isPremium ? 50 : 0),
     lockedOverride: null,
+    gradeId: u.gradeId ?? null,
+    academicYearId: u.academicYearId ?? null,
+    educationalSystemId: u.educationalSystemId ?? null,
     createdAt: u.createdAt ?? new Date().toISOString(),
     updatedAt: u.updatedAt ?? new Date().toISOString(),
     grade: { id: u.gradeId ?? '', name: '', stage: { id: '', name: '' } },
-    _count: { lessons: 0 },
+    _count: { lessons: u._lessonCount as number ?? 0 },
   };
 }
 
@@ -52,7 +56,8 @@ function fromFrontendUnit(body: Record<string, unknown>): Record<string, unknown
   if (body.lockedOverride !== undefined) payload.lockedOverride = body.lockedOverride;
   if (body.gradeId) payload.gradeId = body.gradeId;
   if (body.academicYearId) payload.academicYearId = body.academicYearId;
-  if (body.educationalSystem) payload.educationalSystem = body.educationalSystem;
+  if (body.educationalSystemId) payload.educationalSystemId = body.educationalSystemId;
+  else if (body.educationalSystem) payload.educationalSystemId = body.educationalSystem;
   return payload;
 }
 
@@ -75,16 +80,26 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   if (cursor) page.cursor = cursor;
 
   try {
-    if (academicTermId) {
-      const result = await applicationService.getUnitsByTerm(academicTermId);
-      if (!result.ok) return NextResponse.json({ success: false, error: result.error }, { status: mapErrorCode(result.error.code) });
-      const items = (result.value as unknown as Record<string, unknown>[]).map(toFrontendUnit);
-      return NextResponse.json({ success: true, data: { items, nextCursor: null } });
+    const unitsResult = academicTermId
+      ? await applicationService.getUnitsByTerm(academicTermId)
+      : await applicationService.listUnits(filter, page);
+    if (!unitsResult.ok) return NextResponse.json({ success: false, error: unitsResult.error }, { status: mapErrorCode(unitsResult.error.code) });
+
+    const rawItems = academicTermId
+      ? (unitsResult.value as unknown as Record<string, unknown>[])
+      : ((unitsResult.value as unknown as { items: Record<string, unknown>[] }).items);
+
+    const lessonCounts = new Map<string, number>();
+    const unitIds = rawItems.map((u) => u.id as string).filter(Boolean);
+    if (unitIds.length > 0) {
+      await Promise.all(unitIds.map(async (uid) => {
+        const lessonsResult = await lessonRepo.getPublishedLessons(uid);
+        if (lessonsResult.ok) lessonCounts.set(uid, lessonsResult.value.length);
+      }));
     }
-    const result = await applicationService.listUnits(filter, page);
-    if (!result.ok) return NextResponse.json({ success: false, error: result.error }, { status: mapErrorCode(result.error.code) });
-    const items = ((result.value as unknown as { items: Record<string, unknown>[] }).items).map(toFrontendUnit);
-    const nextCursor = (result.value as unknown as { nextCursor: string | null }).nextCursor;
+
+    const items = rawItems.map((u) => toFrontendUnit({ ...u, _lessonCount: lessonCounts.get(u.id as string) ?? 0 }));
+    const nextCursor = academicTermId ? null : (unitsResult.value as unknown as { nextCursor: string | null }).nextCursor;
     return NextResponse.json({ success: true, data: { items, nextCursor } });
   } catch (error) {
     return NextResponse.json({ success: false, error: { code: 'INTERNAL', message: error instanceof Error ? error.message : 'Unknown error' } }, { status: 500 });

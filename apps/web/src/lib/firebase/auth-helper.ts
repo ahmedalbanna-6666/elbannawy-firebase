@@ -48,17 +48,21 @@ export async function authenticateRequest(request: NextRequest): Promise<AuthUse
         }
       );
       req.on("error", (e) => resolve({ ok: false, data: e.message }));
-      req.setTimeout(10000, () => {
-        req.destroy();
-        resolve({ ok: false, data: { error: { message: "Timed out" } } });
-      });
+      req.setTimeout(10000, () => { req.destroy(); resolve({ ok: false, data: { error: { message: "Timed out" } } }); });
       req.write(JSON.stringify({ idToken: token }));
       req.end();
     });
     if (result.ok) {
-      const lookupData = result.data as { users?: Array<{ localId: string; email?: string; providerUserInfo?: Array<{ providerId: string }> }> };
+      const lookupData = result.data as { users?: Array<{ localId: string; email?: string }> };
       const userInfo = lookupData.users?.[0];
-      if (userInfo) return { uid: userInfo.localId, email: userInfo.email };
+      if (userInfo) {
+        try {
+          const userRecord = await getAdminAuth().getUser(userInfo.localId);
+          return { uid: userInfo.localId, email: userInfo.email, role: (userRecord.customClaims as Record<string, string> | null)?.role };
+        } catch {
+          return { uid: userInfo.localId, email: userInfo.email };
+        }
+      }
     }
   } catch {}
 

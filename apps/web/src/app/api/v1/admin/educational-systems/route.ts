@@ -1,9 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { CurriculumService } from '@el-bannawy/lib';
+import { requireAdmin } from '@/lib/firebase/auth-helper';
 
 const curriculumService = new CurriculumService();
 
-export async function GET(): Promise<NextResponse> {
+export async function GET(request: NextRequest): Promise<NextResponse> {
+  const auth = await requireAdmin(request);
+  if (!auth.authorized) return auth.response;
+
   try {
     const result = await curriculumService.listEducationalSystems({}, { limit: 100 });
     if (!result.ok) return NextResponse.json({ success: false, error: result.error }, { status: 500 });
@@ -14,6 +18,9 @@ export async function GET(): Promise<NextResponse> {
 }
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
+  const auth = await requireAdmin(request);
+  if (!auth.authorized) return auth.response;
+
   try {
     const body = await request.json() as { name?: string; nameAr?: string; description?: string; id?: string };
     if (!body.name || !body.nameAr) {
