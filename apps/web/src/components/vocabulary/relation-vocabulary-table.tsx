@@ -65,7 +65,7 @@ function RelationVocabularyTableBase({
                   <span>
                     {vocab.synonym}
                     {vocab.synonymTranslation && (
-                      <span className="mr-1 text-xs text-neutral-400">
+                      <span className="ms-1 text-xs text-neutral-400">
                         ({vocab.synonymTranslation})
                       </span>
                     )}
@@ -82,7 +82,7 @@ function RelationVocabularyTableBase({
                   <span>
                     {vocab.antonym}
                     {vocab.antonymTranslation && (
-                      <span className="mr-1 text-xs text-neutral-400">
+                      <span className="ms-1 text-xs text-neutral-400">
                         ({vocab.antonymTranslation})
                       </span>
                     )}

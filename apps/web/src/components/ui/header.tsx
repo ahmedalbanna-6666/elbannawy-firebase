@@ -109,8 +109,7 @@ export function Header({
 
       {homeData && isStudent && (
         <div
-          className="flex items-center gap-2 overflow-x-auto pb-2"
-          style={{ scrollbarWidth: "none" }}
+          className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-thin"
         >
           <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-amber-500/10 px-3 py-1 text-xs font-semibold text-amber-600 dark:text-amber-400">
             <Flame className="h-3.5 w-3.5" />

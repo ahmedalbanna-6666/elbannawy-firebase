@@ -54,7 +54,7 @@ function AvailabilityTabBar({
   onSelect: (day: number) => void;
 }): ReactNode {
   return (
-    <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none" dir="ltr">
+    <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-thin" dir="ltr">
       {days.map((day) => (
         <button
           key={day.value}

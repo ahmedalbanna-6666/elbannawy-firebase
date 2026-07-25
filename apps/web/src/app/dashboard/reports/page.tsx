@@ -188,7 +188,7 @@ export default function ReportsPage(): ReactNode {
                     <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100">{a.title}</p>
                     {a.description && <p className="text-xs text-neutral-500">{a.description}</p>}
                   </div>
-                  <span className="ml-auto text-xs text-neutral-400">{new Date(a.earnedAt).toLocaleDateString()}</span>
+                  <span className="ms-auto text-xs text-neutral-400">{new Date(a.earnedAt).toLocaleDateString()}</span>
                 </div>
               ))}
             </div>

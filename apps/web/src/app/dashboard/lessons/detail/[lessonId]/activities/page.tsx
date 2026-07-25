@@ -91,7 +91,7 @@ export default function StudentActivitiesPage(): ReactNode {
   if (!activityList || activityList.length === 0) {
     return (
       <div className="p-6">
-        <Button variant="ghost" onClick={(): void => { router.back(); }}><ArrowLeft className="h-4 w-4 ml-2" /> Back</Button>
+        <Button variant="ghost" onClick={(): void => { router.back(); }}><ArrowLeft className="h-4 w-4 ms-2" /> Back</Button>
         <EmptyState icon={<BookOpen className="h-12 w-12" />} title="No Activities" description="This lesson has no activities yet." />
       </div>
     );
@@ -101,13 +101,13 @@ export default function StudentActivitiesPage(): ReactNode {
     <div className="mx-auto max-w-3xl p-6">
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <Button variant="ghost" onClick={(): void => { router.back(); }}><ArrowLeft className="h-4 w-4 ml-2" /> Back</Button>
+          <Button variant="ghost" onClick={(): void => { router.back(); }}><ArrowLeft className="h-4 w-4 ms-2" /> Back</Button>
           <h1 className="mt-2 text-2xl font-bold">Lesson Activities</h1>
           <p className="text-sm text-neutral-500">{completedCount} of {totalActivities} completed</p>
         </div>
         {allDone && (
           <Button onClick={(): void => { router.push("/dashboard/lessons/detail/" + lessonId + "/results"); }}>
-            <CheckCircle className="h-4 w-4 ml-2" /> View Results
+            <CheckCircle className="h-4 w-4 ms-2" /> View Results
           </Button>
         )}
       </div>
@@ -129,7 +129,7 @@ export default function StudentActivitiesPage(): ReactNode {
       {allDone && (
         <div className="mt-8 text-center">
           <Button size="lg" onClick={(): void => { router.push("/dashboard/lessons/detail/" + lessonId + "/results"); }}>
-            <CheckCircle className="h-5 w-5 ml-2" /> View Your Results
+            <CheckCircle className="h-5 w-5 ms-2" /> View Your Results
           </Button>
         </div>
       )}

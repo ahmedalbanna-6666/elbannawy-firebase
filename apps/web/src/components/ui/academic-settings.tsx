@@ -191,7 +191,7 @@ export function AcademicSettings(): ReactNode {
                           >
                             {g.name}
                             {g._count?.users !== undefined && (
-                              <span className="mr-1 text-[10px] opacity-60">({g._count.users})</span>
+                              <span className="ms-1 text-[10px] opacity-60">({g._count.users})</span>
                             )}
                           </button>
                         );

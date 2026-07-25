@@ -261,7 +261,7 @@ export function AssessmentPlayer({ lessonId, type: t }: AssessmentPlayerProps): 
         <p className="text-sm text-neutral-500">{prereqError}</p>
         <Link href={`/dashboard/lessons/${lessonId}`}>
           <Button variant="outline" size="sm">
-            <ChevronLeft className="mr-2 h-4 w-4" />
+            <ChevronLeft className="ms-2 h-4 w-4" />
             العودة للدرس
           </Button>
         </Link>
@@ -278,11 +278,11 @@ export function AssessmentPlayer({ lessonId, type: t }: AssessmentPlayerProps): 
         <TeacherContextBanner />
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="sm" onClick={handleBackToResult}>
-            <ArrowLeft className="mr-2 h-4 w-4" />
+            <ArrowLeft className="ms-2 h-4 w-4" />
             العودة للنتائج
           </Button>
           <h1 className="text-xl font-bold text-neutral-900 dark:text-neutral-100">مراجعة الإجابات</h1>
-          <Badge variant={review.passed ? "success" : "warning"} className="ml-auto">
+          <Badge variant={review.passed ? "success" : "warning"} className="ms-auto">
             النتيجة: {review.score}%
           </Badge>
         </div>
@@ -302,9 +302,9 @@ export function AssessmentPlayer({ lessonId, type: t }: AssessmentPlayerProps): 
                     </span>
                     <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100">{q.question}</p>
                     {q.isCorrect ? (
-                      <CheckCircle className="ml-auto h-5 w-5 shrink-0 text-success-500" />
+                      <CheckCircle className="ms-auto h-5 w-5 shrink-0 text-success-500" />
                     ) : (
-                      <XCircle className="ml-auto h-5 w-5 shrink-0 text-danger-500" />
+                      <XCircle className="ms-auto h-5 w-5 shrink-0 text-danger-500" />
                     )}
                   </div>
                   <div className="ps-8 space-y-1 text-sm">
@@ -372,14 +372,14 @@ export function AssessmentPlayer({ lessonId, type: t }: AssessmentPlayerProps): 
           <div className="flex gap-2">
             {isSubmitted && assessment.showAnswers && (
               <Button variant="outline" size="sm" onClick={(): void => { void handleViewReview(); }}>
-                <Eye className="mr-2 h-4 w-4" />
+                <Eye className="ms-2 h-4 w-4" />
                 مراجعة الإجابات
               </Button>
             )}
             {isSubmitted ? (
               assessment.allowRetry && (
                 <Button variant="outline" size="sm" onClick={(): void => { void handleRetry(); }}>
-                  <RotateCcw className="mr-2 h-4 w-4" />
+                  <RotateCcw className="ms-2 h-4 w-4" />
                   {t.retryLabel}
                 </Button>
               )
@@ -469,7 +469,7 @@ export function AssessmentPlayer({ lessonId, type: t }: AssessmentPlayerProps): 
             disabled={!allAnswered}
             loading={submitting}
           >
-            <Trophy className="mr-2 h-4 w-4" />
+            <Trophy className="ms-2 h-4 w-4" />
             {t.submitLabel}
           </Button>
         </div>

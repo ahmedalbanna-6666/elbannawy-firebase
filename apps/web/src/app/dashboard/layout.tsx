@@ -45,18 +45,18 @@ export default function DashboardLayout({ children }: DashboardLayoutProps): Rea
 
   const { data: profile } = useQuery<{
     role: string;
-    roleProfile?: { grade?: { name: string } | null; stage?: { name: string } | null };
-    assignedGrade?: { name: string; stage: { name: string } } | null;
+    roleProfile?: { grade?: { name: string; stage: { name: string } } | null; stage?: { name: string } | null };
   } | null>({
     queryKey: ["sidebar-profile", userId],
     queryFn: async () => {
       const res = await api.get<Record<string, unknown>>("/profile");
       if (!res.data) return null;
       const data = res.data;
-      return data as { role: string; roleProfile?: { grade?: { name: string } | null; stage?: { name: string } | null }; assignedGrade?: { name: string; stage: { name: string } } | null };
+      return data as { role: string; roleProfile?: { grade?: { name: string; stage: { name: string } } | null; stage?: { name: string } | null } };
     },
     enabled: isAuthenticated && !!userId,
     staleTime: 120_000,
+    gcTime: 0,
   });
 
   const userRole = (useAuthStore((s) => s.user?.role) ?? "").toUpperCase();
@@ -77,7 +77,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps): Rea
   useEffect(() => {
     if (!isAuthenticated || !userId || !profile) return;
     const role = (profile.role ?? "").toLowerCase();
-    const hasGrade = !!(profile.assignedGrade);
+    const hasGrade = !!(profile.roleProfile?.grade);
     if (role === "student" && !hasGrade) {
       router.push("/onboarding");
     }

@@ -89,7 +89,7 @@ function UnitPicker({
         <Layers className="h-4 w-4" />
         الوحدات
         {selected.length > 0 && (
-          <Badge variant="primary" className="mr-1 px-1.5 py-0">{selected.length}</Badge>
+          <Badge variant="primary" className="ms-1 px-1.5 py-0">{selected.length}</Badge>
         )}
       </Button>
       {open && (
@@ -390,7 +390,7 @@ function FilterBar({
             {filters.stories.map((s) => <option key={s.id} value={s.id}>{s.title}</option>)}
           </select>
         )}
-        <div className="relative mr-auto">
+        <div className="relative ms-auto">
           <Input
             placeholder="بحث في الأسئلة..."
             value={searchText}
@@ -539,7 +539,7 @@ function ExamOrResultsView({
       {questions.map((q, idx) => (
         <Card key={q.questionId}>
           <CardHeader>
-            <h3 className="text-base font-medium"><span className="ml-2 text-neutral-400">{idx + 1}.</span>{q.question}</h3>
+            <h3 className="text-base font-medium"><span className="ms-2 text-neutral-400">{idx + 1}.</span>{q.question}</h3>
             <p className="text-xs text-neutral-400">{SOURCE_LABEL[q.source as MistakeSource]}</p>
           </CardHeader>
           <CardContent className="flex flex-col gap-2">

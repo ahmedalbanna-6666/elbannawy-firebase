@@ -86,7 +86,7 @@ export function TeacherDashboard(): ReactNode {
         </p>
       </div>
 
-      <section className="grid grid-cols-3 gap-4">
+      <section className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="rounded-2xl bg-primary-500/10 p-4 text-center">
           <Users className="mx-auto mb-1 h-6 w-6 text-primary-500" />
           <p className="text-2xl font-bold text-primary-600 dark:text-primary-400">

@@ -148,7 +148,7 @@ export default function LeaderboardPage(): ReactNode {
       ) : (
         <>
           {/* Podium */}
-          <div className="grid grid-cols-3 items-end gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-3 items-end gap-3">
             {podiumOrder.map((entry) => {
               const style = PODIUM_STYLES[entry.rank] ?? PODIUM_STYLES[3];
               const Icon = style.icon;
@@ -276,7 +276,7 @@ function LeaderboardSkeleton(): ReactNode {
   return (
     <div className="flex flex-col gap-6">
       <Skeleton className="h-12 w-64" />
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         {Array.from({ length: 3 }, (_, i) => (
           <Skeleton key={i} className="h-44 rounded-2xl" />
         ))}

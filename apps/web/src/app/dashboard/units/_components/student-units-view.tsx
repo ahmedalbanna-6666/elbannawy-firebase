@@ -270,7 +270,7 @@ export function StudentUnitsView(): ReactNode {
                   </div>
 
                   {locked && (
-                    <span className="absolute -right-2 -top-2 flex h-7 w-7 items-center justify-center rounded-full bg-amber-500 text-white shadow-[0_0_10px_rgba(245,158,11,0.5)]">
+                    <span className="absolute -end-2 -top-2 flex h-7 w-7 items-center justify-center rounded-full bg-amber-500 text-white shadow-[0_0_10px_rgba(245,158,11,0.5)]">
                       <Lock className="h-3.5 w-3.5" />
                     </span>
                   )}

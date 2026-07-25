@@ -119,7 +119,7 @@ export default function AdminRolesPage(): ReactNode {
                     >
                       <div className={`h-2 w-2 rounded-full ${roleHasIt ? "bg-primary-500" : "bg-neutral-300"}`} />
                       <span className={roleHasIt ? "text-neutral-900 dark:text-neutral-100" : "text-neutral-500"}>{p.label}</span>
-                      <span className="text-xs text-neutral-400 mr-auto">{p.permission}</span>
+                      <span className="text-xs text-neutral-400 ms-auto">{p.permission}</span>
                     </div>
                   );
                 })}
@@ -148,7 +148,7 @@ export default function AdminRolesPage(): ReactNode {
               {filteredPermissions.map((p) => (
                 <div key={p.permission} className="flex items-center gap-2 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/50 p-2 text-sm">
                   <span className="text-neutral-900 dark:text-neutral-100">{p.label}</span>
-                  <span className="text-xs text-neutral-400 mr-auto">{p.permission}</span>
+                  <span className="text-xs text-neutral-400 ms-auto">{p.permission}</span>
                 </div>
               ))}
             </div>

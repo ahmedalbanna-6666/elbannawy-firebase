@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, type ReactNode } from "react";
+
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { useQuery, useQueryClient, type UseQueryResult } from "@tanstack/react-query";
@@ -10,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
-import { YouTubePlayer, VideoPlayerSkeleton } from "@/components/lesson-player/youtube-player";
+import { PlyrVideoPlayer, VideoPlayerSkeleton } from "@/components/plyr-player";
 import {
   CheckCircle,
   Clock,
@@ -387,7 +388,7 @@ function NavigationFooter({
 
       <Link href="/dashboard/final-review">
         <Button variant="ghost" size="sm">
-          <BookMarked className="mr-2 h-4 w-4" />
+          <BookMarked className="ms-2 h-4 w-4" />
           العودة للمراجعات
         </Button>
       </Link>
@@ -436,14 +437,6 @@ export default function FinalReviewPlayerPage(): ReactNode {
     [activeVideo?.id, queryClient],
   );
 
-  const handlePlayerReady = useCallback(() => {
-    return undefined;
-  }, []);
-
-  const handlePlayerError = useCallback(() => {
-    return undefined;
-  }, []);
-
   // ── Derived non-hook values ──
   const videoWatchedPct =
     activeVideo && videoProgress && activeVideo.duration > 0
@@ -489,12 +482,9 @@ export default function FinalReviewPlayerPage(): ReactNode {
       <section aria-label="فيديو المراجعة">
         {activeVideo ? (
           <div className="space-y-1">
-            <YouTubePlayer
-              videoId={activeVideo.id}
-              youtubeId={activeVideo.youtubeId}
+            <PlyrVideoPlayer
+              providerVideoId={activeVideo.youtubeId}
               onProgress={handleVideoProgress}
-              onReady={handlePlayerReady}
-              onError={handlePlayerError}
               startAt={videoProgress?.lastPosition ?? 0}
             />
             <div className="flex items-center justify-between rounded-b-2xl bg-neutral-800/80 px-4 py-2 backdrop-blur">

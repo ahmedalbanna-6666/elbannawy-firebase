@@ -252,7 +252,7 @@ export function AdminUnitsView(): ReactNode {
       {canCreate && (
         <Button
           variant="primary"
-          className="fixed bottom-20 left-4 z-20 shadow-lg lg:bottom-6 lg:left-6"
+          className="fixed bottom-24 start-4 z-20 shadow-lg lg:bottom-6 lg:start-6"
           onClick={(): void => { setCreateDialogOpen(true); }}
         >
           <Plus className="h-5 w-5" />

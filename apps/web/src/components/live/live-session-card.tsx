@@ -223,7 +223,7 @@ export function LiveSessionCard({
           )}
 
           {canControl && onControl ? (
-            <div className="mr-auto flex items-center gap-2">
+            <div className="ms-auto flex items-center gap-2">
               {(state === "live" || state === "join_now") && (
                 <Button
                   variant="danger"
@@ -279,7 +279,7 @@ export function LiveSessionCard({
                 variant={config.actionVariant}
                 size="sm"
                 onClick={handleAction}
-                className="mr-auto"
+                className="ms-auto"
               >
                 {config.icon}
                 {config.actionLabel}

@@ -47,7 +47,7 @@ function EditModal({ grade, onClose }: EditModalProps): ReactNode {
 
           <div>
             <label className="mb-1.5 block text-xs font-medium text-neutral-600 dark:text-neutral-400">
-              <Phone className="inline h-3.5 w-3.5 ml-1" />
+              <Phone className="inline h-3.5 w-3.5 ms-1" />
               رقم الهاتف
             </label>
             <Input
@@ -60,7 +60,7 @@ function EditModal({ grade, onClose }: EditModalProps): ReactNode {
 
           <div>
             <label className="mb-1.5 block text-xs font-medium text-neutral-600 dark:text-neutral-400">
-              <Mail className="inline h-3.5 w-3.5 ml-1" />
+              <Mail className="inline h-3.5 w-3.5 ms-1" />
               البريد الإلكتروني
             </label>
             <Input
@@ -73,7 +73,7 @@ function EditModal({ grade, onClose }: EditModalProps): ReactNode {
 
           <div>
             <label className="mb-1.5 block text-xs font-medium text-neutral-600 dark:text-neutral-400">
-              <MessageCircle className="inline h-3.5 w-3.5 ml-1" />
+              <MessageCircle className="inline h-3.5 w-3.5 ms-1" />
               رقم واتساب
             </label>
             <Input

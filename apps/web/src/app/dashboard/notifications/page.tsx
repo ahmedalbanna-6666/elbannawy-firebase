@@ -75,7 +75,7 @@ export default function NotificationsPage(): ReactNode {
           </div>
           {unreadCount > 0 && (
             <Button variant="ghost" size="sm" onClick={(): void => { void markAllRead(); }}>
-              <CheckCheck className="mr-2 h-4 w-4" />
+              <CheckCheck className="ms-2 h-4 w-4" />
               تحديد الكل كمقروء
             </Button>
           )}

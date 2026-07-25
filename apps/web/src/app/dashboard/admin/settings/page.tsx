@@ -267,7 +267,7 @@ export default function AdminSettingsPage(): ReactNode {
                 />
               </div>
               <Button size="sm" onClick={handleSaveAutoDates}>
-                <Calendar className="ml-1 h-4 w-4" />
+                <Calendar className="ms-1 h-4 w-4" />
                 حفظ التواريخ
               </Button>
             </div>
@@ -349,7 +349,7 @@ export default function AdminSettingsPage(): ReactNode {
               <h2 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100">السنوات الدراسية</h2>
             </div>
             <Button size="sm" onClick={() => { setShowCreateYear(true); }}>
-              <Plus className="ml-1 h-4 w-4" />
+              <Plus className="ms-1 h-4 w-4" />
               إضافة سنة
             </Button>
           </div>
@@ -394,11 +394,11 @@ export default function AdminSettingsPage(): ReactNode {
                   </div>
 
                   {/* Terms */}
-                  <div className="mr-4 space-y-2">
+                  <div className="me-4 space-y-2">
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-medium text-neutral-600 dark:text-neutral-400">الترمات</span>
                       <Button size="sm" variant="outline" onClick={() => { setShowCreateTerm(year.id); }}>
-                        <Plus className="h-3 w-3 ml-1" />
+                        <Plus className="h-3 w-3 ms-1" />
                         إضافة ترم
                       </Button>
                     </div>
@@ -627,7 +627,7 @@ function AiConfigSection(): ReactNode {
             onChange={(e) => { setLocal((p) => ({ ...p, ...config, ragEnabled: e.target.checked })); }}
           />
           {vals.ragEnabled && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mr-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 me-8">
               <Input
                 label="عدد النتائج القصوى (RAG Max Results)"
                 type="number"
@@ -914,7 +914,7 @@ function AiPricingSection(): ReactNode {
                     <span className="text-amber-500 font-semibold">{plan.coinsPerToken} عملة / توكن</span>
                   </div>
                 </div>
-                <div className="flex items-center gap-2 mr-4">
+                <div className="flex items-center gap-2 me-4">
                   <Button variant="outline" size="xs" onClick={() => { void handleToggleActive(plan); }}>
                     {plan.active ? "تعطيل" : "تفعيل"}
                   </Button>

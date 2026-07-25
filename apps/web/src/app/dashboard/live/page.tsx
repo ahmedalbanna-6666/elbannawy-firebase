@@ -224,7 +224,7 @@ function ServiceCards(): ReactNode {
           {service.badge && (
             <div className="absolute left-4 top-4">
               <Badge variant="primary" className="text-[10px] shadow-sm">
-                <Sparkles className="mr-1 h-3 w-3" />
+                <Sparkles className="ms-1 h-3 w-3" />
                 {service.badge}
               </Badge>
             </div>

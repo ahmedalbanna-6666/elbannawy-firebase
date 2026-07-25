@@ -230,7 +230,7 @@ export default function StudentsPage(): ReactNode {
       <div className="flex flex-col gap-6">
         <div className="flex items-center gap-3">
           <Button variant="outline" size="sm" onClick={() => { setSelectedStudentId(null); }}>
-            <ChevronLeft className="h-4 w-4 ml-1" />
+            <ChevronLeft className="h-4 w-4 ms-1" />
             العودة
           </Button>
           <h1 className="text-xl font-bold text-neutral-900 dark:text-neutral-100">
@@ -253,7 +253,7 @@ export default function StudentsPage(): ReactNode {
               size="sm"
               onClick={() => { setActiveTab(tab.key); }}
             >
-              <tab.icon className="h-4 w-4 ml-1" />
+              <tab.icon className="h-4 w-4 ms-1" />
               {tab.label}
             </Button>
           ))}
@@ -360,7 +360,7 @@ export default function StudentsPage(): ReactNode {
                     <div className="flex items-center gap-2">
                       <span className="text-sm text-amber-500">{s.coins} عملة</span>
                       <Button size="sm" variant="outline" onClick={() => { setSelectedStudentId(s.id); }}>
-                        <Eye className="h-4 w-4 ml-1" />
+                        <Eye className="h-4 w-4 ms-1" />
                         عرض
                       </Button>
                     </div>
@@ -460,41 +460,41 @@ function StudentProfileTab({
         <CardContent>
           <div className="flex flex-wrap gap-2">
             <Button size="sm" variant="outline" onClick={() => { setDialog({ type: "edit" }); }}>
-              <User className="h-4 w-4 ml-1" />
+              <User className="h-4 w-4 ms-1" />
               تعديل البيانات
             </Button>
             <Button size="sm" variant="outline" onClick={() => { setDialog({ type: "phone" }); }}>
-              <Phone className="h-4 w-4 ml-1" />
+              <Phone className="h-4 w-4 ms-1" />
               تغيير رقم الهاتف
             </Button>
             <Button size="sm" variant="outline" onClick={() => { setDialog({ type: "password" }); }}>
-              <KeyRound className="h-4 w-4 ml-1" />
+              <KeyRound className="h-4 w-4 ms-1" />
               إعادة تعيين كلمة المرور
             </Button>
             <Button size="sm" variant="outline" onClick={() => { confirmAction.mutate({ method: "post", endpoint: `/admin/students/${detail.id}/reset-device` }); }}>
-              <Smartphone className="h-4 w-4 ml-1" />
+              <Smartphone className="h-4 w-4 ms-1" />
               إعادة تعيين الجهاز
             </Button>
             <Button size="sm" variant="outline" onClick={() => { setDialog({ type: "coins-add" }); }}>
-              <Coins className="h-4 w-4 ml-1" />
+              <Coins className="h-4 w-4 ms-1" />
               إضافة عملات
             </Button>
             <Button size="sm" variant="outline" onClick={() => { setDialog({ type: "coins-remove" }); }}>
-              <Coins className="h-4 w-4 ml-1" />
+              <Coins className="h-4 w-4 ms-1" />
               خصم عملات
             </Button>
             <Button size="sm" variant="outline" onClick={() => { setDialog({ type: "xp" }); }}>
-              <Zap className="h-4 w-4 ml-1" />
+              <Zap className="h-4 w-4 ms-1" />
               تعديل نقاط XP
             </Button>
             {detail.status !== "DELETED" && (
               <>
                 <Button size="sm" variant="outline" className="text-amber-500" onClick={() => { setDialog({ type: "status" }); }}>
-                  <AlertTriangle className="h-4 w-4 ml-1" />
+                  <AlertTriangle className="h-4 w-4 ms-1" />
                   {detail.status === "SUSPENSED" || detail.status === "BANNED" ? "إعادة تنشيط" : detail.status === "ACTIVE" ? "تعليق" : "تغيير الحالة"}
                 </Button>
                 <Button size="sm" variant="outline" className="text-danger-500" onClick={() => { setDialog({ type: "delete" }); }}>
-                  <Trash2 className="h-4 w-4 ml-1" />
+                  <Trash2 className="h-4 w-4 ms-1" />
                   حذف الحساب
                 </Button>
               </>
@@ -647,7 +647,7 @@ function StudentSubscriptionTab({ studentId }: { studentId: string }): ReactNode
               <div key={p.id} className="flex items-center justify-between rounded bg-neutral-50 dark:bg-neutral-800 px-3 py-1.5 text-sm">
                 <div>
                   <span className="font-medium">{p.productType}</span>
-                  <span className="mr-2 text-neutral-500">{new Date(p.createdAt).toLocaleDateString("ar-EG")}</span>
+                  <span className="ms-2 text-neutral-500">{new Date(p.createdAt).toLocaleDateString("ar-EG")}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="font-bold">{p.amount} ج.م</span>

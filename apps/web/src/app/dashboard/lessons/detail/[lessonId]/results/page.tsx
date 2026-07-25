@@ -25,7 +25,7 @@ export default function StudentResultsPage(): ReactNode {
   return (
     <div className="mx-auto max-w-3xl p-6">
       <div className="mb-6">
-        <Button variant="ghost" onClick={(): void => { router.back(); }}><ArrowLeft className="h-4 w-4 ml-2" /> Back</Button>
+        <Button variant="ghost" onClick={(): void => { router.back(); }}><ArrowLeft className="h-4 w-4 ms-2" /> Back</Button>
       </div>
 
       <Card className="mb-6">
@@ -35,7 +35,7 @@ export default function StudentResultsPage(): ReactNode {
           <p className="text-lg text-neutral-500 mb-8">You have completed all activities for this lesson.</p>
 
           <Button size="lg" onClick={(): void => { completeMutation.mutate(); }} loading={completeMutation.isPending}>
-            <Trophy className="h-5 w-5 ml-2" /> Mark Lesson as Complete
+            <Trophy className="h-5 w-5 ms-2" /> Mark Lesson as Complete
           </Button>
         </CardContent>
       </Card>

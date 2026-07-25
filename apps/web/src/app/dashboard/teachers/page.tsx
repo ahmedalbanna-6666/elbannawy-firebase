@@ -184,7 +184,7 @@ export default function TeachersPage(): ReactNode {
       <div className="flex flex-col gap-6">
         <div className="flex items-center gap-3">
           <Button variant="outline" size="sm" onClick={() => { setSelectedTeacherId(null); }}>
-            <ChevronLeft className="h-4 w-4 ml-1" />
+            <ChevronLeft className="h-4 w-4 ms-1" />
             العودة
           </Button>
           <h1 className="text-xl font-bold text-neutral-900 dark:text-neutral-100">
@@ -205,7 +205,7 @@ export default function TeachersPage(): ReactNode {
               size="sm"
               onClick={() => { setActiveTab(tab.key); }}
             >
-              <tab.icon className="h-4 w-4 ml-1" />
+              <tab.icon className="h-4 w-4 ms-1" />
               {tab.label}
             </Button>
           ))}
@@ -261,7 +261,7 @@ export default function TeachersPage(): ReactNode {
           <p className="mt-1 text-sm text-neutral-500">إدارة المعلمين والصلاحيات الدراسية</p>
         </div>
         <Button size="sm" onClick={() => { setDialog({ type: "create" }); }}>
-          <Plus className="h-4 w-4 ml-1" />
+          <Plus className="h-4 w-4 ms-1" />
           إضافة معلم
         </Button>
       </div>
@@ -344,7 +344,7 @@ export default function TeachersPage(): ReactNode {
                       </div>
                       <div className="flex items-center gap-2">
                         <Button size="sm" variant="outline" onClick={() => { setSelectedTeacherId(t.id); }}>
-                          <User className="h-4 w-4 ml-1" />
+                          <User className="h-4 w-4 ms-1" />
                           عرض
                         </Button>
                       </div>
@@ -444,11 +444,11 @@ function TeacherProfileTab({
         <CardContent>
           <div className="flex flex-wrap gap-2">
             <Button size="sm" variant="outline" onClick={() => { setDialog({ type: "edit" }); }}>
-              <User className="h-4 w-4 ml-1" />
+              <User className="h-4 w-4 ms-1" />
               تعديل البيانات
             </Button>
             <Button size="sm" variant="outline" onClick={() => { setDialog({ type: "grades" }); }}>
-              <BookOpen className="h-4 w-4 ml-1" />
+              <BookOpen className="h-4 w-4 ms-1" />
               إدارة الصفوف
             </Button>
             {detail.status !== "DELETED" && (
@@ -492,7 +492,7 @@ function TeacherGradesTab({
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100">الصفوف الدراسية المسندة</h2>
           <Button size="sm" variant="outline" onClick={() => { setDialog({ type: "grades" }); }}>
-            <Plus className="h-4 w-4 ml-1" />
+            <Plus className="h-4 w-4 ms-1" />
             تعديل
           </Button>
         </div>
@@ -1075,7 +1075,7 @@ function GradeSelector({
           تم اختيار {selectedGradeIds.size} صف
         </span>
         <Button size="sm" variant="outline" onClick={handleSave} disabled={saving}>
-          <Check className="h-4 w-4 ml-1" />
+          <Check className="h-4 w-4 ms-1" />
           حفظ التغييرات
         </Button>
       </div>

@@ -135,7 +135,7 @@ export default function AiChatPage(): ReactNode {
       {/* Sidebar */}
       <div className="hidden w-64 shrink-0 flex-col gap-3 md:flex">
         <Button variant="primary" size="sm" fullWidth onClick={(): void => { void newConversation(); }}>
-          <Plus className="mr-2 h-4 w-4" />
+          <Plus className="ms-2 h-4 w-4" />
           محادثة جديدة
         </Button>
         <div className="flex-1 space-y-1 overflow-y-auto">

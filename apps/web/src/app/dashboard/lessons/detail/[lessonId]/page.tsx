@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, type ReactNode } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import Link from "next/link";
 import { useQuery, useQueryClient, type UseQueryResult } from "@tanstack/react-query";
 import { api } from "@/lib/api-client";
@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ErrorState } from "@/components/ui/error-state";
-import { VideoPlayer, VideoPlayerSkeleton } from "@/components/video-player";
+import { PlyrVideoPlayer, VideoPlayerSkeleton } from "@/components/plyr-player";
 import {
   Play,
   CheckCircle,
@@ -520,7 +520,7 @@ function QuizCard({
               </p>
             </div>
             <Button variant="outline" size="sm" disabled className="mt-2 sm:mt-0">
-              <Lock className="mr-2 h-4 w-4" />
+              <Lock className="ms-2 h-4 w-4" />
               مقفل
             </Button>
           </div>
@@ -575,7 +575,7 @@ function QuizCard({
           </div>
           <Link href={`/dashboard/quiz/${lessonId}`}>
             <Button variant="primary" size="sm" className="mt-2 sm:mt-0">
-              <Play className="mr-2 h-4 w-4" />
+              <Play className="ms-2 h-4 w-4" />
               بدء الاختبار
             </Button>
           </Link>
@@ -599,7 +599,7 @@ function NavigationFooter({
           <Button variant="outline" size="sm" className="gap-1">
             <ChevronRight className="h-4 w-4" />
             <span className="hidden sm:inline">الدرس السابق</span>
-            <span className="hidden sm:inline text-xs text-neutral-400 ml-1">
+            <span className="hidden sm:inline text-xs text-neutral-400 ms-1">
               {prevLesson.title}
             </span>
           </Button>
@@ -610,7 +610,7 @@ function NavigationFooter({
 
       <Link href="/dashboard/units">
         <Button variant="ghost" size="sm">
-          <BookOpen className="mr-2 h-4 w-4" />
+          <BookOpen className="ms-2 h-4 w-4" />
           العودة للوحدات
         </Button>
       </Link>
@@ -618,7 +618,7 @@ function NavigationFooter({
       {nextLesson ? (
         <Link href={`/dashboard/lessons/detail/${nextLesson.id}`}>
           <Button variant="outline" size="sm" className="gap-1">
-            <span className="hidden sm:inline text-xs text-neutral-400 mr-1">
+            <span className="hidden sm:inline text-xs text-neutral-400 ms-1">
               {nextLesson.title}
             </span>
             <span className="hidden sm:inline">الدرس التالي</span>
@@ -716,22 +716,6 @@ export default function LessonDetailPage(): ReactNode {
   };
 
   const nextLesson = navigation.next;
-  const lessonCompletedActions = {
-    onNextLesson: nextLesson
-      ? (): void => { router.push(`/dashboard/lessons/detail/${nextLesson.id}`); }
-      : undefined,
-    onReviewQuestions: (): void => {
-      if (quizEnabled && quizData) {
-        router.push(`/dashboard/quiz/${lessonId}`);
-      } else {
-        router.push(`/dashboard/lessons/detail/${lessonId}/vocabulary`);
-      }
-    },
-    onHomework: lesson.homeworkEnabled
-      ? (): void => { router.push(`/dashboard/homework/${lessonId}`); }
-      : undefined,
-    onBackToUnit: (): void => { router.push("/dashboard/units"); },
-  };
 
   // ── Render ──
   return (
@@ -750,16 +734,11 @@ export default function LessonDetailPage(): ReactNode {
       <section aria-label="مشغل الفيديو">
         {activeVideo ? (
           <div className="space-y-1">
-            <VideoPlayer
-              providerName={activeVideo.providerName}
+            <PlyrVideoPlayer
               providerVideoId={activeVideo.providerVideoId}
-              videoId={activeVideo.id}
               onProgress={handleVideoProgress}
               startAt={videoProgress?.lastPosition ?? 0}
-              lessonTitle={activeVideo.title}
-              enableLessonCompleted
               onComplete={handleLessonComplete}
-              completedActions={lessonCompletedActions}
             />
             <div className="flex items-center justify-between rounded-b-2xl bg-neutral-800/80 px-4 py-2 backdrop-blur">
               <div className="flex items-center gap-3 text-sm text-neutral-300">

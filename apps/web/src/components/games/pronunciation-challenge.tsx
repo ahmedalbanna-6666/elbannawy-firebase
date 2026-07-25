@@ -388,7 +388,7 @@ export function PronunciationChallenge({
               )}
               <span>دقتك: {String(attemptScore)}%</span>
               {passed && (
-                <span className="mr-auto flex items-center gap-3 font-bold">
+                <span className="ms-auto flex items-center gap-3 font-bold">
                   <span className="flex items-center gap-1">
                     <Award className="h-3.5 w-3.5" />
                     +{String(config.xpReward)} XP

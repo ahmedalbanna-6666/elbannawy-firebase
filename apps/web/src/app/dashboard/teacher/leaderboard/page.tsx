@@ -117,7 +117,7 @@ export default function TeacherLeaderboardPage(): ReactNode {
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <Card variant="elevated" padding="md">
           <CardContent>
             <div className="flex flex-col items-center gap-2 text-center">
@@ -162,7 +162,7 @@ export default function TeacherLeaderboardPage(): ReactNode {
       ) : (
         <>
           {top3.length > 0 && (
-            <div className="grid grid-cols-3 items-end gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 items-end gap-3">
               {([top3[1], top3[0], top3[2]].filter(Boolean) as LeaderboardStudent[]).map((student) => {
                 const style = RANK_STYLES[student.rank];
                 return (
@@ -242,12 +242,12 @@ function LeaderboardSkeleton(): ReactNode {
   return (
     <div className="flex flex-col gap-6">
       <Skeleton className="h-12 w-64" />
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {Array.from({ length: 3 }, (_, i) => (
           <Skeleton key={i} className="h-24 rounded-2xl" />
         ))}
       </div>
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         {Array.from({ length: 3 }, (_, i) => (
           <Skeleton key={i} className="h-44 rounded-2xl" />
         ))}
