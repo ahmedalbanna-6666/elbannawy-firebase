@@ -39,8 +39,7 @@ export function AdminDashboard(): ReactNode {
     queryKey: ["admin-dashboard-stats"],
     queryFn: async () => {
       const res = await api.get<DashboardStats>("/admin/dashboard/stats");
-      const fallback: DashboardStats = { studentsCount: 0, teachersCount: 0, academicYearsCount: 0 };
-      return res.data ?? fallback;
+      return res.data ?? { studentsCount: 0, teachersCount: 0, unitsCount: 0, lessonsCount: 0, academicYearsCount: 0 };
     },
     refetchInterval: 60_000,
   });
