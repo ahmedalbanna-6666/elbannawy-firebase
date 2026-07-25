@@ -1,8 +1,3 @@
-.plyr__video-embed {
-  position: relative;
-  overflow: hidden;
-}
-
 .plyr__video-embed iframe {
   position: absolute;
   top: -50% !important;
@@ -11,7 +6,6 @@
   height: 200% !important;
   border: 0;
   max-width: none;
-  pointer-events: none;
 }
 
 .plyr__poster {
@@ -35,7 +29,6 @@
   border-radius: 1rem;
   overflow: hidden;
   position: relative;
-  touch-action: manipulation;
 }
 
 .plyr__controls {
@@ -49,7 +42,6 @@
   padding: 8px 12px !important;
   background: linear-gradient(180deg, transparent, rgba(0, 0, 0, 0.75)) !important;
   z-index: 5;
-  touch-action: manipulation;
 }
 
 .plyr__controls .plyr__controls__item.plyr__progress__container {
@@ -69,38 +61,6 @@
   height: 7px !important;
 }
 
-.plyr__progress input[type="range"] {
-  height: 5px !important;
-  border-radius: 3px !important;
-  -webkit-appearance: none;
-  appearance: none;
-  background: transparent;
-}
-
-.plyr__progress input[type="range"]::-webkit-slider-runnable-track {
-  height: 5px;
-  border-radius: 3px;
-  background: transparent;
-}
-
-.plyr__progress input[type="range"]::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  background: #fff;
-  border: none;
-  margin-top: -3.5px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
-  opacity: 0;
-  transition: opacity 0.15s ease;
-}
-
-.plyr__progress:hover input[type="range"]::-webkit-slider-thumb {
-  opacity: 1;
-}
-
 .plyr__progress__buffer {
   border-radius: 3px !important;
   background: rgba(255, 255, 255, 0.1) !important;
@@ -109,7 +69,6 @@
 .plyr__time {
   font-size: 12px !important;
   font-weight: 500 !important;
-  font-variant-numeric: tabular-nums;
   color: rgba(255, 255, 255, 0.7) !important;
 }
 
@@ -117,22 +76,11 @@
   margin-left: 2px !important;
 }
 
-.plyr__time + .plyr__time::before {
-  margin-right: 3px !important;
-  color: rgba(255, 255, 255, 0.3) !important;
-}
-
 .plyr__control {
   padding: 6px !important;
   border-radius: 4px !important;
   color: rgba(255, 255, 255, 0.8) !important;
   transition: all 0.15s ease;
-  touch-action: manipulation;
-  min-width: 36px;
-  min-height: 36px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
 .plyr__control:hover {
@@ -151,9 +99,6 @@
   border-radius: 50% !important;
   padding: 16px !important;
   transition: all 0.2s ease !important;
-  touch-action: manipulation;
-  min-width: 56px;
-  min-height: 56px;
 }
 
 .plyr__control--overlaid svg {
@@ -174,10 +119,6 @@
   transform: translate(-50%, -50%) !important;
 }
 
-.plyr--video .plyr__control--overlaid:hover {
-  transform: translate(-50%, -50%) scale(1.05) !important;
-}
-
 .plyr__volume {
   display: flex !important;
   align-items: center !important;
@@ -189,20 +130,7 @@
   width: 50px !important;
   height: 3px !important;
   border-radius: 2px !important;
-  -webkit-appearance: none;
-  appearance: none;
   background: rgba(255, 255, 255, 0.2) !important;
-  cursor: pointer;
-}
-
-.plyr__volume input[type="range"]::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: #fff;
-  border: none;
   cursor: pointer;
 }
 
@@ -212,36 +140,4 @@
 
 .plyr--fullscreen {
   border-radius: 0 !important;
-  position: relative;
-}
-
-@media (pointer: coarse) {
-  .plyr__control {
-    padding: 8px !important;
-    min-width: 44px;
-    min-height: 44px;
-  }
-  .plyr__control svg {
-    width: 20px !important;
-    height: 20px !important;
-  }
-  .plyr__control--overlaid {
-    padding: 18px !important;
-    min-width: 64px;
-    min-height: 64px;
-  }
-  .plyr__control--overlaid svg {
-    width: 28px !important;
-    height: 28px !important;
-  }
-  .plyr__controls {
-    padding: 10px 14px !important;
-  }
-  .plyr__progress {
-    height: 6px !important;
-  }
-  .plyr__volume input[type="range"] {
-    width: 60px !important;
-    height: 4px !important;
-  }
 }

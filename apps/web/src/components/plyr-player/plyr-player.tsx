@@ -6,28 +6,6 @@ import "plyr/dist/plyr.css";
 import "./plyr-player.css";
 import { Skeleton } from "@/components/ui/skeleton";
 
-async function lockLandscape(): Promise<void> {
-  try {
-    const screen = window.screen as Screen & { orientation?: { lock?: (orientation: string) => Promise<void> } };
-    if (screen.orientation?.lock) {
-      await screen.orientation.lock("landscape");
-    }
-  } catch {
-    /* not supported */
-  }
-}
-
-async function unlockOrientation(): Promise<void> {
-  try {
-    const screen = window.screen as Screen & { orientation?: { unlock?: () => Promise<void> } };
-    if (screen.orientation?.unlock) {
-      await screen.orientation.unlock();
-    }
-  } catch {
-    /* not supported */
-  }
-}
-
 export function PlyrVideoPlayer({
   providerVideoId,
   startAt = 0,
@@ -39,7 +17,7 @@ export function PlyrVideoPlayer({
   readonly onProgress?: (currentTime: number, duration: number) => void;
   readonly onComplete?: (currentTime: number, duration: number) => void;
 }): ReactNode {
-  const containerRef = useRef<HTMLDivElement>(null);
+  const elementRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<Plyr | null>(null);
   const progressRef = useRef(onProgress);
   const completeRef = useRef(onComplete);
@@ -47,10 +25,10 @@ export function PlyrVideoPlayer({
   completeRef.current = onComplete;
 
   useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
+    const element = elementRef.current;
+    if (!element) return;
 
-    const player = new Plyr(container, {
+    const player = new Plyr(element, {
       controls: ["play-large", "play", "progress", "current-time", "mute", "volume", "fullscreen"],
       youtube: {
         noCookie: true,
@@ -71,16 +49,6 @@ export function PlyrVideoPlayer({
 
     playerRef.current = player;
 
-    const handleFullscreen = (): void => {
-      if (document.fullscreenElement) {
-        void lockLandscape();
-      } else {
-        void unlockOrientation();
-      }
-    };
-
-    document.addEventListener("fullscreenchange", handleFullscreen);
-
     if (startAt > 0) {
       player.once("ready", () => {
         try {
@@ -91,20 +59,6 @@ export function PlyrVideoPlayer({
       });
     }
 
-    const posterEl = container.querySelector<HTMLElement>(".plyr__poster");
-
-    player.on("pause", () => {
-      if (posterEl) {
-        posterEl.style.display = "block";
-        posterEl.style.opacity = "1";
-      }
-    });
-    player.on("play", () => {
-      if (posterEl) {
-        posterEl.style.display = "";
-        posterEl.style.opacity = "";
-      }
-    });
     player.on("ended", () => {
       setTimeout(() => {
         try {
@@ -132,8 +86,6 @@ export function PlyrVideoPlayer({
     });
 
     return (): void => {
-      document.removeEventListener("fullscreenchange", handleFullscreen);
-      void unlockOrientation();
       player.destroy();
       playerRef.current = null;
     };
@@ -141,15 +93,11 @@ export function PlyrVideoPlayer({
 
   return (
     <div className="aspect-video w-full overflow-hidden rounded-2xl bg-black">
-      <div className="plyr__video-embed relative" ref={containerRef}>
-        <iframe
-          src={`https://www.youtube-nocookie.com/embed/${providerVideoId}?controls=0&rel=0&iv_load_policy=3&playsinline=1&modestbranding=1&enablejsapi=1`}
-          allowFullScreen
-          allowTransparency
-          allow="autoplay"
-          loading="lazy"
-        />
-      </div>
+      <div
+        ref={elementRef}
+        data-plyr-provider="youtube"
+        data-plyr-embed-id={providerVideoId}
+      />
     </div>
   );
 }
