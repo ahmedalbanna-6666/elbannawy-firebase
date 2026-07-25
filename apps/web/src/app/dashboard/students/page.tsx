@@ -87,9 +87,10 @@ const STATUS_OPTIONS = [
 ];
 
 function useStudents(params: Record<string, string>): UseQueryResult<ListResponse> {
+  const paramsStr = JSON.stringify(params);
   const searchParams = new URLSearchParams(params);
   return useQuery<ListResponse>({
-    queryKey: ["students", params],
+    queryKey: ["students", paramsStr],
     queryFn: async () => {
       const res = await api.get<ListResponse>(`/admin/students?${searchParams.toString()}`);
       return res.data ?? { students: [], meta: { total: 0, page: 1, limit: 20, totalPages: 0 } };
