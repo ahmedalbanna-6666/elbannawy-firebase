@@ -230,12 +230,6 @@ function formatSeconds(totalSeconds: number): string {
   return `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
 }
 
-function getResolutionBadge(durationSec: number): string {
-  if (durationSec >= 3600) return "1080p";
-  if (durationSec >= 1800) return "720p";
-  return "HD";
-}
-
 // ── Sub-components ───────────────────────────────────────────────────
 
 function Breadcrumb({
@@ -737,20 +731,6 @@ export default function LessonDetailPage(): ReactNode {
               startAt={videoProgress?.lastPosition ?? 0}
               onComplete={handleLessonComplete}
             />
-            <div className="flex items-center justify-between rounded-b-2xl bg-neutral-800/80 px-4 py-2 backdrop-blur">
-              <div className="flex items-center gap-3 text-sm text-neutral-300">
-                <span className="flex items-center gap-1">
-                  <Clock className="h-3.5 w-3.5" />
-                  {formatSeconds(activeVideo.duration)}
-                </span>
-                <Badge variant="secondary" className="text-[10px]">
-                  {getResolutionBadge(activeVideo.duration)}
-                </Badge>
-              </div>
-              <span className="text-xs text-neutral-400">
-                {activeVideo.title}
-              </span>
-            </div>
           </div>
         ) : (
           <Card variant="default" padding="lg">

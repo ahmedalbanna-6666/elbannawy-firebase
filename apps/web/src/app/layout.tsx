@@ -19,8 +19,21 @@ const cairo = Cairo({
 export const metadata: Metadata = {
   title: "El-bannawy Platform",
   description: "AI-Powered English Learning Platform",
+  manifest: "/manifest.json",
   icons: {
     icon: [{ url: "/favicon.svg", type: "image/svg+xml" }],
+    apple: [{ url: "/logo.svg", sizes: "any", type: "image/svg+xml" }],
+  },
+  appleWebApp: {
+    capable: true,
+    title: "El-bannawy",
+    statusBarStyle: "black-translucent",
+  },
+  other: {
+    "mobile-web-app-capable": "yes",
+    "apple-mobile-web-app-capable": "yes",
+    "apple-mobile-web-app-status-bar-style": "black-translucent",
+    "msapplication-tile-color": "#030711",
   },
 };
 

@@ -1,10 +1,21 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { SplashScreen } from "./splash-screen";
+
+function registerSw(): void {
+  if (typeof window === "undefined") return;
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("/firebase-messaging-sw.js").catch(() => {});
+  }
+}
 
 export function RootClient({ children }: { children: React.ReactNode }): React.ReactNode {
   const [showSplash, setShowSplash] = useState(true);
+
+  useEffect(() => {
+    registerSw();
+  }, []);
 
   if (showSplash) {
     return <SplashScreen onFinish={() => { setShowSplash(false); }} />;

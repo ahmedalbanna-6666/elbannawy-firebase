@@ -121,8 +121,8 @@ export function AuthProvider({ children }: { children: ReactNode }): ReactNode {
     initRef.current = true;
 
     const unsubscribe = onAuthStateChanged(getClientAuth(), (fbUser: FirebaseUser | null) => {
-      setFirebaseUser(fbUser);
       if (fbUser) {
+        setFirebaseUser(fbUser);
         void fbUser.getIdToken().then((token: string) => {
           const maxAge = 60 * 60 * 24 * 14;
           document.cookie = 'auth_token=' + token + '; path=/; max-age=' + String(maxAge) + '; SameSite=Lax';
@@ -130,7 +130,8 @@ export function AuthProvider({ children }: { children: ReactNode }): ReactNode {
         if (!userRef.current) {
           void fetchUser(fbUser);
         }
-      } else {
+      } else if (!userRef.current) {
+        setFirebaseUser(null);
         document.cookie = "auth_token=; path=/; max-age=0";
         fetch('/api/v1/auth/sign-out', { method: 'POST' }).catch(() => {});
       }

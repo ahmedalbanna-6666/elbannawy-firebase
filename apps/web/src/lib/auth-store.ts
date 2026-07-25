@@ -44,7 +44,7 @@ export const useAuthStore = create<AuthState>()(
       isAuthenticated: false,
       idToken: null,
       setFirebaseUser: (firebaseUser: FirebaseUser | null): void => {
-        set({ firebaseUser, isAuthenticated: firebaseUser !== null });
+        set({ firebaseUser });
       },
       setUser: (user: AuthUser): void => {
         set({ user });
@@ -66,6 +66,7 @@ export const useAuthStore = create<AuthState>()(
       partialize: (state) => ({
         user: state.user,
         isAuthenticated: state.isAuthenticated,
+        idToken: state.idToken,
       }),
     },
   ),

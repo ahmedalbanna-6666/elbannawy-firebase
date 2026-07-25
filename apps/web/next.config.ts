@@ -6,6 +6,15 @@ const nextConfig: NextConfig = {
     ignoreDuringBuilds: true,
   },
   transpilePackages: ["@el-bannawy/shared", "@el-bannawy/lib"],
+  async redirects() {
+    return [
+      {
+        source: "/logo.png",
+        destination: "/logo.svg",
+        permanent: true,
+      },
+    ];
+  },
   webpack: (config) => {
     config.resolve.extensionAlias = {
       ...config.resolve.extensionAlias,

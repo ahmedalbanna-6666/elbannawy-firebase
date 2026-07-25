@@ -1,0 +1,33 @@
+{
+  "name": "El-bannawy Platform",
+  "short_name": "El-bannawy",
+  "description": "AI-Powered English Learning Platform",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#030711",
+  "theme_color": "#06b6d4",
+  "orientation": "portrait",
+  "lang": "ar",
+  "dir": "rtl",
+  "icons": [
+    {
+      "src": "/logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/logo-splash.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/favicon.svg",
+      "sizes": "48x48 72x72 96x96 128x128",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ],
+  "splash_pages": null
+}

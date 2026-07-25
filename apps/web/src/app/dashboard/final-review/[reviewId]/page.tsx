@@ -8,13 +8,11 @@ import { useQuery, useQueryClient, type UseQueryResult } from "@tanstack/react-q
 import { api } from "@/lib/api-client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
 import { PlyrVideoPlayer, VideoPlayerSkeleton } from "@/components/plyr-player";
 import {
   CheckCircle,
-  Clock,
   BookMarked,
   FileText,
   Puzzle,
@@ -132,12 +130,6 @@ function formatSeconds(totalSeconds: number): string {
   const mins = Math.floor(totalSeconds / 60);
   const secs = totalSeconds % 60;
   return `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
-}
-
-function getResolutionBadge(durationSec: number): string {
-  if (durationSec >= 3600) return "1080p";
-  if (durationSec >= 1800) return "720p";
-  return "HD";
 }
 
 function buildReviews(stages: Stage[]): ReviewInfo[] {
@@ -487,18 +479,6 @@ export default function FinalReviewPlayerPage(): ReactNode {
               onProgress={handleVideoProgress}
               startAt={videoProgress?.lastPosition ?? 0}
             />
-            <div className="flex items-center justify-between rounded-b-2xl bg-neutral-800/80 px-4 py-2 backdrop-blur">
-              <div className="flex items-center gap-3 text-sm text-neutral-300">
-                <span className="flex items-center gap-1">
-                  <Clock className="h-3.5 w-3.5" />
-                  {formatSeconds(activeVideo.duration)}
-                </span>
-                <Badge variant="secondary" className="text-[10px]">
-                  {getResolutionBadge(activeVideo.duration)}
-                </Badge>
-              </div>
-              <span className="text-xs text-neutral-400">{activeVideo.title}</span>
-            </div>
           </div>
         ) : (
           <Card variant="default" padding="lg">
