@@ -1,12 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { LessonDocumentRepository, CreateLessonDocumentInputSchema } from '@el-bannawy/lib';
+import { authenticateRequest } from '@/lib/firebase/auth-helper';
 
 const documentRepository = new LessonDocumentRepository();
+
+async function requireAuth(request: NextRequest): Promise<{ uid: string } | { response: NextResponse }> {
+  const decoded = await authenticateRequest(request);
+  if (!decoded) {
+    return { response: NextResponse.json({ success: false, error: { code: 'UNAUTHORIZED', message: 'Not authenticated' } }, { status: 401 }) };
+  }
+  return { uid: decoded.uid };
+}
 
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ): Promise<NextResponse> {
+  const auth = await requireAuth(request);
+  if ('response' in auth) return auth.response;
   const { id } = await params;
   let body: Record<string, unknown>;
   try {

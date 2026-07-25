@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { LessonService, LessonApplicationService, VocabularyItemRepository } from '@el-bannawy/lib';
+import { LessonService, LessonApplicationService, VocabularyItemRepository, LessonDocumentRepository } from '@el-bannawy/lib';
 import { getAdminDb } from '@/lib/firebase/admin';
 import { authenticateRequest } from '@/lib/firebase/auth-helper';
 
 const lessonService = new LessonService();
 const applicationService = new LessonApplicationService(lessonService);
 const vocabRepo = new VocabularyItemRepository();
+const docRepo = new LessonDocumentRepository();
 
 function mapErrorCode(code: string): number {
   switch (code) {
@@ -93,6 +94,11 @@ export async function GET(
       items: vocabItems.map(v => ({ id: v.id, word: v.word, translation: v.translation, definition: v.definition, example: v.example, partOfSpeech: v.partOfSpeech, displayOrder: v.displayOrder })),
     }];
 
+    const docResult = await docRepo.getByLessonId(id);
+    const document = docResult.ok && docResult.value
+      ? { id: docResult.value.id, fileName: docResult.value.fileName, downloadable: docResult.value.downloadable, mimeType: docResult.value.mimeType }
+      : null;
+
     const enriched = {
       id: lesson.id,
       title: lesson.title,
@@ -110,7 +116,7 @@ export async function GET(
       videos: videoList,
       vocabulary: { groups: vocabGroups },
       settings: null,
-      document: null,
+      document,
     };
 
     return NextResponse.json({ success: true, data: enriched });
