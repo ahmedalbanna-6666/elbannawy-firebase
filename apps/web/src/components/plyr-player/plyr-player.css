@@ -35,7 +35,17 @@
   opacity: 0.99;
 }
 
-.plyr--youtube .plyr__controls {
-  z-index: 5;
+.plyr {
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.plyr__video-wrapper {
+  aspect-ratio: 16 / 9;
   position: relative;
+}
+
+.plyr__controls {
+  position: static !important;
+  order: 1;
 }
