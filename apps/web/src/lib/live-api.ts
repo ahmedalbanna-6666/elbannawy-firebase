@@ -180,7 +180,7 @@ export function useAvailableSlots(teacherId?: string): UseQueryResult<AvailableS
       const params = new URLSearchParams({ dateFrom, dateTo });
       if (teacherId) params.set("teacherId", teacherId);
       const res = await api.get<AvailableSlotItem[]>(
-        `/live/availability/calendar?${params.toString()}`,
+        `/live/available-slots?${params.toString()}`,
       );
       return res.data ?? [];
     },
@@ -218,7 +218,7 @@ export function useBookSession(): UseMutationResult<unknown, Error, IBookSession
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (dto: IBookSessionDto) =>
-      api.post<LiveBookingItem>(`/live/sessions/${dto.sessionId}/book`, dto),
+      api.post<LiveBookingItem>(`/live/bookings`, dto),
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: LIVE_KEYS.sessions });
       void qc.invalidateQueries({ queryKey: LIVE_KEYS.myBookings });
@@ -226,14 +226,11 @@ export function useBookSession(): UseMutationResult<unknown, Error, IBookSession
   });
 }
 
-export function useBookBySlot(): UseMutationResult<unknown, Error, IBookBySlotDto & { slotId: string }> {
+export function useBookBySlot(): UseMutationResult<unknown, Error, Record<string, unknown>> {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ slotId, ...dto }: IBookBySlotDto & { slotId: string }) =>
-      api.post<BookBySlotResponse>(
-        `/live/availability/calendar/${slotId}/book`,
-        dto,
-      ),
+    mutationFn: (dto: Record<string, unknown>) =>
+      api.post<LiveBookingItem>("/live/bookings", dto),
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: LIVE_KEYS.all });
     },
@@ -244,7 +241,7 @@ export function useCancelBooking(): UseMutationResult<unknown, Error, string> {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (bookingId: string) =>
-      api.delete(`/live/bookings/${bookingId}`),
+      api.post("/live/bookings/cancel", { id: bookingId }),
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: LIVE_KEYS.myBookings });
       void qc.invalidateQueries({ queryKey: LIVE_KEYS.sessions });

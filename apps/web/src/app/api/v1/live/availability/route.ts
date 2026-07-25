@@ -58,6 +58,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json({ success: false, error: { code: 'INVALID_INPUT', message: 'Invalid JSON body' } }, { status: 400 });
     }
 
+    const availId = 'avail-' + decoded.uid + '-' + String(Date.now());
+    body.id = availId;
+    body.teacherId = decoded.uid;
+
     const result = await liveRepo.createAvailability(body as any);
 
     if (!result.ok) {

@@ -58,6 +58,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json({ success: false, error: { code: 'INVALID_INPUT', message: 'Invalid JSON body' } }, { status: 400 });
     }
 
+    body.id = 'db-' + decoded.uid + '-' + String(Date.now());
+    body.teacherId = decoded.uid;
+
     const result = await liveRepo.createDateBlock(body as any);
 
     if (!result.ok) {

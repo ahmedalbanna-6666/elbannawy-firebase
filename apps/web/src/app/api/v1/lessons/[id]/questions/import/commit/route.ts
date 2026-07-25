@@ -1,11 +1,14 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import type { ImportedActivity } from '@el-bannawy/lib';
 import { QuestionImportService } from '@el-bannawy/lib';
+import { requireAdmin } from '@/lib/firebase/auth-helper';
 
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ): Promise<NextResponse> {
+  const auth = await requireAdmin(request);
+  if (!auth.authorized) return auth.response;
   const lessonId = (await params).id;
   try {
     const body: { activities?: ImportedActivity[] } = await request.json() as Record<string, unknown>;

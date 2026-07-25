@@ -23,6 +23,7 @@ import { Sidebar, type SidebarContent } from "@/components/ui/sidebar";
 import { Header } from "@/components/ui/header";
 import { BottomNav, type BottomNavItem } from "@/components/ui/bottom-nav";
 import { ToastContainer } from "@/components/toast";
+import { PwaInstallPrompt } from "@/components/pwa-install-prompt";
 
 const ROLE_LABELS: Record<string, string> = {
   ADMINISTRATOR: "مدير",
@@ -243,6 +244,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps): Rea
         </main>
 
         <BottomNav items={bottomNavItems} />
+        <PwaInstallPrompt />
         <ToastContainer />
       </div>
     </div>

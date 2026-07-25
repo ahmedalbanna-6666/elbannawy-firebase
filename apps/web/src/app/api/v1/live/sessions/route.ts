@@ -69,6 +69,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json({ success: false, error: { code: 'INVALID_INPUT', message: 'Invalid JSON body' } }, { status: 400 });
     }
 
+    const sessionId = 'sess-' + decoded.uid + '-' + String(Date.now());
+    body.id = sessionId;
+    body.teacherId = decoded.uid;
+
     const result = await liveRepo.createSession(body as any);
 
     if (!result.ok) {
