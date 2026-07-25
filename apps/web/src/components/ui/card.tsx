@@ -12,7 +12,7 @@ const cardVariants = cva(
         elevated:
           "bg-gradient-to-b from-white to-neutral-50 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.7),0_1px_3px_0_rgba(0,0,0,0.04),0_4px_14px_-2px_rgba(0,0,0,0.05),0_16px_40px_-10px_rgba(0,0,0,0.04)] dark:bg-[var(--color-surface-elevated)] dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04),0_1px_3px_0_rgba(0,0,0,0.30),0_6px_18px_-3px_rgba(0,0,0,0.25),0_16px_44px_-10px_rgba(0,0,0,0.18)]",
         outline:
-          "bg-gradient-to-b from-white to-neutral-50 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.7),0_1px_3px_0_rgba(0,0,0,0.04),0_4px_14px_-2px_rgba(0,0,0,0.05),0_16px_40px_-10px_rgba(0,0,0,0.04)] dark:border-white/8 dark:bg-[var(--color-surface)] dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04),0_1px_3px_0_rgba(0,0,0,0.30),0_6px_18px_-3px_rgba(0,0,0,0.25),0_16px_44px_-10px_rgba(0,0,0,0.18)]",
+          "bg-gradient-to-b from-white to-neutral-50 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.7),0_1px_3px_0_rgba(0,0,0,0.04),0_4px_14px_-2px_rgba(0,0,0,0.05),0_16px_40px_-10px_rgba(0,0,0,0.04)] dark:border-white/10 dark:bg-[var(--color-surface)] dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04),0_1px_3px_0_rgba(0,0,0,0.30),0_6px_18px_-3px_rgba(0,0,0,0.25),0_16px_44px_-10px_rgba(0,0,0,0.18)]",
         glass:
           "bg-gradient-to-b from-white/95 to-neutral-50/90 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.5),0_1px_2px_0_rgba(0,0,0,0.02),0_3px_10px_-1px_rgba(0,0,0,0.03),0_10px_28px_-6px_rgba(0,0,0,0.02)] dark:bg-[rgba(15,23,41,0.88)] dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.02),0_1px_2px_0_rgba(0,0,0,0.20),0_3px_10px_-1px_rgba(0,0,0,0.15),0_10px_28px_-6px_rgba(0,0,0,0.12)]",
         gradient:
