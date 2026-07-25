@@ -6,10 +6,6 @@ import "plyr/dist/plyr.css";
 import "./plyr-player.css";
 import { Skeleton } from "@/components/ui/skeleton";
 
-function getYouTubeThumbnail(videoId: string): string {
-  return `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
-}
-
 export function PlyrVideoPlayer({
   providerVideoId,
   startAt = 0,
@@ -21,7 +17,7 @@ export function PlyrVideoPlayer({
   readonly onProgress?: (currentTime: number, duration: number) => void;
   readonly onComplete?: (currentTime: number, duration: number) => void;
 }): ReactNode {
-  const elementRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<Plyr | null>(null);
   const progressRef = useRef(onProgress);
   const completeRef = useRef(onComplete);
@@ -29,19 +25,11 @@ export function PlyrVideoPlayer({
   completeRef.current = onComplete;
 
   useEffect(() => {
-    const element = elementRef.current;
-    if (!element) return;
+    const container = containerRef.current;
+    if (!container) return;
 
-    const player = new Plyr(element, {
-      controls: [
-        "play-large",
-        "play",
-        "progress",
-        "current-time",
-        "mute",
-        "volume",
-        "fullscreen",
-      ],
+    const player = new Plyr(container, {
+      controls: ["play-large", "play", "progress", "current-time", "mute", "volume", "fullscreen"],
       youtube: {
         noCookie: true,
         rel: 0,
@@ -51,7 +39,7 @@ export function PlyrVideoPlayer({
         fs: 0,
         cc_load_policy: 0,
       },
-      poster: getYouTubeThumbnail(providerVideoId),
+      poster: `https://img.youtube.com/vi/${providerVideoId}/maxresdefault.jpg`,
       ratio: "16:9",
       resetOnEnd: true,
       clickToPlay: true,
@@ -70,6 +58,30 @@ export function PlyrVideoPlayer({
         }
       });
     }
+
+    const posterEl = container.querySelector<HTMLElement>(".plyr__poster");
+
+    player.on("pause", () => {
+      if (posterEl) {
+        posterEl.style.display = "block";
+        posterEl.style.opacity = "1";
+      }
+    });
+    player.on("play", () => {
+      if (posterEl) {
+        posterEl.style.display = "";
+        posterEl.style.opacity = "";
+      }
+    });
+    player.on("ended", () => {
+      setTimeout(() => {
+        try {
+          player.restart();
+        } catch {
+          /* ignore */
+        }
+      }, 500);
+    });
 
     let ended = false;
     player.on("timeupdate", () => {
@@ -94,12 +106,16 @@ export function PlyrVideoPlayer({
   }, [providerVideoId, startAt]);
 
   return (
-    <div className="aspect-video w-full overflow-hidden rounded-2xl bg-black">
-      <div
-        ref={elementRef}
-        data-plyr-provider="youtube"
-        data-plyr-embed-id={providerVideoId}
-      />
+    <div className="aspect-video w-full overflow-hidden rounded-2xl">
+      <div className="plyr__video-embed" ref={containerRef}>
+        <iframe
+          src={`https://www.youtube-nocookie.com/embed/${providerVideoId}?controls=0&rel=0&iv_load_policy=3&playsinline=1&modestbranding=1&enablejsapi=1`}
+          allowFullScreen
+          allowTransparency
+          allow="autoplay"
+          loading="lazy"
+        />
+      </div>
     </div>
   );
 }
