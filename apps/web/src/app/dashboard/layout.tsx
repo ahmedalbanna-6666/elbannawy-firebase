@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo, useCallback, type ReactNode } from "react";
+import dynamic from "next/dynamic";
 import { useRouter, usePathname } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api-client";
@@ -9,21 +10,24 @@ import { useAuth } from "@/providers/auth-provider";
 import { usePermissions } from "@/lib/use-permissions";
 import { getSidebarModules, type NavModule } from "@/lib/nav-registry";
 import { Skeleton } from "@/components/ui/skeleton";
-import { AcademicSettings } from "@/components/ui/academic-settings";
 import {
+  LogOut,
+  ScrollText,
   Home,
   BookOpen,
-  ScrollText,
-  LogOut,
   UserCircle,
   ClipboardList,
   GraduationCap,
 } from "lucide-react";
-import { Sidebar, type SidebarContent } from "@/components/ui/sidebar";
-import { Header } from "@/components/ui/header";
-import { BottomNav, type BottomNavItem } from "@/components/ui/bottom-nav";
-import { ToastContainer } from "@/components/toast";
-import { PwaInstallPrompt } from "@/components/pwa-install-prompt";
+import { type SidebarContent } from "@/components/ui/sidebar";
+import { type BottomNavItem } from "@/components/ui/bottom-nav";
+
+const Sidebar = dynamic(() => import("@/components/ui/sidebar").then(m => ({ default: m.Sidebar })), { ssr: false });
+const Header = dynamic(() => import("@/components/ui/header").then(m => ({ default: m.Header })), { ssr: false });
+const BottomNav = dynamic(() => import("@/components/ui/bottom-nav").then(m => ({ default: m.BottomNav })), { ssr: false });
+const AcademicSettings = dynamic(() => import("@/components/ui/academic-settings").then(m => ({ default: m.AcademicSettings })), { ssr: false });
+const ToastContainer = dynamic(() => import("@/components/toast").then(m => ({ default: m.ToastContainer })), { ssr: false });
+const PwaInstallPrompt = dynamic(() => import("@/components/pwa-install-prompt").then(m => ({ default: m.PwaInstallPrompt })), { ssr: false });
 
 const ROLE_LABELS: Record<string, string> = {
   ADMINISTRATOR: "مدير",

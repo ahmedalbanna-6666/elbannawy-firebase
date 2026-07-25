@@ -6,6 +6,9 @@ const nextConfig: NextConfig = {
     ignoreDuringBuilds: true,
   },
   transpilePackages: ["@el-bannawy/shared", "@el-bannawy/lib"],
+  experimental: {
+    optimizePackageImports: ["lucide-react", "firebase/auth", "firebase/firestore"],
+  },
   async redirects() {
     return [
       {

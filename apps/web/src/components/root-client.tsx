@@ -17,9 +17,10 @@ export function RootClient({ children }: { children: React.ReactNode }): React.R
     registerSw();
   }, []);
 
-  if (showSplash) {
-    return <SplashScreen onFinish={() => { setShowSplash(false); }} />;
-  }
-
-  return <>{children}</>;
+  return (
+    <>
+      {showSplash && <SplashScreen onFinish={() => { setShowSplash(false); }} />}
+      {children}
+    </>
+  );
 }

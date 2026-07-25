@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState, useRef, useCallback } from "react";
-import { motion } from "framer-motion";
 import Image from "next/image";
 import { useTheme } from "@/providers/theme-provider";
 
@@ -11,36 +10,25 @@ interface SplashScreenProps {
 
 export function SplashScreen({ onFinish }: SplashScreenProps): React.ReactNode {
   const { theme } = useTheme();
-  const [showSplash, setShowSplash] = useState(true);
+  const [fadeOut, setFadeOut] = useState(false);
   const mountedRef = useRef(true);
 
   const finish = useCallback((): void => {
-    setShowSplash(false);
-    onFinish?.();
+    setFadeOut(true);
+    setTimeout(() => { if (mountedRef.current) onFinish?.(); }, 300);
   }, [onFinish]);
 
   useEffect(() => {
     mountedRef.current = true;
-    const id = setTimeout(() => {
-      if (mountedRef.current) finish();
-    }, 800);
-    return (): void => {
-      mountedRef.current = false;
-      clearTimeout(id);
-    };
+    const id = setTimeout(() => { if (mountedRef.current) finish(); }, 500);
+    return (): void => { mountedRef.current = false; clearTimeout(id); };
   }, [finish]);
-
-  if (!showSplash) return null;
 
   const isDark = theme === "dark";
 
   return (
-    <motion.div
-      className="fixed inset-0 z-[9999] flex items-center justify-center"
-      initial={{ opacity: 1 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.4 }}
+    <div
+      className={`fixed inset-0 z-[9999] flex items-center justify-center transition-opacity duration-300 ${fadeOut ? "opacity-0 pointer-events-none" : "opacity-100"}`}
     >
       {isDark ? (
         <>
@@ -54,11 +42,8 @@ export function SplashScreen({ onFinish }: SplashScreenProps): React.ReactNode {
         </>
       )}
 
-      <motion.div
-        className="relative cursor-pointer"
-        initial={{ scale: 0.9, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ duration: 0.5 }}
+      <div
+        className="relative cursor-pointer animate-[scale-in_0.5s_ease]"
         onClick={finish}
         role="button"
         tabIndex={0}
@@ -74,7 +59,7 @@ export function SplashScreen({ onFinish }: SplashScreenProps): React.ReactNode {
             unoptimized
           />
         </div>
-      </motion.div>
+      </div>
 
       <button
         onClick={finish}
@@ -82,6 +67,6 @@ export function SplashScreen({ onFinish }: SplashScreenProps): React.ReactNode {
       >
         تخطي
       </button>
-    </motion.div>
+    </div>
   );
 }
