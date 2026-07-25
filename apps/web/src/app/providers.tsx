@@ -1,9 +1,10 @@
 "use client";
 
-import { Suspense, type ReactNode } from "react";
+import { Suspense, lazy, type ReactNode } from "react";
 import { ThemeProvider } from "@/providers/theme-provider";
 import { QueryProvider } from "@/providers/query-provider";
-import { AuthProvider } from "@/providers/auth-provider";
+
+const AuthProvider = lazy(() => import("@/providers/auth-provider").then(m => ({ default: m.AuthProvider })));
 
 export function Providers({ children }: { children: ReactNode }): ReactNode {
   return (
