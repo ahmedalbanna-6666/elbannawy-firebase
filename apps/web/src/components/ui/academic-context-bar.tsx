@@ -7,9 +7,7 @@ import { Select } from "@/components/ui/select";
 import { useAcademicContextStore } from "@/lib/academic-context-store";
 import { useAuthStore } from "@/lib/auth-store";
 import {
-  ACADEMIC_YEAR_OPTIONS,
   STAGE_OPTIONS,
-  TERM_OPTIONS,
   SYSTEM_OPTIONS,
   getGradeOptions,
   stageLabelToKey,
@@ -85,7 +83,7 @@ export function AcademicContextBar({ className }: AcademicContextBarProps): Reac
   });
 
   const yearOptions = useMemo(() => {
-    if (!Array.isArray(academicYears)) return ACADEMIC_YEAR_OPTIONS;
+    if (!Array.isArray(academicYears)) return [];
     return academicYears.map((y) => ({ value: y.name, label: y.name }));
   }, [academicYears]);
 
@@ -102,13 +100,13 @@ export function AcademicContextBar({ className }: AcademicContextBarProps): Reac
   }, [academicYears]);
 
   const termOptions = useMemo(() => {
-    if (!Array.isArray(academicYears) || !academicYear) return TERM_OPTIONS;
+    if (!Array.isArray(academicYears) || !academicYear) return [];
     const yearId = yearToId.get(academicYear);
     const year = academicYears.find((y) => y.id === yearId || y.name === academicYear);
     if (year && Array.isArray(year.terms) && year.terms.length > 0) {
       return year.terms.map((t) => ({ value: t.name, label: t.name }));
     }
-    return TERM_OPTIONS;
+    return [];
   }, [academicYears, academicYear, yearToId]);
 
   const termToId = useMemo(() => {
@@ -141,8 +139,8 @@ export function AcademicContextBar({ className }: AcademicContextBarProps): Reac
   const { data: allStages } = useQuery({
     queryKey: ["curriculum-stages"],
     queryFn: async () => {
-      const res = await api.get<{ items: { id: string; name: string; grades: { id: string; name: string }[] }[] }>("/curriculum/stages");
-      return res.data?.items ?? [];
+      const res = await api.get<{ id: string; name: string; grades: { id: string; name: string }[] }[]>("/curriculum/stages");
+      return res.data ?? [];
     },
     enabled: isAdmin,
     staleTime: 60_000,

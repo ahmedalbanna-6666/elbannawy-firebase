@@ -1,7 +1,16 @@
 ﻿import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { useShallow } from "zustand/react/shallow";
-import { getDefaultAcademicYear } from "@/lib/education-options";
+
+function getDefaultAcademicYear(): string {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth();
+  if (month >= 8) {
+    return `${String(year)}-${String(year + 1)}`;
+  }
+  return `${String(year - 1)}-${String(year)}`;
+}
 
 export interface AcademicContext {
   readonly academicYear: string | null;

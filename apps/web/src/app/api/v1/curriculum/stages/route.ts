@@ -7,14 +7,12 @@ const applicationService = new CurriculumApplicationService(curriculumService);
 export async function GET(request: NextRequest): Promise<NextResponse> {
   const { searchParams } = new URL(request.url);
   const limit = Math.min(Math.max(Number(searchParams.get('limit')) || 50, 1), 100);
-  const cursor = searchParams.get('cursor') ?? undefined;
   const isActiveParam = searchParams.get('isActive');
 
   const filter: Record<string, unknown> = {};
   if (isActiveParam !== null) filter.isActive = isActiveParam === 'true';
 
   const page: Record<string, unknown> = { limit };
-  if (cursor) page.cursor = cursor;
 
   try {
     const result = await applicationService.listStages(filter, page);
@@ -24,8 +22,22 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         { status: 400 },
       );
     }
+    const gradesResult = await applicationService.listGrades({}, { limit: 100 });
+    const gradesByStage = new Map<string, { id: string; name: string }[]>();
+    if (gradesResult.ok) {
+      for (const g of gradesResult.value.items) {
+        const entry = gradesByStage.get(g.stageId) ?? [];
+        entry.push({ id: g.id, name: g.nameAr });
+        gradesByStage.set(g.stageId, entry);
+      }
+    }
+    const stages = result.value.items.map((s) => ({
+      id: s.id,
+      name: s.nameAr,
+      grades: gradesByStage.get(s.id) ?? [],
+    }));
     return NextResponse.json(
-      { success: true, data: result.value, timestamp: new Date().toISOString() },
+      { success: true, data: stages, timestamp: new Date().toISOString() },
       { status: 200 },
     );
   } catch (error) {

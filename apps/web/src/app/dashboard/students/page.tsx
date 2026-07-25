@@ -4,7 +4,7 @@ import { useState, useMemo, type ReactNode } from "react";
 import { useQuery, useMutation, useQueryClient, type UseQueryResult } from "@tanstack/react-query";
 import { api } from "@/lib/api-client";
 import { useAcademicContext } from "@/lib/academic-context-store";
-import { EDUCATIONAL_STAGES, ACADEMIC_TERMS } from "@/lib/education-options";
+import { EDUCATIONAL_STAGES, ACADEMIC_TERMS, getStagesWithGrades } from "@/lib/education-options";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -31,19 +31,6 @@ import {
   CalendarDays,
   CreditCard,
 } from "lucide-react";
-
-interface GradeItem {
-  id: string;
-  name: string;
-  displayOrder: number;
-}
-
-interface StageItem {
-  id: string;
-  name: string;
-  displayOrder: number;
-  grades: GradeItem[];
-}
 
 interface TermItem {
   id: string;
@@ -124,17 +111,6 @@ function useStudentDetail(id: string | null): UseQueryResult<StudentDetail> {
   });
 }
 
-function useStages(): UseQueryResult<StageItem[]> {
-  return useQuery<StageItem[]>({
-    queryKey: ["stages"],
-    queryFn: async () => {
-      const res = await api.get<StageItem[]>("/admin/stages");
-      return res.data ?? [];
-    },
-    staleTime: 60_000,
-  });
-}
-
 function useAcademicYears(): UseQueryResult<AcademicYearItem[]> {
   return useQuery<AcademicYearItem[]>({
     queryKey: ["academic-years"],
@@ -154,7 +130,7 @@ export default function StudentsPage(): ReactNode {
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"profile" | "progress" | "attendance" | "login-history" | "subscription">("profile");
 
-  const { data: stages } = useStages();
+  const stages = useMemo(() => getStagesWithGrades(), []);
   const { data: academicYears } = useAcademicYears();
 
   const academicContext = useAcademicContext();

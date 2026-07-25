@@ -16,17 +16,12 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Select } from "@/components/ui/select";
+import { findGradeIdByName } from "@/lib/education-options";
 
 interface AcademicYearLookup {
   readonly id: string;
   readonly name: string;
   readonly terms: { readonly id: string; readonly name: string }[];
-}
-
-interface StageLookup {
-  readonly id: string;
-  readonly name: string;
-  readonly grades: { readonly id: string; readonly name: string }[];
 }
 
 interface UnitEditData {
@@ -122,16 +117,6 @@ export function UnitFormDialog({
     staleTime: 300_000,
   });
 
-  const { data: stages, isLoading: stagesLoading } = useQuery({
-    queryKey: ["admin-stages"],
-    queryFn: async () => {
-      const res = await api.get<StageLookup[]>("/admin/stages");
-      return res.data ?? [];
-    },
-    enabled: open && !isEdit && isAdmin,
-    staleTime: 300_000,
-  });
-
   const { data: myGrades } = useQuery({
     queryKey: ["my-grades", userId],
     queryFn: async () => {
@@ -166,18 +151,14 @@ export function UnitFormDialog({
   const resolvedGradeId = useMemo(() => {
     if (ctx.gradeId) return ctx.gradeId;
     if (!gradeFromStore) return null;
-    if (stages && stages.length > 0) {
-      for (const stage of stages) {
-        const grade = stage.grades.find((g) => g.id === gradeFromStore);
-        if (grade) return grade.id;
-      }
-    }
+    const staticId = findGradeIdByName(gradeFromStore);
+    if (staticId) return staticId;
     if (myGrades?.grades) {
-      const grade = myGrades.grades.find((g) => g.id === gradeFromStore);
+      const grade = myGrades.grades.find((g) => g.name === gradeFromStore);
       if (grade) return grade.id;
     }
     return null;
-  }, [stages, myGrades, gradeFromStore, ctx.gradeId]);
+  }, [myGrades, gradeFromStore, ctx.gradeId]);
 
   const academicContextResolved =
     isEdit ||
@@ -185,7 +166,7 @@ export function UnitFormDialog({
      resolvedTermId !== null &&
      resolvedGradeId !== null);
 
-  const contextLoading = academicYearsLoading || stagesLoading;
+  const contextLoading = academicYearsLoading;
 
   const mutation = useMutation({
     mutationFn: async () => {

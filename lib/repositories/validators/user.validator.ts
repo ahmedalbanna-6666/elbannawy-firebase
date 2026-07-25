@@ -1,4 +1,11 @@
 import { z } from 'zod';
+import { EDUCATIONAL_SYSTEM_IDS } from '../../domain/curriculum/constants/educational-systems';
+import { STAGE_IDS } from '../../domain/curriculum/constants/stages';
+import { GRADE_IDS } from '../../domain/curriculum/constants/grades';
+
+const VALID_SYSTEM_IDS = Object.values(EDUCATIONAL_SYSTEM_IDS);
+const VALID_STAGE_IDS = Object.values(STAGE_IDS);
+const VALID_GRADE_IDS = Object.values(GRADE_IDS);
 
 const mobileRegex = /^\+?[1-9]\d{6,14}$/;
 export const UserRoleEnum = z.enum([
@@ -30,9 +37,9 @@ export const CreateUserInputSchema = z.object({
   school: z.string().max(200).optional(),
   avatarUrl: z.string().url().max(500).optional(),
   jobTitle: z.string().max(200).optional(),
-  educationalSystemId: z.string().max(128).optional(),
-  stageId: z.string().max(128).optional(),
-  gradeId: z.string().max(128).optional(),
+  educationalSystemId: z.enum(VALID_SYSTEM_IDS as [string, ...string[]]).optional(),
+  stageId: z.enum(VALID_STAGE_IDS as [string, ...string[]]).optional(),
+  gradeId: z.enum(VALID_GRADE_IDS as [string, ...string[]]).optional(),
   academicYearId: z.string().max(128).optional(),
   termId: z.string().max(128).optional(),
 });
@@ -69,9 +76,9 @@ export const RestoreUserInputSchema = z.object({
 });
 
 export const AcademicAssignmentInputSchema = z.object({
-  educationalSystemId: z.string().max(128).optional(),
-  stageId: z.string().max(128).optional(),
-  gradeId: z.string().max(128).optional(),
+  educationalSystemId: z.enum(VALID_SYSTEM_IDS as [string, ...string[]]).optional(),
+  stageId: z.enum(VALID_STAGE_IDS as [string, ...string[]]).optional(),
+  gradeId: z.enum(VALID_GRADE_IDS as [string, ...string[]]).optional(),
   academicYearId: z.string().max(128).optional(),
   termId: z.string().max(128).optional(),
 });

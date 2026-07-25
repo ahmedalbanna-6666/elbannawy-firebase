@@ -4,7 +4,7 @@ import { useEffect, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api-client";
 import { useAcademicContextStore } from "@/lib/academic-context-store";
-import { TERM_OPTIONS, SYSTEM_OPTIONS, STAGE_OPTIONS, getGradeOptions, stageLabelToKey } from "@/lib/education-options";
+import { SYSTEM_OPTIONS, STAGE_OPTIONS, getGradeOptions, stageLabelToKey } from "@/lib/education-options";
 import { Select } from "@/components/ui/select";
 import { useAuthStore } from "@/lib/auth-store";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -197,7 +197,10 @@ export function AcademicSettings(): ReactNode {
 
                 <Select
                   size="sm"
-                  options={TERM_OPTIONS}
+                  options={[
+                    { value: "FIRST_TERM", label: "الترم الأول" },
+                    { value: "SECOND_TERM", label: "الترم الثاني" },
+                  ]}
                   placeholder="اختر ترم المعاينة"
                   value={term ?? ""}
                   onChange={(e) => { setTerm(e.target.value); }}
@@ -219,7 +222,10 @@ export function AcademicSettings(): ReactNode {
           <>
             <Select
               size="sm"
-              options={TERM_OPTIONS}
+              options={[
+                { value: "FIRST_TERM", label: "الترم الأول" },
+                { value: "SECOND_TERM", label: "الترم الثاني" },
+              ]}
               placeholder="اختر ترم المعاينة"
               value={term ?? ""}
               onChange={(e) => { setTerm(e.target.value); }}
