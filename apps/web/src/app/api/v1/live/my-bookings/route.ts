@@ -20,7 +20,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
     // Populate session data for each booking
     const db = getAdminDb();
-    const bookings = (result.value ?? []) as unknown as Record<string, unknown>[];
+    const bookings: Record<string, unknown>[] = result.value ?? [];
     const enriched = await Promise.all(bookings.map(async (b) => {
       const sid = b.sessionId as string | undefined;
       if (!sid) return { ...b, session: null };

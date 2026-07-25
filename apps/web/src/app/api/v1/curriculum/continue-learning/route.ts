@@ -6,22 +6,23 @@ const unitRepository = new UnitRepository();
 const lessonRepository = new LessonRepository();
 const progressRepository = new LessonProgressRepository();
 
-async function getStudentTermId(studentId: string): Promise<string | null> {
+async function getStudentAcademicContext(studentId: string): Promise<{ termId: string | null; gradeId: string | null }> {
   const db = getAdminDb();
   const doc = await db.collection('users').doc(studentId).get();
-  if (!doc.exists) return null;
+  if (!doc.exists) return { termId: null, gradeId: null };
   const data = doc.data();
-  const termId = data?.termId as string | null | undefined;
-  if (termId) return termId;
+  let termId = data?.termId as string | null | undefined;
+  const gradeId = data?.gradeId as string | null | undefined ?? null;
 
-  // Fall back to system active term if student has no termId
+  if (termId) return { termId, gradeId };
+
   const sysDoc = await db.collection('systemSettings').doc('system-settings').get();
   const activeTermId = sysDoc.data()?.activeTermId as string | undefined;
   if (activeTermId) {
     await db.collection('users').doc(studentId).update({ termId: activeTermId });
-    return activeTermId;
+    return { termId: activeTermId, gradeId };
   }
-  return null;
+  return { termId: null, gradeId };
 }
 
 export async function GET(request: NextRequest): Promise<NextResponse> {
@@ -48,12 +49,12 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
   try {
 
-    const termId = await getStudentTermId(studentId);
+    const { termId, gradeId } = await getStudentAcademicContext(studentId);
     if (!termId) {
       return NextResponse.json({ success: true, data: null });
     }
 
-    const unitsResult = await unitRepository.getUnitsByTerm(termId);
+    const unitsResult = await unitRepository.getUnitsByTerm(termId, gradeId ?? undefined);
     if (!unitsResult.ok || unitsResult.value.length === 0) {
       return NextResponse.json({ success: true, data: null });
     }

@@ -58,7 +58,7 @@ async function handleCurriculumTree(request: NextRequest): Promise<NextResponse>
 
     let unitEntries: Array<Record<string, unknown>> = [];
     if (termId) {
-      const unitsResult = await unitRepo.getUnitsByTerm(termId);
+      const unitsResult = await unitRepo.getUnitsByTerm(termId, gradeId);
       if (unitsResult.ok) {
         const unitIds = unitsResult.value.map((u) => u.id);
         const lessonsByUnitResult = await lessonRepo.getPublishedLessonsByUnitIds(unitIds);

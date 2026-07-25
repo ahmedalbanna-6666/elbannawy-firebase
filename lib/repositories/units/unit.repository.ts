@@ -141,10 +141,11 @@ export class UnitRepository implements IUnitRepository {
     }
   }
 
-  async getUnitsByTerm(academicTermId: string): Promise<RepositoryResult<IUnit[]>> {
+  async getUnitsByTerm(academicTermId: string, gradeId?: string): Promise<RepositoryResult<IUnit[]>> {
     try {
       const query = new QueryBuilder<UnitFirestoreDoc>(this.transactionManager);
       query.withFilter('academicTermId', 'eq', academicTermId);
+      if (gradeId) query.withFilter('gradeId', 'eq', gradeId);
       query.withFilter('deletedAt', 'eq', null);
       query.withOrderBy('order', 'asc');
       const result = await query.execute(COLLECTION);
