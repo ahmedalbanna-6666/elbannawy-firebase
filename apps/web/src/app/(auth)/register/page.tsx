@@ -36,6 +36,7 @@ import {
 interface RegisterPayload {
   fullName: string;
   englishName?: string;
+  email?: string;
   mobile: string;
   parentMobile?: string;
   password: string;
@@ -144,6 +145,7 @@ export default function RegisterPage(): ReactNode {
   // Step 1 fields
   const [fullName, setFullName] = useState("");
   const [englishName, setEnglishName] = useState("");
+  const [email, setEmail] = useState("");
   const [mobile, setMobile] = useState("");
   const [parentMobile, setParentMobile] = useState("");
   const [password, setPassword] = useState("");
@@ -238,6 +240,7 @@ export default function RegisterPage(): ReactNode {
         const payload: RegisterPayload = {
           fullName,
           englishName: englishName || undefined,
+          email: email || undefined,
           mobile: normalizeEgyptMobile(mobile),
           parentMobile: parentMobile ? normalizeEgyptMobile(parentMobile) : undefined,
           password,
@@ -293,6 +296,14 @@ export default function RegisterPage(): ReactNode {
             )}
             <Input label="الاسم بالعربية" placeholder="أحمد حسن" value={fullName} onChange={(e): void => { setFullName(e.target.value); }} required />
             <Input label="الاسم بالإنجليزية" placeholder="Ahmed Hassan" value={englishName} onChange={(e): void => { setEnglishName(e.target.value); }} leftIcon={<Globe className="h-5 w-5" />} />
+            <Input
+              label="البريد الإلكتروني"
+              type="email"
+              placeholder="ahmed@example.com"
+              value={email}
+              onChange={(e): void => { setEmail(e.target.value); }}
+              leftIcon={<Globe className="h-5 w-5" />}
+            />
             <Input
               label="رقم الهاتف"
               type="tel"

@@ -637,7 +637,6 @@ function NavigationFooter({
 export default function LessonDetailPage(): ReactNode {
   // ── All Hooks (Rules of Hooks — must be unconditional, at top, same order every render) ──
   const params = useParams();
-  const router = useRouter();
   const queryClient = useQueryClient();
   const lessonId = params.lessonId as string;
 
@@ -714,8 +713,6 @@ export default function LessonDetailPage(): ReactNode {
   const handleLessonComplete = (_currentTime: number, _duration: number): void => {
     void queryClient.invalidateQueries({ queryKey: ["video-progress", firstVideoId] });
   };
-
-  const nextLesson = navigation.next;
 
   // ── Render ──
   return (

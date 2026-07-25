@@ -1,13 +1,11 @@
+import { readFile } from 'fs/promises';
+import type { VocabularyDocument } from './types';
+import { parseVocabularyDocBuffer } from './node-parser';
 import { execFile } from 'child_process';
 import { promisify } from 'util';
 import { resolve } from 'path';
-import type { VocabularyDocument } from './types';
 
 const execFileAsync = promisify(execFile);
-
-function getScriptPath(): string {
-  return resolve(__dirname, 'scripts', 'parse_docx.py');
-}
 
 export interface ParseOptions {
   filePath: string;
@@ -15,20 +13,23 @@ export interface ParseOptions {
 }
 
 export async function parseVocabularyDoc(options: ParseOptions): Promise<VocabularyDocument> {
-  const { filePath, pythonPath = 'python' } = options;
-  const scriptPath = getScriptPath();
-
-  let stdout: string;
+  const buffer = await readFile(options.filePath);
   try {
-    const result = await execFileAsync(pythonPath, [scriptPath, filePath], {
+    return await parseVocabularyDocBuffer(buffer);
+  } catch {
+    // Fallback to Python parser if Node parser fails
+  }
+
+  const pythonPath = options.pythonPath ?? 'python';
+  const scriptPath = resolve(__dirname, 'scripts', 'parse_docx.py');
+  try {
+    const result = await execFileAsync(pythonPath, [scriptPath, options.filePath], {
       encoding: 'utf-8',
       maxBuffer: 10 * 1024 * 1024,
     });
-    stdout = result.stdout;
+    return JSON.parse(result.stdout) as VocabularyDocument;
   } catch (error: unknown) {
     const msg = error instanceof Error ? error.message : String(error);
     throw new Error(`Vocabulary parser failed: ${msg}`);
   }
-
-  return JSON.parse(stdout) as VocabularyDocument;
 }

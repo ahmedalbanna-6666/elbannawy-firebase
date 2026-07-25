@@ -3,6 +3,18 @@ import { LessonVideoRepository, CreateLessonVideoInputSchema } from '@el-bannawy
 
 const videoRepository = new LessonVideoRepository();
 
+function extractYouTubeId(url: string): string | null {
+  const patterns = [
+    /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/v\/)([a-zA-Z0-9_-]{11})/,
+    /^([a-zA-Z0-9_-]{11})$/,
+  ];
+  for (const pattern of patterns) {
+    const match = url.match(pattern);
+    if (match) return match[1];
+  }
+  return null;
+}
+
 export async function GET(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
@@ -32,9 +44,9 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> },
 ): Promise<NextResponse> {
   const { id } = await params;
-  let body: Record<string, unknown>;
+  let body: { youtubeUrl?: string };
   try {
-    body = await request.json() as Record<string, unknown>;
+    body = await request.json() as { youtubeUrl?: string };
   } catch {
     return NextResponse.json(
       { success: false, error: { code: 'INVALID_INPUT', message: 'Invalid JSON body' }, timestamp: new Date().toISOString() },
@@ -42,7 +54,38 @@ export async function POST(
     );
   }
 
-  const parsed = CreateLessonVideoInputSchema.safeParse({ ...body, lessonId: id });
+  const youtubeUrl = body.youtubeUrl?.trim();
+  if (!youtubeUrl) {
+    return NextResponse.json(
+      { success: false, error: { code: 'INVALID_INPUT', message: 'youtubeUrl is required' }, timestamp: new Date().toISOString() },
+      { status: 400 },
+    );
+  }
+
+  const providerVideoId = extractYouTubeId(youtubeUrl);
+  if (!providerVideoId) {
+    return NextResponse.json(
+      { success: false, error: { code: 'INVALID_INPUT', message: 'Invalid YouTube URL' }, timestamp: new Date().toISOString() },
+      { status: 400 },
+    );
+  }
+
+  const existingList = await videoRepository.listByLesson(id);
+  const nextOrder = existingList.ok
+    ? existingList.value.reduce((max, v) => Math.max(max, v.displayOrder), -1) + 1
+    : 0;
+
+  const parsed = CreateLessonVideoInputSchema.safeParse({
+    id: `${id}_${providerVideoId}`,
+    lessonId: id,
+    title: `Video ${String(nextOrder + 1)}`,
+    provider: 'youtube',
+    providerVideoId,
+    providerUrl: youtubeUrl,
+    durationSeconds: 0,
+    displayOrder: nextOrder,
+  });
+
   if (!parsed.success) {
     return NextResponse.json(
       { success: false, error: { code: 'INVALID_INPUT', message: parsed.error.message }, timestamp: new Date().toISOString() },

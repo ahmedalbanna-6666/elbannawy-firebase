@@ -13,6 +13,7 @@ import {
 import { getClientAuth } from "@/lib/firebase/client-auth";
 import { useAuthStore } from "@/lib/auth-store";
 import { api } from "@/lib/api-client";
+import { normalizeEgyptMobile } from "@/lib/phone";
 import type { Permission } from "@el-bannawy/shared";
 
 interface AuthContextValue {
@@ -36,6 +37,7 @@ interface AuthContextValue {
 interface RegisterPayload {
   fullName: string;
   englishName?: string;
+  email?: string;
   mobile: string;
   parentMobile?: string;
   password: string;
@@ -65,7 +67,9 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 
 function toEmail(identity: string): string {
   if (identity.includes("@")) return identity;
-  return `${identity}@el-bannawy.app`;
+  const normalized = normalizeEgyptMobile(identity);
+  if (normalized) identity = normalized;
+  return `${identity.replace(/[+\s]/g, '')}@el-bannawy.app`;
 }
 
 export function AuthProvider({ children }: { children: ReactNode }): ReactNode {
@@ -175,18 +179,19 @@ export function AuthProvider({ children }: { children: ReactNode }): ReactNode {
       if (!response.data?.uid) {
         throw new Error("Registration failed");
       }
-      const email = toEmail(payload.mobile);
-      const res = await fetch('/api/v1/auth/sign-in', {
+      const signInEmail = payload.email ?? toEmail(payload.mobile.replace(/[+\s]/g, ''));
+      const signInRes = await fetch('/api/v1/auth/sign-in', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password: payload.password }),
+        body: JSON.stringify({ email: signInEmail, password: payload.password }),
       });
-      const data = await res.json();
-      if (data.token) {
-        setIdToken(data.token);
-        document.cookie = 'auth_token=' + data.token + '; path=/; max-age=' + String(60 * 60 * 24 * 14) + '; SameSite=Lax';
-        if (data.user) setUser({ ...data.user, role: (data.user.role ?? "").toUpperCase() });
+      const signInData = await signInRes.json();
+      if (!signInRes.ok || !signInData.token) {
+        throw new Error(signInData.error?.message ?? "فشل تسجيل الدخول بعد إنشاء الحساب");
       }
+      setIdToken(signInData.token);
+      document.cookie = 'auth_token=' + signInData.token + '; path=/; max-age=' + String(60 * 60 * 24 * 14) + '; SameSite=Lax';
+      if (signInData.user) setUser({ ...signInData.user, role: (signInData.user.role ?? "").toUpperCase() });
       queryClient.removeQueries({ queryKey: ["profile"] });
       queryClient.removeQueries({ queryKey: ["sidebar-profile"] });
     },

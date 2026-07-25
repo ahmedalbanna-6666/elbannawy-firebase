@@ -23,7 +23,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       );
     }
 
-    const email = (body.email as string) ?? `${String(body.mobile)}@el-bannawy.app`;
+    const email = (body.email as string) ?? `${String(body.mobile).replace(/[+\s]/g, '')}@el-bannawy.app`;
 
     const adminAuth = getAdminAuth();
 
@@ -45,7 +45,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       fullName: body.fullName as string,
       mobileNumber: normalizedMobile,
       isActive: true,
-      email: body.email as string | undefined,
+      email: email,
       englishName: body.englishName as string | undefined,
       parentMobile: body.parentMobile as string | undefined,
       governorate: body.governorate as string | undefined,

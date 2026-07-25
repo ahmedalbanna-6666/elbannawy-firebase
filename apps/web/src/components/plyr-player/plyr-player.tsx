@@ -79,7 +79,7 @@ export function PlyrVideoPlayer({
       }
     });
 
-    return () => {
+    return (): void => {
       player.destroy();
       playerRef.current = null;
     };
