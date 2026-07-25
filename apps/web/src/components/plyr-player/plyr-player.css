@@ -38,6 +38,7 @@
 .plyr {
   border-radius: 1rem;
   overflow: hidden;
+  position: relative;
 }
 
 .plyr__controls {
@@ -51,6 +52,7 @@
   padding: 8px 12px !important;
   background: linear-gradient(180deg, transparent, rgba(0, 0, 0, 0.75)) !important;
   z-index: 5;
+  pointer-events: auto;
 }
 
 .plyr__controls .plyr__controls__item.plyr__progress__container {
@@ -204,6 +206,11 @@
 
 .plyr--fullscreen {
   border-radius: 0 !important;
+  position: relative;
+}
+
+.plyr--fullscreen .plyr__controls {
+  pointer-events: auto;
 }
 
 @media (orientation: portrait) and (pointer: coarse) {
