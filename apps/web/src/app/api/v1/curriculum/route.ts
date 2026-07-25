@@ -27,7 +27,16 @@ async function handleCurriculumTree(request: NextRequest): Promise<NextResponse>
     const userData = userDoc.data() as Record<string, unknown>;
     const stageId = userData.stageId as string | undefined;
     const gradeId = userData.gradeId as string | undefined;
-    const termId = userData.termId as string | undefined;
+    let termId = userData.termId as string | undefined;
+
+    if (!termId) {
+      const sysDoc = await db.collection('systemSettings').doc('system-settings').get();
+      const activeTermId = sysDoc.data()?.activeTermId as string | undefined;
+      if (activeTermId) {
+        termId = activeTermId;
+        await db.collection('users').doc(decoded.uid).update({ termId: activeTermId });
+      }
+    }
 
     const entitlementsSnap = await db.collection('contentEntitlements')
       .where('studentId', '==', decoded.uid)

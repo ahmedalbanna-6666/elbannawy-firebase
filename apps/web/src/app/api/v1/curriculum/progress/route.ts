@@ -7,10 +7,21 @@ const lessonRepository = new LessonRepository();
 const progressRepository = new LessonProgressRepository();
 
 async function getStudentTermId(studentId: string): Promise<string | null> {
-  const doc = await getAdminDb().collection('users').doc(studentId).get();
+  const db = getAdminDb();
+  const doc = await db.collection('users').doc(studentId).get();
   if (!doc.exists) return null;
   const data = doc.data();
-  return data?.termId ?? null;
+  const termId = data?.termId as string | null | undefined;
+  if (termId) return termId;
+
+  // Fall back to system active term if student has no termId
+  const sysDoc = await db.collection('systemSettings').doc('system-settings').get();
+  const activeTermId = sysDoc.data()?.activeTermId as string | undefined;
+  if (activeTermId) {
+    await db.collection('users').doc(studentId).update({ termId: activeTermId });
+    return activeTermId;
+  }
+  return null;
 }
 
 export async function GET(request: NextRequest): Promise<NextResponse> {
