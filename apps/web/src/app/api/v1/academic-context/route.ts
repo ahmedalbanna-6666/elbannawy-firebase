@@ -54,13 +54,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     });
   } catch (error) {
     return NextResponse.json(
-      {
-        success: false,
-        error: {
-          code: 'INTERNAL',
-          message: error instanceof Error ? error.message : 'Unknown error',
-        },
-      },
+      { success: false, error: { code: 'INTERNAL', message: error instanceof Error ? error.message : 'Unknown error' } },
       { status: 500 },
     );
   }

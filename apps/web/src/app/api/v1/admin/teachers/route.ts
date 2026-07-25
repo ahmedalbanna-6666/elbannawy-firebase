@@ -109,8 +109,8 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     }));
 
     return NextResponse.json({ success: true, data: { teachers, meta: { total, page, limit, totalPages } } });
-  } catch {
-    return NextResponse.json({ success: false, error: { code: 'INTERNAL', message: 'Failed to list teachers' } }, { status: 500 });
+  } catch (error) {
+    return NextResponse.json({ success: false, error: { code: 'INTERNAL', message: error instanceof Error ? error.message : 'Failed to list teachers' } }, { status: 500 });
   }
 }
 

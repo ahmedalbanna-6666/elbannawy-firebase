@@ -92,20 +92,26 @@ async function getProfileData(decoded: { uid: string }): Promise<Record<string, 
 }
 
 export async function GET(request: NextRequest): Promise<NextResponse> {
+  let decoded: { uid: string };
   try {
-    const decoded = await authenticateRequest(request);
-    if (!decoded) {
+    const result = await authenticateRequest(request);
+    if (!result) {
       return NextResponse.json({ success: false, error: { code: 'UNAUTHORIZED', message: 'Not authenticated' } }, { status: 401 });
     }
+    decoded = result;
+  } catch {
+    return NextResponse.json({ success: false, error: { code: 'UNAUTHORIZED', message: 'Not authenticated' } }, { status: 401 });
+  }
 
+  try {
     const data = await getProfileData(decoded);
     if (!data) {
       return NextResponse.json({ success: false, error: { code: 'NOT_FOUND', message: 'User not found' } }, { status: 404 });
     }
 
     return NextResponse.json({ success: true, data });
-  } catch {
-    return NextResponse.json({ success: false, error: { code: 'UNAUTHORIZED', message: 'Invalid token' } }, { status: 401 });
+  } catch (error) {
+    return NextResponse.json({ success: false, error: { code: 'INTERNAL', message: error instanceof Error ? error.message : 'Internal server error' } }, { status: 500 });
   }
 }
 

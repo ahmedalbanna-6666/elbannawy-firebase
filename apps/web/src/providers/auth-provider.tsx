@@ -10,7 +10,7 @@ import {
   onAuthStateChanged,
   type User as FirebaseUser,
 } from "firebase/auth";
-import { getClientAuth } from "@/lib/firebase/client";
+import { getClientAuth } from "@/lib/firebase/client-auth";
 import { useAuthStore } from "@/lib/auth-store";
 import { api } from "@/lib/api-client";
 import type { Permission } from "@el-bannawy/shared";

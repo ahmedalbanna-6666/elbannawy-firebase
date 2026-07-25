@@ -42,8 +42,8 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     });
 
     return NextResponse.json({ success: true, data: items });
-  } catch {
-    return NextResponse.json({ success: false, error: { code: 'INTERNAL', message: 'Failed to list academic years' } }, { status: 500 });
+  } catch (error) {
+    return NextResponse.json({ success: false, error: { code: 'INTERNAL', message: error instanceof Error ? error.message : 'Failed to list academic years' } }, { status: 500 });
   }
 }
 
@@ -73,7 +73,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     await docRef.set(yearData);
     const saved = { ...yearData, id: docRef.id };
     return NextResponse.json({ success: true, data: saved }, { status: 201 });
-  } catch {
-    return NextResponse.json({ success: false, error: { code: 'INTERNAL', message: 'Failed to create academic year' } }, { status: 500 });
+  } catch (error) {
+    return NextResponse.json({ success: false, error: { code: 'INTERNAL', message: error instanceof Error ? error.message : 'Failed to create academic year' } }, { status: 500 });
   }
 }

@@ -66,12 +66,12 @@ export function AcademicContextBar({ className }: AcademicContextBarProps): Reac
   });
 
   useEffect(() => {
-    if (activeCtx?.academicYear && activeCtx.term) {
+    if (activeCtx?.academicYear) {
       applyPlatformContext({
         academicYearId: activeCtx.academicYear.id,
         academicYearName: activeCtx.academicYear.name,
-        termId: activeCtx.term.id,
-        termName: activeCtx.term.name,
+        termId: activeCtx.term?.id ?? null,
+        termName: activeCtx.term?.name ?? null,
       });
     }
   }, [activeCtx, applyPlatformContext]);

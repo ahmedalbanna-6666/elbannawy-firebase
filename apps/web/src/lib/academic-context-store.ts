@@ -37,7 +37,7 @@ interface AcademicContextState extends AcademicContext {
   setGrade: (grade: string, gradeId?: string | null) => void;
   setTerm: (term: string) => void;
   setTermId: (termId: string | null) => void;
-  applyPlatformContext: (ctx: { academicYearId: string; academicYearName: string; termId: string; termName: string }) => void;
+  applyPlatformContext: (ctx: { academicYearId: string; academicYearName: string; termId: string | null; termName: string | null }) => void;
   reset: () => void;
 }
 
@@ -73,12 +73,12 @@ export const useAcademicContextStore = create<AcademicContextState>()(
       setTermId: (termId: string | null): void => {
         set({ termId });
       },
-      applyPlatformContext: (ctx: { academicYearId: string; academicYearName: string; termId: string; termName: string }): void => {
+      applyPlatformContext: (ctx: { academicYearId: string; academicYearName: string; termId: string | null; termName: string | null }): void => {
         set({
           academicYear: ctx.academicYearName,
           academicYearId: ctx.academicYearId,
-          term: ctx.termName,
-          termId: ctx.termId,
+          term: ctx.termName ?? null,
+          termId: ctx.termId ?? null,
         });
       },
       reset: (): void => {
