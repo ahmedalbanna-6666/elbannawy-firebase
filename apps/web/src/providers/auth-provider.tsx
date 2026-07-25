@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useContext, useEffect, useRef, type ReactNode, useCallback } from "react";
+import { FcmProvider } from "./fcm-provider";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   signInWithPopup,
@@ -265,7 +266,7 @@ export function AuthProvider({ children }: { children: ReactNode }): ReactNode {
         logout,
       }}
     >
-      {children}
+      <FcmProvider isAuthenticated={isAuthenticated} user={user}>{children}</FcmProvider>
     </AuthContext.Provider>
   );
 }

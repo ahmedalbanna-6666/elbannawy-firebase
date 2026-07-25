@@ -1,20 +1,41 @@
+import { initializeApp, cert, getApps } from 'firebase-admin/app';
+import { getMessaging, type Messaging } from 'firebase-admin/messaging';
 import { getFirestoreInstance } from '../repositories/firestore/firestore.service';
 import { DeviceTokenRepository } from '../repositories/notifications/device-token.repository';
 import { NotificationRepository } from '../repositories/notifications/notification.repository';
 import type { INotificationPayload } from '../repositories/contracts';
 
-let messagingInstance: unknown = null;
+let messagingInstance: Messaging | null = null;
 
-function getMessaging() {
+function getMessagingInstance(): Messaging {
   if (messagingInstance) return messagingInstance;
-  try {
-    const admin = require('firebase-admin');
-    if (admin.messaging) {
-      messagingInstance = admin.messaging();
-      return messagingInstance;
+  const apps = getApps();
+  let app = apps.length > 0 ? apps[0] : null;
+  if (!app) {
+    const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
+    let privateKey = process.env.FIREBASE_PRIVATE_KEY;
+    const projectId = process.env.FIREBASE_PROJECT_ID;
+    if (clientEmail && privateKey && projectId) {
+      privateKey = privateKey.replace(/^["']|["']$/g, '');
+      if (privateKey.includes('\\n')) {
+        privateKey = privateKey.replace(/\\n/g, '\n');
+      }
+      app = initializeApp({
+        credential: cert({
+          projectId,
+          clientEmail,
+          privateKey,
+        }),
+        projectId,
+      });
+    } else {
+      throw new Error(
+        'Firebase Admin SDK not configured for FCM. Set FIREBASE_CLIENT_EMAIL, FIREBASE_PRIVATE_KEY, and FIREBASE_PROJECT_ID.'
+      );
     }
-  } catch {}
-  throw new Error('firebase-admin is not available for FCM');
+  }
+  messagingInstance = getMessaging(app);
+  return messagingInstance;
 }
 
 export class FcmNotificationService {
@@ -81,7 +102,7 @@ export class FcmNotificationService {
       if (!tokens.ok || tokens.value.length === 0) return;
 
       const fcmTokens = tokens.value.map((t) => t.token);
-      const messaging = getMessaging() as { sendEach: (messages: Array<{ token: string; notification: { title: string; body: string }; data: Record<string, string> }>) => Promise<{ responses: Array<{ error?: { code: string } }> }> };
+      const messaging = getMessagingInstance();
 
       const responses = await messaging.sendEach(
         fcmTokens.map((token) => ({
