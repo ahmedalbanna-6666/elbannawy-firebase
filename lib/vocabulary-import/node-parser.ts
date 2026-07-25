@@ -1,29 +1,118 @@
 import JSZip from 'jszip';
 import type { VocabularyDocument, ParsedSection, VocabularyEntry, SynonymEntry } from './types';
 
-const NS_W = 'http://schemas.openxmlformats.org/wordprocessingml/2006/main';
-
-function stripNs(tag: string): string {
-  const idx = tag.indexOf('}');
-  return idx >= 0 ? tag.slice(idx + 1) : tag;
+interface XmlElement {
+  tag: string;
+  attrs: Record<string, string>;
+  children: XmlElement[];
+  text: string;
 }
 
-function extractTextFromElement(el: Element): string {
-  const parts: string[] = [];
-  const tElements = el.getElementsByTagNameNS(NS_W, 't');
-  for (let i = 0; i < tElements.length; i++) {
-    const text = tElements[i].textContent;
-    if (text) parts.push(text);
+function parseXml(xml: string): XmlElement {
+  const cleaned = xml.replace(/<\?xml[^>]*\?>/, '').trim();
+  const root = parseElement(cleaned, 0);
+  return root.element;
+}
+
+function parseElement(xml: string, start: number): { element: XmlElement; end: number } {
+  const tagStart = xml.indexOf('<', start);
+  if (tagStart === -1 || xml[tagStart + 1] === '/') {
+    return { element: { tag: '', attrs: {}, children: [], text: '' }, end: start };
   }
-  return parts.join('').trim();
+
+  const tagEnd = xml.indexOf('>', tagStart);
+  const tagContent = xml.slice(tagStart + 1, tagEnd);
+  const isSelfClosing = tagContent.endsWith('/');
+
+  const spaceIdx = tagContent.indexOf(' ');
+  const tag = (spaceIdx === -1 ? tagContent : tagContent.slice(0, spaceIdx)).replace('/', '');
+
+  const attrs: Record<string, string> = {};
+  if (spaceIdx !== -1) {
+    const attrStr = tagContent.slice(spaceIdx + 1).replace(/\/$/, '').trim();
+    const attrRegex = /([\w:.-]+)\s*=\s*"([^"]*)"/g;
+    let match;
+    while ((match = attrRegex.exec(attrStr)) !== null) {
+      attrs[match[1]] = match[2];
+    }
+  }
+
+  const children: XmlElement[] = [];
+  let text = '';
+  let pos = tagEnd + 1;
+
+  if (isSelfClosing) {
+    return { element: { tag, attrs, children, text }, end: pos };
+  }
+
+  const endTag = `</${tag.split(':').pop()!}>`;
+  const closeTag = `</${tag}>`;
+  let depth = 1;
+
+  while (pos < xml.length && depth > 0) {
+    if (xml[pos] === '<') {
+      if (xml.slice(pos, pos + closeTag.length) === closeTag || xml.slice(pos, pos + endTag.length) === endTag) {
+        depth--;
+        if (depth === 0) {
+          pos += closeTag.length;
+          break;
+        }
+        pos += closeTag.length;
+      } else if (xml[pos + 1] === '/') {
+        depth--;
+        const ctEnd = xml.indexOf('>', pos);
+        pos = ctEnd + 1;
+      } else if (xml.slice(pos, pos + 4) === '<!--') {
+        const commentEnd = xml.indexOf('-->', pos);
+        pos = commentEnd + 3;
+      } else if (xml[pos + 1] === '!') {
+        const ctEnd = xml.indexOf('>', pos);
+        pos = ctEnd + 1;
+      } else {
+        const result = parseElement(xml, pos);
+        children.push(result.element);
+        pos = result.end;
+      }
+    } else {
+      const nextTag = xml.indexOf('<', pos);
+      if (nextTag === -1) break;
+      const textContent = xml.slice(pos, nextTag).replace(/\s+/g, ' ').trim();
+      if (textContent) text += textContent;
+      pos = nextTag;
+    }
+  }
+
+  return { element: { tag: tag.split(':').pop()!, attrs, children, text }, end: pos };
 }
 
-function getParagraphStyle(el: Element): string {
-  const ppr = el.getElementsByTagNameNS(NS_W, 'pPr')[0];
-  if (!ppr) return '';
-  const pStyle = ppr.getElementsByTagNameNS(NS_W, 'pStyle')[0];
-  if (!pStyle) return '';
-  return pStyle.getAttributeNS(null, 'w:val') ?? '';
+function findChildren(el: XmlElement, tag: string): XmlElement[] {
+  return el.children.filter(c => c.tag === tag);
+}
+
+function findFirstChild(el: XmlElement, tag: string): XmlElement | undefined {
+  return el.children.find(c => c.tag === tag);
+}
+
+function getText(el: XmlElement): string {
+  const tElements = findChildren(el, 't');
+  return tElements.map(t => t.text).join('').trim();
+}
+
+function getParagraphStyle(el: XmlElement): string {
+  const pPr = findFirstChild(el, 'pPr');
+  if (!pPr) return '';
+  const pStyle = findFirstChild(pPr, 'pStyle');
+  return pStyle?.attrs['w:val'] ?? '';
+}
+
+function extractCellText(cell: XmlElement): string {
+  const parts: string[] = [];
+  function walk(e: XmlElement): void {
+    if (e.tag === 't' && e.text) parts.push(e.text);
+    for (const c of e.children) walk(c);
+  }
+  walk(cell);
+  return parts.join('').trim();
 }
 
 function dedupeCells(cells: string[]): string[] {
@@ -87,25 +176,6 @@ function classifySection(heading: string): 'vocabulary' | 'synonym-antonym' {
   return 'vocabulary';
 }
 
-function getCellText(table: Element, rowIdx: number, colIdx: number, nsResolver: (tag: string) => string): string {
-  const rows = table.getElementsByTagNameNS(NS_W, 'tr');
-  if (rowIdx >= rows.length) return '';
-  const cells = rows[rowIdx].getElementsByTagNameNS(NS_W, 'tc');
-  if (colIdx >= cells.length) return '';
-  return extractTextFromElement(cells[colIdx]);
-}
-
-function getRowCells(table: Element, rowIdx: number): string[] {
-  const rows = table.getElementsByTagNameNS(NS_W, 'tr');
-  if (rowIdx >= rows.length) return [];
-  const cells = rows[rowIdx].getElementsByTagNameNS(NS_W, 'tc');
-  const result: string[] = [];
-  for (let i = 0; i < cells.length; i++) {
-    result.push(extractTextFromElement(cells[i]));
-  }
-  return result;
-}
-
 export async function parseVocabularyDocBuffer(buffer: Buffer): Promise<VocabularyDocument> {
   const zip = await JSZip.loadAsync(buffer);
   const docFile = zip.file('word/document.xml');
@@ -114,51 +184,44 @@ export async function parseVocabularyDocBuffer(buffer: Buffer): Promise<Vocabula
   }
   const xmlStr = await docFile.async('string');
 
-  const parser = new DOMParser();
-  const xmlDoc = parser.parseFromString(xmlStr, 'text/xml');
-  const body = xmlDoc.getElementsByTagNameNS(NS_W, 'body')[0];
+  const root = parseXml(xmlStr);
+  const body = findFirstChild(root, 'body');
   if (!body) throw new Error('Cannot find document body');
 
-  const children = Array.from(body.childNodes).filter(n => n.nodeType === 1) as Element[];
+  const tables: XmlElement[] = [];
+  const headingTexts: string[] = [];
 
-  const headings: { index: number; text: string }[] = [];
-  const tableElements: Element[] = [];
-
-  for (const child of children) {
-    const tag = stripNs(child.tagName);
-    if (tag === 'p') {
+  for (const child of body.children) {
+    if (child.tag === 'tbl') {
+      tables.push(child);
+    } else if (child.tag === 'p') {
       const style = getParagraphStyle(child);
       if (style.startsWith('Heading')) {
-        const text = extractTextFromElement(child);
-        if (text) headings.push({ index: headings.length + tableElements.length, text });
+        const text = getText(child);
+        if (text) headingTexts.push(text);
       }
-    } else if (tag === 'tbl') {
-      tableElements.push(child);
     }
   }
 
   const sections: ParsedSection[] = [];
   let tableIndex = 0;
-  let headingIndex = 0;
 
-  const sortedHeadings = [...headings].sort((a, b) => a.index - b.index);
-
-  for (const h of sortedHeadings) {
-    const sectionType = classifySection(h.text);
+  for (const heading of headingTexts) {
+    const sectionType = classifySection(heading);
     const section: ParsedSection = {
-      heading: h.text,
+      heading,
       type: sectionType,
       items: [],
     };
 
-    if (tableIndex < tableElements.length) {
-      const table = tableElements[tableIndex];
+    if (tableIndex < tables.length) {
+      const table = tables[tableIndex];
       tableIndex++;
-      const rows = table.getElementsByTagNameNS(NS_W, 'tr');
+      const rows = findChildren(table, 'tr');
 
       if (sectionType === 'synonym-antonym') {
         for (let r = 0; r < rows.length; r++) {
-          const cells = getRowCells(table, r);
+          const cells = findChildren(rows[r], 'tc').map(extractCellText);
           if (r === 0) {
             const headerText = (cells[0] ?? '').toLowerCase() + ' ' + (cells[1] ?? '').toLowerCase();
             if (headerText.includes('word') || headerText.includes('synonym')) continue;
@@ -168,8 +231,8 @@ export async function parseVocabularyDocBuffer(buffer: Buffer): Promise<Vocabula
         }
       } else {
         let isFirst = true;
-        for (let r = 0; r < rows.length; r++) {
-          const cells = getRowCells(table, r);
+        for (const row of rows) {
+          const cells = findChildren(row, 'tc').map(extractCellText);
           if (isFirst) {
             const combined = (cells[0] ?? '').toLowerCase() + ' ' + (cells[1] ?? '').toLowerCase();
             if (combined.includes('word') || combined.includes('english') || combined.includes('synonym')) {
@@ -184,10 +247,7 @@ export async function parseVocabularyDocBuffer(buffer: Buffer): Promise<Vocabula
       }
     }
     sections.push(section);
-    headingIndex++;
   }
 
   return { sections };
 }
-
-export { VocabularyDocument, ParsedSection };
