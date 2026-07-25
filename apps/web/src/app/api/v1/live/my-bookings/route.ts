@@ -20,8 +20,8 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
     // Populate session data for each booking
     const db = getAdminDb();
-    const bookings = result.value ?? [];
-    const enriched = await Promise.all(bookings.map(async (b: { sessionId?: string; [key: string]: unknown }) => {
+    const bookings = (result.value ?? []) as unknown as Record<string, unknown>[];
+    const enriched = await Promise.all(bookings.map(async (b) => {
       const sid = b.sessionId as string | undefined;
       if (!sid) return { ...b, session: null };
       const snap = await db.collection('liveSessions').doc(sid).get();
@@ -35,7 +35,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
           sessionData.teacher = tData ? { id: tId, name: (tData.fullName ?? tData.name ?? '') as string } : { id: tId, name: '' };
         }
       }
-      return { ...b, session: sessionData };
+      return { ...b as Record<string, unknown>, session: sessionData };
     }));
 
     return NextResponse.json({ success: true, data: enriched });
