@@ -17,7 +17,7 @@ export function PlyrVideoPlayer({
   readonly onProgress?: (currentTime: number, duration: number) => void;
   readonly onComplete?: (currentTime: number, duration: number) => void;
 }): ReactNode {
-  const elementRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<Plyr | null>(null);
   const progressRef = useRef(onProgress);
   const completeRef = useRef(onComplete);
@@ -25,10 +25,10 @@ export function PlyrVideoPlayer({
   completeRef.current = onComplete;
 
   useEffect(() => {
-    const element = elementRef.current;
-    if (!element) return;
+    const container = containerRef.current;
+    if (!container) return;
 
-    const player = new Plyr(element, {
+    const player = new Plyr(container, {
       controls: ["play-large", "play", "progress", "current-time", "mute", "volume", "fullscreen"],
       youtube: {
         noCookie: true,
@@ -92,12 +92,16 @@ export function PlyrVideoPlayer({
   }, [providerVideoId, startAt]);
 
   return (
-    <div className="aspect-video w-full overflow-hidden rounded-2xl bg-black">
-      <div
-        ref={elementRef}
-        data-plyr-provider="youtube"
-        data-plyr-embed-id={providerVideoId}
-      />
+    <div className="aspect-video w-full overflow-hidden rounded-2xl">
+      <div className="plyr__video-embed" ref={containerRef}>
+        <iframe
+          src={`https://www.youtube-nocookie.com/embed/${providerVideoId}?controls=0&rel=0&iv_load_policy=3&playsinline=1&modestbranding=1&enablejsapi=1`}
+          allowFullScreen
+          allowTransparency
+          allow="autoplay"
+          loading="lazy"
+        />
+      </div>
     </div>
   );
 }
