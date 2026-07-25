@@ -48,11 +48,11 @@ importScripts("https://www.gstatic.com/firebasejs/12.15.0/firebase-app-compat.js
 importScripts("https://www.gstatic.com/firebasejs/12.15.0/firebase-messaging-compat.js");
 
 firebase.initializeApp({
-  apiKey: "",
-  authDomain: "",
-  projectId: "",
-  messagingSenderId: "",
-  appId: "",
+  apiKey: "AIzaSyA3tYGPqgMBW1vvnUHLj18oihxTKLDREyQ",
+  authDomain: "elbannawy-platform-f0a73.firebaseapp.com",
+  projectId: "elbannawy-platform-f0a73",
+  messagingSenderId: "423891283480",
+  appId: "1:423891283480:web:8d077cb506122fba585d6d",
 });
 
 const messaging = firebase.messaging();
