@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { UnitService, UnitApplicationService } from '@el-bannawy/lib';
+import { UnitService, UnitApplicationService, LessonRepository } from '@el-bannawy/lib';
 
 const unitService = new UnitService();
 const applicationService = new UnitApplicationService(unitService);
+const lessonRepo = new LessonRepository();
 
 function toFrontendUnit(u: Record<string, unknown>): Record<string, unknown> {
   return {
@@ -17,6 +18,21 @@ function toFrontendUnit(u: Record<string, unknown>): Record<string, unknown> {
     updatedAt: u.updatedAt ?? new Date().toISOString(),
     grade: { id: u.gradeId ?? '', name: '', stage: { id: '', name: '' } },
     _count: { lessons: 0 },
+  };
+}
+
+function toFrontendLesson(l: Record<string, unknown>): Record<string, unknown> {
+  return {
+    id: l.id,
+    title: l.title ?? '',
+    displayOrder: l.displayOrder ?? 0,
+    published: l.isPublished ?? l.status === 'published',
+    isPremium: l.isPremium ?? false,
+    lockedOverride: l.lockedOverride ?? null,
+    homeworkEnabled: l.homeworkEnabled ?? false,
+    quizEnabled: l.quizEnabled ?? false,
+    estimatedDuration: l.estimatedDuration ?? null,
+    createdAt: l.createdAt ?? new Date().toISOString(),
   };
 }
 
@@ -39,9 +55,16 @@ export async function GET(
 ): Promise<NextResponse> {
   const { id } = await params;
   try {
-    const result = await applicationService.getUnitById(id);
-    if (!result.ok) return NextResponse.json({ success: false, error: result.error }, { status: 404 });
-    return NextResponse.json({ success: true, data: toFrontendUnit(result.value as unknown as Record<string, unknown>) });
+    const [unitResult, lessonsResult] = await Promise.all([
+      applicationService.getUnitById(id),
+      lessonRepo.getPublishedLessons(id),
+    ]);
+    if (!unitResult.ok) return NextResponse.json({ success: false, error: unitResult.error }, { status: 404 });
+    const unit = toFrontendUnit(unitResult.value as unknown as Record<string, unknown>);
+    const lessons = lessonsResult.ok
+      ? lessonsResult.value.map((l) => toFrontendLesson(l as unknown as Record<string, unknown>))
+      : [];
+    return NextResponse.json({ success: true, data: { ...unit, lessons } });
   } catch (error) {
     return NextResponse.json({ success: false, error: { code: 'INTERNAL', message: error instanceof Error ? error.message : 'Unknown error' } }, { status: 500 });
   }

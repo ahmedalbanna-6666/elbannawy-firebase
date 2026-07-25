@@ -136,6 +136,7 @@ export default function UnitDetailPage(): ReactNode {
     mutationFn: async (lesson: LessonManagement) =>
       api.post("/curriculum/lessons", {
         title: `${lesson.title} (نسخة)`,
+        displayOrder: lesson.displayOrder + 1,
         unitId,
       }),
     onSuccess: () => {

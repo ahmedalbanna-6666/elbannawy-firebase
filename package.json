@@ -19,6 +19,7 @@
     "firebase:emulators": "firebase emulators:start --import=./firebase-seed-data --export-on-exit",
     "firebase:emulators:clean": "firebase emulators:start",
     "firebase:seed": "node scripts/firebase-seed.mjs",
+    "firebase:audit": "node scripts/data-audit.mjs",
     "firebase:export": "firebase emulators:export ./firebase-seed-data",
     "emulators": "pnpm firebase:emulators",
     "dev:web": "pnpm --filter @el-bannawy/web dev"

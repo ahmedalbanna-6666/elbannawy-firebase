@@ -15,9 +15,8 @@ import { ChevronLeft, GraduationCap, UserCog, BookOpen, Layers, BookMarked, Cale
 interface DashboardStats {
   studentsCount: number;
   teachersCount: number;
-  systemsCount: number;
-  stagesCount: number;
-  gradesCount: number;
+  unitsCount: number;
+  lessonsCount: number;
   academicYearsCount: number;
 }
 
@@ -40,7 +39,7 @@ export function AdminDashboard(): ReactNode {
     queryKey: ["admin-dashboard-stats"],
     queryFn: async () => {
       const res = await api.get<DashboardStats>("/admin/dashboard/stats");
-      return res.data ?? { studentsCount: 0, teachersCount: 0, systemsCount: 0, stagesCount: 0, gradesCount: 0, academicYearsCount: 0 };
+      return res.data ?? { studentsCount: 0, teachersCount: 0, academicYearsCount: 0 };
     },
     refetchInterval: 60_000,
   });
@@ -54,9 +53,8 @@ export function AdminDashboard(): ReactNode {
   const statsCards = [
     { label: "الطلاب", value: stats?.studentsCount ?? 0, icon: GraduationCap, color: "text-primary-500" },
     { label: "المعلمون", value: stats?.teachersCount ?? 0, icon: UserCog, color: "text-blue-500" },
-    { label: "الأنظمة التعليمية", value: stats?.systemsCount ?? 0, icon: BookOpen, color: "text-green-500" },
-    { label: "المراحل", value: stats?.stagesCount ?? 0, icon: Layers, color: "text-purple-500" },
-    { label: "الصفوف", value: stats?.gradesCount ?? 0, icon: BookMarked, color: "text-amber-500" },
+    { label: "الوحدات", value: stats?.unitsCount ?? 0, icon: BookOpen, color: "text-green-500" },
+    { label: "الدروس", value: stats?.lessonsCount ?? 0, icon: Layers, color: "text-purple-500" },
     { label: "السنوات الدراسية", value: stats?.academicYearsCount ?? 0, icon: Calendar, color: "text-rose-500" },
   ];
 
