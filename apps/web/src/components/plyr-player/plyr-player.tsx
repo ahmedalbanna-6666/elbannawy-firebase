@@ -48,7 +48,7 @@ export function PlyrVideoPlayer({
       ratio: "16:9",
       resetOnEnd: true,
       clickToPlay: true,
-      hideControls: false,
+      hideControls: true,
       tooltips: { controls: true, seek: true },
     });
 
@@ -101,33 +101,42 @@ export function PlyrVideoPlayer({
 
     let fullscreenLocked = false;
 
-    const handleOrientation = (): void => {
+    const tryFullscreen = (): void => {
       const plyrEl = containerRef.current?.closest(".plyr") as HTMLElement | null;
       if (!plyrEl) return;
 
       const isLandscape = window.innerWidth > window.innerHeight;
 
-      if (isLandscape && !fullscreenLocked) {
+      if (isLandscape && !document.fullscreenElement && !fullscreenLocked) {
         fullscreenLocked = true;
+        const el = plyrEl.querySelector("iframe") ?? plyrEl;
         try {
-          void plyrEl.requestFullscreen();
+          void el.requestFullscreen();
         } catch {
-          /* not supported */
+          try {
+            void plyrEl.requestFullscreen();
+          } catch {
+            fullscreenLocked = false;
+          }
         }
-      } else if (!isLandscape && fullscreenLocked) {
+      }
+
+      if (!isLandscape && document.fullscreenElement && fullscreenLocked) {
         fullscreenLocked = false;
-        if (document.fullscreenElement) {
+        try {
           void document.exitFullscreen();
+        } catch {
+          /* ignore */
         }
       }
     };
 
-    window.addEventListener("orientationchange", handleOrientation);
-    window.addEventListener("resize", handleOrientation);
+    window.addEventListener("orientationchange", tryFullscreen);
+    window.addEventListener("resize", tryFullscreen);
 
     return (): void => {
-      window.removeEventListener("orientationchange", handleOrientation);
-      window.removeEventListener("resize", handleOrientation);
+      window.removeEventListener("orientationchange", tryFullscreen);
+      window.removeEventListener("resize", tryFullscreen);
     };
   }, []);
 

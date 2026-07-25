@@ -54,9 +54,18 @@
   align-items: center !important;
   gap: 8px !important;
   padding: 10px 14px !important;
-  background: rgba(15, 15, 15, 0.7) !important;
+  min-height: 44px;
+  background: rgba(15, 15, 15, 0.75) !important;
   backdrop-filter: blur(8px);
   border-top: 1px solid rgba(255, 255, 255, 0.06);
+  transition: opacity 0.3s ease, visibility 0.3s ease !important;
+}
+
+.plyr.plyr--hide-controls .plyr__controls {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  transform: none !important;
+  pointer-events: none !important;
 }
 
 .plyr__controls .plyr__controls__item.plyr__progress__container {
@@ -198,4 +207,5 @@
   order: unset;
   background: linear-gradient(180deg, transparent, rgba(0, 0, 0, 0.85)) !important;
   border-top: none;
+  min-height: unset;
 }
