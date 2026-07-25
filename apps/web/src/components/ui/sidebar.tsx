@@ -103,7 +103,7 @@ export function Sidebar({ items, className, onClose, onProfileClick, profileGrad
         )}
         <button
           onClick={(): void => { setCollapsed(!collapsed); }}
-          className="rounded-lg p-2 text-neutral-500 transition-colors hover:bg-white/10 hover:text-white light:text-neutral-500 light:hover:bg-neutral-100 light:hover:text-neutral-700"
+          className="rounded-lg p-2 text-neutral-400 transition-colors hover:bg-white/10 hover:text-white light:text-neutral-500 light:hover:bg-neutral-100 light:hover:text-neutral-700"
           aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
         >
           <ChevronLeft
@@ -134,7 +134,7 @@ export function Sidebar({ items, className, onClose, onProfileClick, profileGrad
               <span className="text-[1.05rem] font-extrabold leading-none text-neutral-50 light:text-neutral-900">
                 {firstName || "Student"}
               </span>
-              <span className="text-[0.75rem] font-semibold leading-none text-neutral-500 light:text-neutral-500">
+              <span className="text-[0.75rem] font-semibold leading-none text-neutral-400 light:text-neutral-500">
                 {gradeLabel}
               </span>
             </div>
