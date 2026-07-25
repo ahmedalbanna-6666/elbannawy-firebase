@@ -195,79 +195,66 @@ function VideoBlock({
   });
 
   return (
-    <ContentBlock
-      icon={MonitorPlay}
-      title="فيديو الدرس"
-      description="إدارة فيديوهات الدرس (YouTube)"
-      statusBadge={
-        videos.length > 0 ? (
-          <Badge variant="primary" className="text-[10px]">
-            {String(videos.length)} فيديو
-          </Badge>
-        ) : undefined
-      }
-    >
-      <div className="flex flex-col gap-3">
-        {videos.length === 0 ? (
-          <p className="py-4 text-center text-sm text-neutral-400">
-            لا يوجد فيديو لهذا الدرس
-          </p>
-        ) : (
-          videos.map((video) => (
-            <div
-              key={video.id}
-              className="flex items-center gap-3 rounded-xl bg-neutral-50 p-3 dark:bg-neutral-800/50"
-            >
-              <Film className="h-5 w-5 shrink-0 text-red-500" />
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium text-neutral-900 dark:text-neutral-100">
-                  {video.title}
-                </p>
-                <p className="truncate text-xs text-neutral-400">
-                  {video.providerName} • {video.providerVideoId}
-                </p>
-              </div>
-              <Button
-                variant="ghost"
-                size="icon-sm"
-                aria-label="حذف الفيديو"
-                className="text-danger-500 hover:bg-danger-500/10"
-                loading={deleteMutation.isPending}
-                onClick={(): void => { deleteMutation.mutate(video.id); }}
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
-            </div>
-          ))
-        )}
-
-        <div className="flex items-center gap-2 border-t border-neutral-200 pt-3 dark:border-neutral-700">
-          <Input
-            placeholder="https://www.youtube.com/watch?v=..."
-            value={url}
-            onChange={(e): void => { setUrl(e.target.value); }}
-            className="flex-1"
-          />
-          <Button
-            variant="primary"
-            size="sm"
-            loading={addMutation.isPending}
-            disabled={!url.trim()}
-            onClick={(): void => { addMutation.mutate(); }}
+    <div className="flex flex-col gap-3">
+      {videos.length === 0 ? (
+        <p className="py-4 text-center text-sm text-neutral-400">
+          لا يوجد فيديو لهذا الدرس
+        </p>
+      ) : (
+        videos.map((video) => (
+          <div
+            key={video.id}
+            className="flex items-center gap-3 rounded-xl bg-neutral-50 p-3 dark:bg-neutral-800/50"
           >
-            <Plus className="h-4 w-4" />
-            إضافة
-          </Button>
-        </div>
-        {addMutation.isError && (
-          <p className="text-sm text-danger-500" role="alert">
-            {addMutation.error instanceof Error
-              ? addMutation.error.message
-              : "فشل إضافة الفيديو"}
-          </p>
-        )}
+            <Film className="h-5 w-5 shrink-0 text-red-500" />
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-medium text-neutral-900 dark:text-neutral-100">
+                {video.title}
+              </p>
+              <p className="truncate text-xs text-neutral-400">
+                {video.providerName} • {video.providerVideoId}
+              </p>
+            </div>
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              aria-label="حذف الفيديو"
+              className="text-danger-500 hover:bg-danger-500/10"
+              loading={deleteMutation.isPending}
+              onClick={(): void => { deleteMutation.mutate(video.id); }}
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </div>
+        ))
+      )}
+
+      <div className="flex items-center gap-2 border-t border-neutral-200 pt-3 dark:border-neutral-700">
+        <Input
+          placeholder="https://www.youtube.com/watch?v=..."
+          value={url}
+          onChange={(e): void => { setUrl(e.target.value); }}
+          className="flex-1"
+        />
+        <Button
+          variant="primary"
+          size="sm"
+          loading={addMutation.isPending}
+          disabled={!url.trim()}
+          onClick={(): void => { addMutation.mutate(); }}
+        >
+          <Plus className="h-4 w-4" />
+          إضافة
+        </Button>
       </div>
-    </ContentBlock>
+      {addMutation.isError && (
+        <p className="text-sm text-danger-500" role="alert">
+          {addMutation.error instanceof Error
+            ? addMutation.error.message
+            : "فشل إضافة الفيديو"}
+        </p>
+      )}
+    </div>
   );
 }
 
@@ -455,16 +442,18 @@ function StandardVocabularyTable({
 function VocabularyBlock({
   lessonId,
   vocabulary = [],
+  isOpen,
+  onToggle,
 }: {
   lessonId: string;
   vocabulary?: readonly LessonVocabulary[];
+  isOpen?: boolean;
+  onToggle?: () => void;
 }): ReactNode {
   const queryClient = useQueryClient();
   const { can } = usePermissions();
   const canManage = can("vocabulary.manage");
   const { speak, isSpeaking, isSupported } = usePronunciation();
-
-  const [expanded, setExpanded] = useState(true);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [showImportDialog, setShowImportDialog] = useState(false);
   const [word, setWord] = useState("");
@@ -624,11 +613,11 @@ function VocabularyBlock({
           <Button
             variant="ghost"
             size="icon-sm"
-            aria-label={expanded ? "طي قسم المفردات" : "توسيع قسم المفردات"}
-            aria-expanded={expanded}
-            onClick={(): void => { setExpanded((prev) => !prev); }}
+            aria-label={isOpen ? "طي قسم المفردات" : "توسيع قسم المفردات"}
+            aria-expanded={isOpen}
+            onClick={onToggle}
           >
-            {expanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+            {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
           </Button>
         </div>
       }
@@ -636,7 +625,7 @@ function VocabularyBlock({
       <div
         className={cn(
           "grid transition-all duration-200 ease-out",
-          expanded ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0",
+          isOpen ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0",
         )}
       >
         <div className="overflow-hidden">
@@ -1441,6 +1430,53 @@ interface LessonContentData {
   readonly homework: HomeworkData | null;
 }
 
+function CollapsibleSection({
+  icon: Icon,
+  title,
+  description,
+  statusBadge,
+  isOpen,
+  onToggle,
+  children,
+}: {
+  icon: LucideIcon;
+  title: string;
+  description: string;
+  statusBadge?: ReactNode;
+  isOpen: boolean;
+  onToggle: () => void;
+  children: ReactNode;
+}): ReactNode {
+  return (
+    <ContentBlock
+      icon={Icon}
+      title={title}
+      description={description}
+      statusBadge={statusBadge}
+      actions={
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          aria-label={isOpen ? `طي قسم ${title}` : `توسيع قسم ${title}`}
+          aria-expanded={isOpen}
+          onClick={onToggle}
+        >
+          {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+        </Button>
+      }
+    >
+      <div
+        className={cn(
+          "grid transition-all duration-200 ease-out",
+          isOpen ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0",
+        )}
+      >
+        <div className="overflow-hidden">{children}</div>
+      </div>
+    </ContentBlock>
+  );
+}
+
 export function LessonContentBlocks({
   lessonId,
   videos,
@@ -1449,15 +1485,33 @@ export function LessonContentBlocks({
   quiz,
   homework,
 }: LessonContentData): ReactNode {
+  const [openSection, setOpenSection] = useState<string | null>(null);
+
+  const toggleSection = (sectionId: string): void => {
+    setOpenSection((prev) => (prev === sectionId ? null : sectionId));
+  };
+
   return (
     <div className="flex flex-col gap-4">
-      <VideoBlock lessonId={lessonId} videos={videos} />
-      <VideoQuestionBlock lessonId={lessonId} videos={videos} />
-      <VocabularyBlock lessonId={lessonId} vocabulary={vocabulary} />
-      <PdfBlock lessonId={lessonId} document={document} />
-      <QuizBlock lessonId={lessonId} quiz={quiz} />
-      <HomeworkBlock lessonId={lessonId} homework={homework} />
-      <QuestionBlock lessonId={lessonId} />
+      <CollapsibleSection icon={MonitorPlay} title="فيديو الدرس" description="إدارة فيديوهات الدرس (YouTube)" statusBadge={videos.length > 0 ? <Badge variant="primary" className="text-[10px]">{String(videos.length)} فيديو</Badge> : undefined} isOpen={openSection === "video"} onToggle={(): void => { toggleSection("video"); }}>
+        <VideoBlock lessonId={lessonId} videos={videos} />
+      </CollapsibleSection>
+      <CollapsibleSection icon={HelpCircle} title="الأسئلة التفاعلية للفيديو" description="إدارة الأسئلة التفاعلية للفيديو" isOpen={openSection === "video-questions"} onToggle={(): void => { toggleSection("video-questions"); }}>
+        <VideoQuestionBlock lessonId={lessonId} videos={videos} />
+      </CollapsibleSection>
+      <VocabularyBlock lessonId={lessonId} vocabulary={vocabulary} isOpen={openSection === "vocabulary"} onToggle={(): void => { toggleSection("vocabulary"); }} />
+      <CollapsibleSection icon={FileText} title="ملف PDF" description="رفع واستبدال وحذف ملف PDF" statusBadge={document ? <Badge variant="primary" className="text-[10px]">PDF</Badge> : undefined} isOpen={openSection === "pdf"} onToggle={(): void => { toggleSection("pdf"); }}>
+        <PdfBlock lessonId={lessonId} document={document} />
+      </CollapsibleSection>
+      <CollapsibleSection icon={GraduationCap} title="اختبار الدرس" description="إدارة اختبار الدرس" statusBadge={quiz ? <Badge variant="primary" className="text-[10px]">تم الرفع</Badge> : undefined} isOpen={openSection === "quiz"} onToggle={(): void => { toggleSection("quiz"); }}>
+        <QuizBlock lessonId={lessonId} quiz={quiz} />
+      </CollapsibleSection>
+      <CollapsibleSection icon={ClipboardList} title="واجب الدرس" description="إدارة واجب الدرس" statusBadge={homework ? <Badge variant="primary" className="text-[10px]">تم الرفع</Badge> : undefined} isOpen={openSection === "homework"} onToggle={(): void => { toggleSection("homework"); }}>
+        <HomeworkBlock lessonId={lessonId} homework={homework} />
+      </CollapsibleSection>
+      <CollapsibleSection icon={FileQuestion} title="استيراد أسئلة" description="استيراد أسئلة من ملف Word" isOpen={openSection === "questions"} onToggle={(): void => { toggleSection("questions"); }}>
+        <QuestionBlock lessonId={lessonId} />
+      </CollapsibleSection>
     </div>
   );
 }
