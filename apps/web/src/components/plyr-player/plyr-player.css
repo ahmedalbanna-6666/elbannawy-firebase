@@ -22,7 +22,7 @@
   background-size: cover !important;
   background-position: center center !important;
   z-index: 4 !important;
-  transition: opacity 0.2s ease;
+  transition: opacity 0.3s ease;
 }
 
 .plyr--paused .plyr__poster {
@@ -38,22 +38,190 @@
 .plyr {
   display: flex !important;
   flex-direction: column !important;
+  border-radius: 1rem;
+  overflow: hidden;
 }
 
 .plyr__video-wrapper {
   aspect-ratio: 16 / 9;
   position: relative;
+  background: #000;
 }
 
 .plyr__controls {
   position: static !important;
   order: 1;
-  background: rgba(0, 0, 0, 0.5) !important;
-  backdrop-filter: blur(4px);
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  padding: 10px 16px !important;
+  background: linear-gradient(180deg, rgba(20, 20, 20, 0.95), rgb(15, 15, 15)) !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
 }
 
-.plyr--fullscreen .plyr {
-  display: block !important;
+.plyr__controls .plyr__controls__item.plyr__progress__container {
+  flex: 1 !important;
+}
+
+.plyr__progress {
+  height: 6px !important;
+  border-radius: 3px !important;
+  background: rgba(255, 255, 255, 0.15) !important;
+  cursor: pointer;
+  transition: height 0.15s ease;
+}
+
+.plyr__progress:hover {
+  height: 8px !important;
+}
+
+.plyr__progress input[type="range"] {
+  height: 6px !important;
+  border-radius: 3px !important;
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+}
+
+.plyr__progress input[type="range"]::-webkit-slider-runnable-track {
+  height: 6px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.plyr__progress input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #fff;
+  border: 2px solid #fff;
+  margin-top: -4px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.plyr__progress:hover input[type="range"]::-webkit-slider-thumb {
+  opacity: 1;
+}
+
+.plyr__progress__buffer {
+  border-radius: 3px !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+}
+
+.plyr--loading .plyr__progress__buffer {
+  animation: plyr-progress-buffer 0.5s linear infinite;
+  background: linear-gradient(
+    -45deg,
+    rgba(255, 255, 255, 0.08) 25%,
+    transparent 25%,
+    transparent 50%,
+    rgba(255, 255, 255, 0.08) 50%,
+    rgba(255, 255, 255, 0.08) 75%,
+    transparent 75%,
+    transparent
+  ) !important;
+  background-size: 20px 20px !important;
+}
+
+@keyframes plyr-progress-buffer {
+  0% { background-position: 0 0; }
+  100% { background-position: 20px 0; }
+}
+
+.plyr__time {
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  font-variant-numeric: tabular-nums;
+  color: rgba(255, 255, 255, 0.8) !important;
+  letter-spacing: 0.02em;
+}
+
+.plyr__time + .plyr__time {
+  margin-left: 2px !important;
+}
+
+.plyr__time + .plyr__time::before {
+  margin-right: 4px !important;
+  color: rgba(255, 255, 255, 0.4) !important;
+}
+
+.plyr__control {
+  padding: 6px !important;
+  border-radius: 6px !important;
+  color: rgba(255, 255, 255, 0.85) !important;
+  transition: all 0.15s ease;
+}
+
+.plyr__control:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+  color: #fff !important;
+}
+
+.plyr__control--pressed {
+  color: #fff !important;
+}
+
+.plyr__control--pressed .plyr__icon {
+  fill: #fff;
+}
+
+.plyr__control svg {
+  width: 20px !important;
+  height: 20px !important;
+}
+
+.plyr__control.plyr__control--pressed svg {
+  fill: #fff;
+}
+
+.plyr__volume {
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  max-width: 100px !important;
+}
+
+.plyr__volume input[type="range"] {
+  width: 70px !important;
+  height: 4px !important;
+  border-radius: 2px !important;
+  -webkit-appearance: none;
+  appearance: none;
+  background: rgba(255, 255, 255, 0.2) !important;
+  cursor: pointer;
+}
+
+.plyr__volume input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #fff;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.1s ease;
+}
+
+.plyr__volume input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+}
+
+.plyr__volume input[type="range"]::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #fff;
+  border: none;
+  cursor: pointer;
+}
+
+.plyr--fullscreen {
+  border-radius: 0 !important;
 }
 
 .plyr--fullscreen .plyr__video-wrapper {
@@ -67,4 +235,62 @@
   left: 0 !important;
   right: 0 !important;
   order: unset;
+  padding: 12px 20px !important;
+  background: linear-gradient(180deg, transparent, rgba(0, 0, 0, 0.85)) !important;
+  border-top: none;
+}
+
+.plyr__control--overlaid {
+  background: rgba(0, 0, 0, 0.65) !important;
+  border: 2px solid rgba(255, 255, 255, 0.2) !important;
+  border-radius: 50% !important;
+  padding: 18px !important;
+  transition: all 0.2s ease !important;
+}
+
+.plyr__control--overlaid svg {
+  width: 28px !important;
+  height: 28px !important;
+  fill: #fff;
+}
+
+.plyr__control--overlaid:hover {
+  background: rgba(0, 0, 0, 0.8) !important;
+  border-color: rgba(255, 255, 255, 0.4) !important;
+  transform: scale(1.05);
+}
+
+.plyr--video .plyr__control--overlaid {
+  left: 50% !important;
+  top: 50% !important;
+  transform: translate(-50%, -50%) !important;
+}
+
+.plyr--video .plyr__control--overlaid:hover {
+  transform: translate(-50%, -50%) scale(1.05) !important;
+}
+
+.plyr__menu {
+  display: none !important;
+}
+
+.plyr__controls .plyr__controls__item:first-child {
+  margin-left: 0;
+}
+
+.plyr--paused.plyr--stopped .plyr__poster {
+  display: block !important;
+}
+
+.plyr--loading .plyr__poster {
+  display: none !important;
+}
+
+.plyr__tooltip {
+  background: rgba(0, 0, 0, 0.85) !important;
+  color: #fff !important;
+  font-size: 12px !important;
+  border-radius: 4px !important;
+  padding: 4px 8px !important;
+  backdrop-filter: blur(8px);
 }

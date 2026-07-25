@@ -33,7 +33,15 @@ export function PlyrVideoPlayer({
     if (!element) return;
 
     const player = new Plyr(element, {
-      controls: ["play-large", "play", "progress", "current-time", "mute", "volume", "fullscreen"],
+      controls: [
+        "play-large",
+        "play",
+        "progress",
+        "current-time",
+        "mute",
+        "volume",
+        "fullscreen",
+      ],
       youtube: {
         noCookie: true,
         rel: 0,
@@ -86,7 +94,7 @@ export function PlyrVideoPlayer({
   }, [providerVideoId, startAt]);
 
   return (
-    <div className="aspect-video w-full overflow-hidden rounded-2xl">
+    <div className="aspect-video w-full overflow-hidden rounded-2xl bg-black">
       <div
         ref={elementRef}
         data-plyr-provider="youtube"
