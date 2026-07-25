@@ -103,6 +103,9 @@ export function fromFrontendUnitUpdate(body: Record<string, unknown>): Record<st
   if (body.published !== undefined) payload.published = body.published;
   if (body.isPremium !== undefined) payload.isPremium = body.isPremium;
   if (body.isActive !== undefined) payload.isActive = body.isActive;
+  if (body.gradeId !== undefined) payload.gradeId = body.gradeId ?? null;
+  if (body.academicYearId !== undefined) payload.academicYearId = body.academicYearId ?? null;
+  if (body.educationalSystemId !== undefined) payload.educationalSystemId = body.educationalSystemId ?? null;
   if (body.lockedOverride !== undefined) payload.lockedOverride = body.lockedOverride;
   return payload;
 }

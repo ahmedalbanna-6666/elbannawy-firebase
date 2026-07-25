@@ -1,12 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { TeacherRepository } from '@el-bannawy/lib';
+import { requireAdmin } from '@/lib/firebase/auth-helper';
 
 const teacherRepo = new TeacherRepository();
+
+async function checkAdmin(request: NextRequest): Promise<{ authorized: false; response: NextResponse } | null> {
+  const auth = await requireAdmin(request);
+  if (!auth.authorized) {
+    return { authorized: false, response: auth.response };
+  }
+  return null;
+}
 
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ): Promise<NextResponse> {
+  const unauth = await checkAdmin(request);
+  if (unauth) return unauth.response;
   const { id } = await params;
   try {
     const body = (await request.json()) as { gradeIds?: string[]; academicYearId?: string };
@@ -60,6 +71,8 @@ export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ): Promise<NextResponse> {
+  const unauth = await checkAdmin(request);
+  if (unauth) return unauth.response;
   const { id } = await params;
   try {
     const result = await teacherRepo.listTeacherAssignments(id, { limit: 100 });
@@ -91,6 +104,8 @@ export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ): Promise<NextResponse> {
+  const unauth = await checkAdmin(request);
+  if (unauth) return unauth.response;
   const { id } = await params;
   try {
     const body = (await request.json()) as { gradeIds?: string[] };

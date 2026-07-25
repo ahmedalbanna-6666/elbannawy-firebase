@@ -75,7 +75,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ success: false, error: { code: 'INVALID_INPUT', message: 'Invalid JSON body' } }, { status: 400 });
   }
   try {
-    const payload = fromFrontendUnit(body);
+    const payload = fromFrontendUnitCreate(body);
     const result = await applicationService.createUnit(payload);
     if (!result.ok) return NextResponse.json({ success: false, error: result.error }, { status: mapErrorCode(result.error.code) });
     return NextResponse.json({ success: true, data: toFrontendUnit(result.value as unknown as Record<string, unknown>) }, { status: 201 });
