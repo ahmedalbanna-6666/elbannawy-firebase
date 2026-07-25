@@ -59,7 +59,9 @@ export function StudentProfileSection({ profile, onSave }: Props): ReactNode {
       <CardHeader>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <GraduationCap className="h-4 w-4 text-primary-400" />
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-500/10">
+              <GraduationCap className="h-4 w-4 text-primary-400" />
+            </div>
             <h2 className="text-base font-extrabold text-neutral-100">المعلومات الدراسية</h2>
           </div>
           {!editing && (
@@ -68,7 +70,7 @@ export function StudentProfileSection({ profile, onSave }: Props): ReactNode {
                 setGradeId(profile.grade?.id ?? "");
                 setEditing(true);
               }}
-              className="rounded-lg p-1.5 text-neutral-500 hover:bg-neutral-500/10 hover:text-primary-400 transition-colors"
+              className="rounded-lg p-1.5 text-neutral-400 hover:bg-neutral-800 hover:text-primary-400 transition-colors"
               aria-label="تعديل المعلومات الدراسية"
             >
               <Pencil className="h-4 w-4" />
@@ -80,7 +82,7 @@ export function StudentProfileSection({ profile, onSave }: Props): ReactNode {
         {editing ? (
           <div className="flex flex-col gap-3">
             <div>
-              <p className="mb-1 text-xs text-neutral-500">الصف الدراسي</p>
+              <p className="mb-1 text-xs text-neutral-400">الصف الدراسي</p>
               <Select
                 value={gradeId}
                 onChange={(e): void => { setGradeId(e.target.value); }}
@@ -144,12 +146,12 @@ function ProfileField({
   value: string | null;
 }): ReactNode {
   return (
-    <div className="flex items-center gap-3 rounded-xl border border-white/10 p-3">
-      <span className="shrink-0">{icon}</span>
+    <div className="flex items-center gap-3 rounded-xl border border-neutral-800 bg-neutral-900/50 p-3">
+      <span className="shrink-0 text-neutral-500">{icon}</span>
       <div>
-        <p className="text-xs text-neutral-500">{label}</p>
-        <p className="text-sm font-medium text-neutral-200">
-          {value ?? <span className="text-neutral-600">غير محدد</span>}
+        <p className="text-xs text-neutral-400">{label}</p>
+        <p className="text-sm font-medium text-neutral-100">
+          {value ?? <span className="text-neutral-500">غير محدد</span>}
         </p>
       </div>
     </div>

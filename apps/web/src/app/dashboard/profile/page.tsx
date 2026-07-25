@@ -106,11 +106,11 @@ function EditableField({
   }, [draft, value, fieldKey, onSave, normalizeOnSave]);
 
   return (
-    <div className="flex items-center justify-between rounded-xl border border-white/10 p-3 transition-colors hover:border-white/20">
+    <div className="flex items-center justify-between rounded-xl border border-neutral-800 bg-neutral-900/50 p-3 transition-colors hover:border-neutral-700">
       <div className="flex min-w-0 flex-1 items-center gap-3">
-        <span className="shrink-0 text-neutral-400">{icon}</span>
+        <span className="shrink-0 text-neutral-500">{icon}</span>
         <div className="min-w-0 flex-1">
-          <p className="text-xs text-neutral-500">{label}</p>
+          <p className="text-xs text-neutral-400">{label}</p>
           {editing ? (
             renderEditor ? (
               <div className="mt-1">
@@ -127,8 +127,8 @@ function EditableField({
               />
             )
           ) : (
-            <p className="truncate text-sm font-medium text-neutral-200">
-              {value || <span className="text-neutral-600">غير محدد</span>}
+            <p className="truncate text-sm font-medium text-neutral-100">
+              {value || <span className="text-neutral-500">غير محدد</span>}
             </p>
           )}
         </div>
@@ -148,7 +148,7 @@ function EditableField({
               <button
                 onClick={handleCancel}
                 disabled={saving}
-                className="rounded-lg p-1.5 text-neutral-400 hover:bg-neutral-500/10 transition-colors"
+                className="rounded-lg p-1.5 text-neutral-400 hover:bg-neutral-800 transition-colors"
                 aria-label="إلغاء"
               >
                 <X className="h-4 w-4" />
@@ -157,7 +157,7 @@ function EditableField({
           ) : (
             <button
               onClick={handleEdit}
-              className="rounded-lg p-1.5 text-neutral-500 hover:bg-neutral-500/10 hover:text-primary-400 transition-colors"
+              className="rounded-lg p-1.5 text-neutral-400 hover:bg-neutral-800 hover:text-primary-400 transition-colors"
               aria-label={`تعديل ${label}`}
             >
               <Pencil className="h-4 w-4" />
@@ -263,7 +263,7 @@ export default function ProfilePage(): ReactNode {
             <div className="flex flex-1 flex-col gap-3 text-center sm:text-start">
               <div>
                 <p className="text-lg font-extrabold text-neutral-50">{p.fullName}</p>
-                <p className="text-sm text-neutral-400">
+                <p className="text-sm text-neutral-300">
                   {getRoleLabel()}
                 </p>
               </div>
@@ -277,12 +277,12 @@ export default function ProfilePage(): ReactNode {
                   placeholder="الاسم الكامل"
                 />
                 {p.email && (
-                  <span className="flex items-center gap-2 px-1 text-sm text-neutral-400">
+                  <span className="flex items-center gap-2 px-1 text-sm text-neutral-300">
                     <Mail className="h-4 w-4 text-neutral-500" />
                     {p.email}
                   </span>
                 )}
-                <span className="flex items-center gap-2 px-1 text-sm text-neutral-400">
+                <span className="flex items-center gap-2 px-1 text-sm text-neutral-300">
                   <Phone className="h-4 w-4 text-neutral-500" />
                   {p.mobileNumber}
                 </span>
@@ -359,17 +359,17 @@ export default function ProfilePage(): ReactNode {
         </CardHeader>
         <CardContent>
           <div className="flex flex-col gap-2">
-            <div className="flex items-center justify-between rounded-xl border border-white/10 p-3">
+            <div className="flex items-center justify-between rounded-xl border border-neutral-800 bg-neutral-900/50 p-3">
               <span className="text-sm text-neutral-400">حالة الحساب</span>
               <span className={`text-sm font-extrabold ${p.status === "ACTIVE" ? "text-success-500" : "text-warning-500"}`}>
                 {statusLabel}
               </span>
             </div>
-            <div className="flex items-center justify-between rounded-xl border border-white/10 p-3">
+            <div className="flex items-center justify-between rounded-xl border border-neutral-800 bg-neutral-900/50 p-3">
               <span className="text-sm text-neutral-400">تاريخ التسجيل</span>
-              <span className="text-sm font-medium text-neutral-300">{formattedDate}</span>
+              <span className="text-sm font-semibold text-neutral-200">{formattedDate}</span>
             </div>
-            <div className="flex items-center justify-between rounded-xl border border-white/10 p-3">
+            <div className="flex items-center justify-between rounded-xl border border-neutral-800 bg-neutral-900/50 p-3">
               <span className="text-sm text-neutral-400">نوع الحساب</span>
               <span className="text-sm font-extrabold text-primary-400">مجاني</span>
             </div>
@@ -409,7 +409,7 @@ export default function ProfilePage(): ReactNode {
         </CardHeader>
         <CardContent>
           <div className="flex flex-col gap-3">
-            <div className="flex items-center justify-between rounded-xl border border-white/10 p-3">
+            <div className="flex items-center justify-between rounded-xl border border-neutral-800 bg-neutral-900/50 p-3">
               <span className="text-sm text-neutral-400">الخطة الحالية</span>
               <span className="text-sm font-extrabold text-primary-400">مجاني</span>
             </div>

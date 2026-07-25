@@ -37,6 +37,19 @@ function resolveAcademicNames(
   return { stage: resolvedStage, grade: resolvedGrade, currentTerm: resolvedTerm };
 }
 
+async function resolveTermName(db: ReturnType<typeof getAdminDb>, termId: string): Promise<string> {
+  try {
+    const termDoc = await db.collection('academicTerms').doc(termId).get();
+    if (termDoc.exists) {
+      const data = termDoc.data() as { name?: string; nameAr?: string } | undefined;
+      return data?.nameAr ?? data?.name ?? termId;
+    }
+  } catch {
+    // fall through to return termId
+  }
+  return termId;
+}
+
 async function getProfileData(decoded: { uid: string }): Promise<Record<string, unknown> | null> {
   const adminAuth = getAdminAuth();
   const db = getAdminDb();
@@ -73,6 +86,9 @@ async function getProfileData(decoded: { uid: string }): Promise<Record<string, 
   const termId = extractString(u.termId);
 
   const roleProfile = resolveAcademicNames(gradeId, stageId, termId);
+  if (roleProfile.currentTerm && termId) {
+    roleProfile.currentTerm.name = await resolveTermName(db, termId);
+  }
 
   return {
     id: decoded.uid,

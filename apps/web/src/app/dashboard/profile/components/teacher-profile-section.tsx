@@ -32,15 +32,15 @@ export function TeacherProfileSection({ profile }: Props): ReactNode {
                 ))}
               </div>
             ) : (
-              <p className="text-sm text-neutral-600">لا توجد صفوف مكلّف بها حاليًا</p>
+              <p className="text-sm text-neutral-500">لا توجد صفوف مكلّف بها حاليًا</p>
             )}
           </div>
 
-          <div className="flex items-center gap-3 rounded-xl border border-white/10 p-3">
+          <div className="flex items-center gap-3 rounded-xl border border-neutral-800 bg-neutral-900/50 p-3">
             <Users className="h-5 w-5 text-primary-400" />
             <div>
-              <p className="text-xs text-neutral-500">إجمالي الطلاب</p>
-              <p className="text-lg font-extrabold text-neutral-200">
+              <p className="text-xs text-neutral-400">إجمالي الطلاب</p>
+              <p className="text-lg font-extrabold text-neutral-100">
                 {profile.totalStudents}
               </p>
             </div>

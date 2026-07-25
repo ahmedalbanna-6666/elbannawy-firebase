@@ -13,6 +13,8 @@ interface ContentBlockProps {
   actions?: ReactNode;
   children?: ReactNode;
   className?: string;
+  isOpen?: boolean;
+  onToggle?: () => void;
 }
 
 export function ContentBlock({

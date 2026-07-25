@@ -6,6 +6,28 @@ import "plyr/dist/plyr.css";
 import "./plyr-player.css";
 import { Skeleton } from "@/components/ui/skeleton";
 
+async function lockLandscape(): Promise<void> {
+  try {
+    const screen = window.screen as Screen & { orientation?: { lock?: (orientation: string) => Promise<void> } };
+    if (screen.orientation?.lock) {
+      await screen.orientation.lock("landscape");
+    }
+  } catch {
+    /* not supported */
+  }
+}
+
+async function unlockOrientation(): Promise<void> {
+  try {
+    const screen = window.screen as Screen & { orientation?: { unlock?: () => Promise<void> } };
+    if (screen.orientation?.unlock) {
+      await screen.orientation.unlock();
+    }
+  } catch {
+    /* not supported */
+  }
+}
+
 export function PlyrVideoPlayer({
   providerVideoId,
   startAt = 0,
@@ -48,6 +70,16 @@ export function PlyrVideoPlayer({
     });
 
     playerRef.current = player;
+
+    const handleFullscreen = (): void => {
+      if (document.fullscreenElement) {
+        void lockLandscape();
+      } else {
+        void unlockOrientation();
+      }
+    };
+
+    document.addEventListener("fullscreenchange", handleFullscreen);
 
     if (startAt > 0) {
       player.once("ready", () => {
@@ -100,14 +132,16 @@ export function PlyrVideoPlayer({
     });
 
     return (): void => {
+      document.removeEventListener("fullscreenchange", handleFullscreen);
+      void unlockOrientation();
       player.destroy();
       playerRef.current = null;
     };
   }, [providerVideoId, startAt]);
 
   return (
-    <div className="aspect-video w-full overflow-hidden rounded-2xl">
-      <div className="plyr__video-embed" ref={containerRef}>
+    <div className="aspect-video w-full overflow-hidden rounded-2xl bg-black">
+      <div className="plyr__video-embed relative" ref={containerRef}>
         <iframe
           src={`https://www.youtube-nocookie.com/embed/${providerVideoId}?controls=0&rel=0&iv_load_policy=3&playsinline=1&modestbranding=1&enablejsapi=1`}
           allowFullScreen

@@ -168,9 +168,13 @@ export const CONTENT_BLOCKS: readonly ContentBlockDefinition[] = [
 function VideoBlock({
   lessonId,
   videos,
+  isOpen,
+  onToggle,
 }: {
   lessonId: string;
   videos: readonly LessonVideo[];
+  isOpen?: boolean;
+  onToggle?: () => void;
 }): ReactNode {
   const queryClient = useQueryClient();
   const [url, setUrl] = useState("");
@@ -838,9 +842,13 @@ function VocabularyBlock({
 function PdfBlock({
   lessonId,
   document,
+  isOpen,
+  onToggle,
 }: {
   lessonId: string;
   document: LessonDocument | null;
+  isOpen?: boolean;
+  onToggle?: () => void;
 }): ReactNode {
   const queryClient = useQueryClient();
 
@@ -924,9 +932,13 @@ function PdfBlock({
 function QuizBlock({
   lessonId,
   quiz,
+  isOpen,
+  onToggle,
 }: {
   lessonId: string;
   quiz: QuizData | null;
+  isOpen?: boolean;
+  onToggle?: () => void;
 }): ReactNode {
   const queryClient = useQueryClient();
 
@@ -973,9 +985,13 @@ function QuizBlock({
 function HomeworkBlock({
   lessonId,
   homework,
+  isOpen,
+  onToggle,
 }: {
   lessonId: string;
   homework: HomeworkData | null;
+  isOpen?: boolean;
+  onToggle?: () => void;
 }): ReactNode {
   const queryClient = useQueryClient();
 
@@ -1044,9 +1060,13 @@ function formatTimestamp(seconds: number): string {
 function VideoQuestionBlock({
   lessonId,
   videos,
+  isOpen,
+  onToggle,
 }: {
   lessonId: string;
   videos: readonly LessonVideo[];
+  isOpen?: boolean;
+  onToggle?: () => void;
 }): ReactNode {
   const queryClient = useQueryClient();
 
@@ -1196,6 +1216,8 @@ function VideoQuestionBlock({
       icon={HelpCircle}
       title="أسئلة الفيديو التفاعلية"
       description="إضافة أسئلة تظهر أثناء تشغيل الفيديو"
+      isOpen={isOpen}
+      onToggle={onToggle}
       statusBadge={
         allQuestions && allQuestions.length > 0 ? (
           <Badge variant="primary" className="text-[10px]">
@@ -1392,8 +1414,12 @@ function VideoQuestionBlock({
 
 function QuestionBlock({
   lessonId,
+  isOpen,
+  onToggle,
 }: {
   lessonId: string;
+  isOpen?: boolean;
+  onToggle?: () => void;
 }): ReactNode {
   const [dialogOpen, setDialogOpen] = useState(false);
 

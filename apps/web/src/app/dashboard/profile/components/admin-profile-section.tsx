@@ -21,11 +21,11 @@ export function AdminProfileSection({ profile }: Props): ReactNode {
       </CardHeader>
       <CardContent>
         <div className="flex flex-col gap-3">
-          <div className="flex items-center gap-3 rounded-xl border border-white/10 p-3">
+          <div className="flex items-center gap-3 rounded-xl border border-neutral-800 bg-neutral-900/50 p-3">
             <Shield className="h-5 w-5 text-primary-400" />
             <div>
-              <p className="text-xs text-neutral-500">نوع الإدارة</p>
-              <p className="text-sm font-medium text-neutral-200">
+              <p className="text-xs text-neutral-400">نوع الإدارة</p>
+              <p className="text-sm font-medium text-neutral-100">
                 {profile.administrationType === "Platform Admin"
                   ? "مدير المنصة"
                   : "مدير بصلاحيات مخصصة"}
@@ -33,10 +33,10 @@ export function AdminProfileSection({ profile }: Props): ReactNode {
             </div>
           </div>
 
-          <div className="flex items-center gap-3 rounded-xl border border-white/10 p-3">
+          <div className="flex items-center gap-3 rounded-xl border border-neutral-800 bg-neutral-900/50 p-3">
             <Globe className="h-5 w-5 text-primary-400" />
             <div>
-              <p className="text-xs text-neutral-500">نطاق الوصول</p>
+              <p className="text-xs text-neutral-400">نطاق الوصول</p>
               <div className="mt-1">
                 <Badge variant={profile.accessScope === "FULL" ? "success" : "warning"}>
                   {profile.accessScope === "FULL" ? "وصول كامل" : "وصول مخصص"}
