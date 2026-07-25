@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { LessonService, LessonApplicationService } from '@el-bannawy/lib';
+import { fromFrontendLesson } from '../_shared/transforms';
 
 const lessonService = new LessonService();
 const applicationService = new LessonApplicationService(lessonService);
@@ -16,36 +17,6 @@ function mapErrorCode(code: string): number {
     case 'UNAVAILABLE': return 503;
     default: return 500;
   }
-}
-
-function slugify(text: string): string {
-  return text
-    .toLowerCase()
-    .replace(/[^a-z0-9\s-]/g, '')
-    .replace(/\s+/g, '-')
-    .replace(/-+/g, '-')
-    .replace(/^-|-$/g, '')
-    || `lesson-${String(Date.now())}`;
-}
-
-function fromFrontendLesson(body: Record<string, unknown>): Record<string, unknown> {
-  const title = (body.title ?? body.name ?? '') as string;
-  return {
-    id: body.id ?? `lesson-${String(Date.now())}-${String(Math.random()).slice(2, 8)}`,
-    unitId: (body.unitId ?? '') as string,
-    title,
-    slug: (body.slug as string) ?? slugify(title),
-    description: (body.description as string) ?? '',
-    displayOrder: (body.displayOrder as number) ?? (body.order as number) ?? 0,
-    isPublished: body.published === true || body.isPublished === true,
-    status: body.status ?? (body.published === true ? 'published' : 'draft'),
-    isVisible: body.isVisible !== false,
-    isPremium: body.isPremium === true,
-    lockedOverride: body.lockedOverride === true ? true : body.lockedOverride === false ? false : null,
-    homeworkEnabled: body.homeworkEnabled === true,
-    quizEnabled: body.quizEnabled === true,
-    estimatedDuration: (body.estimatedDuration as number) ?? undefined,
-  };
 }
 
 export async function GET(request: NextRequest): Promise<NextResponse> {

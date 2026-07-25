@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { LessonService, LessonApplicationService } from '@el-bannawy/lib';
+import { fromFrontendLessonUpdate } from '../../_shared/transforms';
 
 const lessonService = new LessonService();
 const applicationService = new LessonApplicationService(lessonService);
@@ -30,7 +31,8 @@ export async function PATCH(
     return NextResponse.json({ success: false, error: { code: 'INVALID_INPUT', message: 'Invalid JSON body' } }, { status: 400 });
   }
   try {
-    const result = await applicationService.updateLesson(id, body, 0);
+    const payload = fromFrontendLessonUpdate(body);
+    const result = await applicationService.updateLesson(id, payload, 0);
     if (!result.ok) return NextResponse.json({ success: false, error: result.error }, { status: 400 });
     return NextResponse.json({ success: true, data: result.value });
   } catch (error) {

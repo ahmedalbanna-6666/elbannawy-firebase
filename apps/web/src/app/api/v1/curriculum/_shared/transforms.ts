@@ -94,6 +94,55 @@ export function fromFrontendUnitCreate(body: Record<string, unknown>): Record<st
   return payload;
 }
 
+function slugify(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '')
+    || `lesson-${String(Date.now())}`;
+}
+
+export function fromFrontendLesson(body: Record<string, unknown>): Record<string, unknown> {
+  const title = (body.title ?? body.name ?? '') as string;
+  return {
+    id: body.id ?? `lesson-${String(Date.now())}-${String(Math.random()).slice(2, 8)}`,
+    unitId: (body.unitId ?? '') as string,
+    title,
+    slug: (body.slug as string) ?? slugify(title),
+    description: (body.description as string) ?? '',
+    displayOrder: (body.displayOrder as number) ?? (body.order as number) ?? 0,
+    isPublished: body.published === true || body.isPublished === true,
+    status: body.status ?? (body.published === true ? 'published' : 'draft'),
+    isVisible: body.isVisible !== false,
+    isPremium: body.isPremium === true,
+    lockedOverride: body.lockedOverride === true ? true : body.lockedOverride === false ? false : null,
+    homeworkEnabled: body.homeworkEnabled === true,
+    quizEnabled: body.quizEnabled === true,
+    estimatedDuration: (body.estimatedDuration as number) ?? undefined,
+  };
+}
+
+export function fromFrontendLessonUpdate(body: Record<string, unknown>): Record<string, unknown> {
+  const payload: Record<string, unknown> = {};
+  if (body.title !== undefined) payload.title = body.title;
+  if (body.slug !== undefined) payload.slug = body.slug;
+  if (body.description !== undefined) payload.description = body.description;
+  if (body.displayOrder !== undefined) payload.displayOrder = body.displayOrder;
+  if (body.order !== undefined) payload.displayOrder = body.order;
+  if (body.published !== undefined) payload.isPublished = body.published === true;
+  if (body.isPublished !== undefined) payload.isPublished = body.isPublished === true;
+  if (body.status !== undefined) payload.status = body.status;
+  if (body.isVisible !== undefined) payload.isVisible = body.isVisible;
+  if (body.isPremium !== undefined) payload.isPremium = body.isPremium === true;
+  if (body.lockedOverride !== undefined) payload.lockedOverride = body.lockedOverride === true ? true : body.lockedOverride === false ? false : null;
+  if (body.homeworkEnabled !== undefined) payload.homeworkEnabled = body.homeworkEnabled === true;
+  if (body.quizEnabled !== undefined) payload.quizEnabled = body.quizEnabled === true;
+  if (body.estimatedDuration !== undefined) payload.estimatedDuration = body.estimatedDuration;
+  return payload;
+}
+
 export function fromFrontendUnitUpdate(body: Record<string, unknown>): Record<string, unknown> {
   const payload: Record<string, unknown> = {};
   if (body.title !== undefined) { payload.name = body.title; payload.nameAr = body.title; }

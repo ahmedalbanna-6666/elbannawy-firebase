@@ -22,22 +22,22 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         { status: 400 },
       );
     }
-    const gradesResult = await applicationService.listGrades({}, { limit: 100 });
+    const gradesResult = await applicationService.listGrades({}, { limit: 1000 });
     const gradesByStage = new Map<string, { id: string; name: string }[]>();
     if (gradesResult.ok) {
       for (const g of gradesResult.value.items) {
         const entry = gradesByStage.get(g.stageId) ?? [];
-        entry.push({ id: g.id, name: g.nameAr });
+        entry.push({ id: g.id, name: g.nameAr || g.name });
         gradesByStage.set(g.stageId, entry);
       }
     }
     const stages = result.value.items.map((s) => ({
       id: s.id,
-      name: s.nameAr,
+      name: s.nameAr || s.name,
       grades: gradesByStage.get(s.id) ?? [],
     }));
     return NextResponse.json(
-      { success: true, data: stages, timestamp: new Date().toISOString() },
+      { success: true, data: { items: stages, nextCursor: result.value.nextCursor }, timestamp: new Date().toISOString() },
       { status: 200 },
     );
   } catch (error) {

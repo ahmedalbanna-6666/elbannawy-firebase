@@ -5,7 +5,14 @@
     "build": {
       "dependsOn": ["^build"],
       "outputs": ["dist/**", ".next/**", "build/**"],
-      "inputs": ["$TURBO_DEFAULT$", "src/**"]
+      "inputs": ["$TURBO_DEFAULT$", "src/**"],
+      "env": [
+        "FIREBASE_PROJECT_ID",
+        "FIREBASE_CLIENT_EMAIL",
+        "FIREBASE_PRIVATE_KEY",
+        "FIREBASE_STORAGE_BUCKET",
+        "FIRESTORE_EMULATOR_HOST"
+      ]
     },
     "dev": {
       "cache": false,

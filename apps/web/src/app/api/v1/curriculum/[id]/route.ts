@@ -81,7 +81,10 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> },
 ): Promise<NextResponse> {
   const { searchParams } = new URL(request.url);
-  const collection = searchParams.get('collection') ?? 'academic-years';
+  const collection = searchParams.get('collection');
+  if (!collection) {
+    return NextResponse.json({ success: false, error: { code: 'INVALID_INPUT', message: 'collection query parameter is required' }, timestamp: new Date().toISOString() }, { status: 400 });
+  }
   const { id } = await params;
 
   let body: Record<string, unknown>;
