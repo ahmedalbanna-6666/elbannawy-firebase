@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAdminAuth } from '@/lib/firebase/admin';
-import { VideoProgressRepository, LessonVideoRepository } from '@el-bannawy/lib';
+import { getAdminAuth, getAdminDb } from '@/lib/firebase/admin';
+import { LessonVideoRepository } from '@el-bannawy/lib';
 
-const progressRepository = new VideoProgressRepository();
 const videoRepository = new LessonVideoRepository();
 
 export async function GET(
@@ -18,20 +17,24 @@ export async function GET(
     const token = authHeader.slice(7);
     const decoded = await getAdminAuth().verifyIdToken(token);
 
-    const result = await progressRepository.getByUserAndVideo(decoded.uid, videoId);
-    if (!result.ok || !result.value) {
+    // Document ID is deterministic: userId_videoId
+    const progressId = `${decoded.uid}_${videoId}`;
+    const db = getAdminDb();
+    const snap = await db.collection('videoProgress').doc(progressId).get();
+    if (!snap.exists) {
       return NextResponse.json({ success: true, data: { watchedSeconds: 0, completed: false, lastPositionSeconds: 0 } });
     }
+    const data = snap.data() as { watchedSeconds?: number; completed?: boolean; lastPositionSeconds?: number };
     return NextResponse.json({
       success: true,
       data: {
-        watchedSeconds: result.value.watchedSeconds,
-        completed: result.value.completed,
-        lastPositionSeconds: result.value.lastPositionSeconds,
+        watchedSeconds: data.watchedSeconds ?? 0,
+        completed: data.completed ?? false,
+        lastPositionSeconds: data.lastPositionSeconds ?? 0,
       },
     });
-  } catch {
-    return NextResponse.json({ success: false, error: { code: 'INTERNAL', message: 'Failed to fetch progress' } }, { status: 500 });
+  } catch (error) {
+    return NextResponse.json({ success: false, error: { code: 'INTERNAL', message: error instanceof Error ? error.message : 'Failed to fetch progress' } }, { status: 500 });
   }
 }
 
@@ -53,25 +56,36 @@ export async function PATCH(
     const lessonId = (videoResult.ok && videoResult.value) ? videoResult.value.lessonId : '';
 
     const progressId = `${decoded.uid}_${videoId}`;
-    const result = await progressRepository.upsert(progressId, {
-      id: progressId,
+    const db = getAdminDb();
+    const docRef = db.collection('videoProgress').doc(progressId);
+    const existing = await docRef.get();
+
+    const now = new Date().toISOString();
+    const updateData: Record<string, unknown> = {
       userId: decoded.uid,
       videoId,
       lessonId,
-      lastPositionSeconds: (body.lastPosition as number) ?? body.lastPositionSeconds as number ?? 0,
+      lastPositionSeconds: (body.lastPosition as number) ?? (body.lastPositionSeconds as number) ?? 0,
       watchedSeconds: (body.watchedSeconds as number) ?? 0,
-    });
+      updatedAt: now,
+      lastActiveAt: now,
+    };
 
-    if (!result.ok) {
-      return NextResponse.json({ success: false, error: result.error }, { status: 500 });
+    if (!existing.exists) {
+      updateData.createdAt = now;
+      updateData.completed = false;
+      updateData.watchedSeconds = 0;
     }
 
     if (body.completed) {
-      await progressRepository.upsert(progressId, { completed: true, completedAt: new Date().toISOString() });
+      updateData.completed = true;
+      updateData.completedAt = now;
     }
 
+    await docRef.set(updateData, { merge: true });
+
     return NextResponse.json({ success: true, data: null });
-  } catch {
-    return NextResponse.json({ success: false, error: { code: 'INTERNAL', message: 'Failed to save progress' } }, { status: 500 });
+  } catch (error) {
+    return NextResponse.json({ success: false, error: { code: 'INTERNAL', message: error instanceof Error ? error.message : 'Failed to save progress' } }, { status: 500 });
   }
 }
