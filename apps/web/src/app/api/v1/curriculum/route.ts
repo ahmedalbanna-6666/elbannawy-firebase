@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAdminDb } from '@/lib/firebase/admin';
 import { authenticateRequest } from '@/lib/firebase/auth-helper';
-import { CurriculumService, CurriculumApplicationService, UnitRepository, LessonRepository } from '@el-bannawy/lib';
+import { CurriculumService, CurriculumApplicationService, UnitRepository, LessonRepository, type ILesson } from '@el-bannawy/lib';
 
 const curriculumService = new CurriculumService();
 const applicationService = new CurriculumApplicationService(curriculumService);
@@ -53,9 +53,8 @@ async function handleCurriculumTree(request: NextRequest): Promise<NextResponse>
           const unitsResult = await unitRepo.getUnitsByTerm(termId);
           if (unitsResult.ok) {
             const unitIds = unitsResult.value.map((u) => u.id);
-            const lessonsByUnit = (await lessonRepo.getPublishedLessonsByUnitIds(unitIds)).ok
-              ? (await lessonRepo.getPublishedLessonsByUnitIds(unitIds)).value!
-              : new Map<string, ILesson[]>();
+            const lessonsByUnitResult = await lessonRepo.getPublishedLessonsByUnitIds(unitIds);
+            const lessonsByUnit = lessonsByUnitResult.ok ? lessonsByUnitResult.value! : new Map<string, ILesson[]>();
             const unitEntries: Array<Record<string, unknown>> = [];
             for (const unit of unitsResult.value) {
               const lessonItems = (lessonsByUnit.get(unit.id) ?? []).map((l) => ({

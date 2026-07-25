@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAdminAuth, getAdminDb } from '@/lib/firebase/admin';
-import { UnitRepository, LessonRepository, LessonProgressRepository } from '@el-bannawy/lib';
+import { UnitRepository, LessonRepository, LessonProgressRepository, type ILesson } from '@el-bannawy/lib';
 
 const unitRepository = new UnitRepository();
 const lessonRepository = new LessonRepository();
@@ -49,11 +49,13 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       }
     }
 
-    for (const unit of unitsResult.value) {
-      const lessonsResult = await lessonRepository.getPublishedLessons(unit.id);
-      if (!lessonsResult.ok) continue;
+    const unitIds = unitsResult.value.map((u) => u.id);
+    const lessonsByUnitResult = await lessonRepository.getPublishedLessonsByUnitIds(unitIds);
+    const lessonsByUnit = lessonsByUnitResult.ok ? lessonsByUnitResult.value! : new Map<string, ILesson[]>();
 
-      for (const lesson of lessonsResult.value) {
+    for (const unit of unitsResult.value) {
+      const unitLessons = lessonsByUnit.get(unit.id) ?? [];
+      for (const lesson of unitLessons) {
         if (!completedLessonIds.has(lesson.id)) {
           return NextResponse.json({
             success: true,

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAdminAuth, getAdminDb } from '@/lib/firebase/admin';
-import { UnitRepository, LessonRepository, LessonProgressRepository } from '@el-bannawy/lib';
+import { UnitRepository, LessonRepository, LessonProgressRepository, type ILesson } from '@el-bannawy/lib';
 
 const unitRepository = new UnitRepository();
 const lessonRepository = new LessonRepository();
@@ -54,18 +54,20 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       percentage: number;
     }
 
+    const unitIds = unitsResult.value.map((u) => u.id);
+    const lessonsByUnitResult = await lessonRepository.getPublishedLessonsByUnitIds(unitIds);
+    const lessonsByUnit = lessonsByUnitResult.ok ? lessonsByUnitResult.value! : new Map<string, ILesson[]>();
+
     const unitProgress: UnitProgressEntry[] = [];
     let totalLessons = 0;
     let completedLessons = 0;
 
     for (const unit of unitsResult.value) {
-      const lessonsResult = await lessonRepository.getPublishedLessons(unit.id);
-      if (!lessonsResult.ok) continue;
-
-      const unitTotal = lessonsResult.value.length;
+      const unitLessons = lessonsByUnit.get(unit.id) ?? [];
+      const unitTotal = unitLessons.length;
       let unitCompleted = 0;
 
-      for (const lesson of lessonsResult.value) {
+      for (const lesson of unitLessons) {
         totalLessons++;
         const status = progressMap.get(lesson.id);
         if (status === 'completed') {

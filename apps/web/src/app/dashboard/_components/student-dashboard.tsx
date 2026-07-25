@@ -9,6 +9,7 @@ import { CardEdge } from "@/components/ui/card-edge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ErrorState } from "@/components/ui/error-state";
+import { AnimatedContainer, StaggerList } from "@/components/ui/animated-container";
 import {
   Sparkles,
   GraduationCap,
@@ -233,7 +234,8 @@ export function StudentDashboard(): ReactNode {
       )}
 
       {/* SECTION 4 — Quick Learning Tools */}
-      <section className="grid grid-cols-1 gap-4 md:grid-cols-2">
+      <AnimatedContainer animation="fade-slide-up" delay={120}>
+        <section className="grid grid-cols-1 gap-4 md:grid-cols-2">
 
         <div onClick={(): void => { router.push("/dashboard/ai"); }} role="button" tabIndex={0} onKeyDown={(e): void => { if (e.key === "Enter") { router.push("/dashboard/ai"); } }}>
           <Card variant="outline" padding="md" className="cursor-pointer transition-colors hover:bg-neutral-50 dark:hover:bg-neutral-800/50 h-full">
@@ -304,8 +306,10 @@ export function StudentDashboard(): ReactNode {
         </div>
 
       </section>
+      </AnimatedContainer>
 
       {/* SECTION 5 — Curriculum Units */}
+      <AnimatedContainer animation="fade-slide-up" delay={200}>
       <div onClick={(): void => { router.push("/dashboard/units"); }} role="button" tabIndex={0} onKeyDown={(e): void => { if (e.key === "Enter") { router.push("/dashboard/units"); } }}>
       <Card variant="outline" padding="md" className="cursor-pointer transition-colors hover:bg-neutral-50 dark:hover:bg-neutral-800/50">
         <CardContent>
@@ -358,6 +362,7 @@ export function StudentDashboard(): ReactNode {
         </CardContent>
       </Card>
       </div>
+      </AnimatedContainer>
 
     </div>
   );
