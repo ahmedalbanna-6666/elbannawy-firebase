@@ -25,6 +25,8 @@ export function ContentBlock({
   actions,
   children,
   className,
+  isOpen: _isOpen,
+  onToggle: _onToggle,
 }: ContentBlockProps): ReactNode {
   const isActive = statusBadge !== null && statusBadge !== undefined;
 

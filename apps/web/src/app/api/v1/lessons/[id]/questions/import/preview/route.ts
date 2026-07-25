@@ -3,13 +3,13 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
 import { QuestionImportService } from '@el-bannawy/lib';
-import { requireAdmin } from '@/lib/firebase/auth-helper';
+import { requireTeacher } from '@/lib/firebase/auth-helper';
 
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ): Promise<NextResponse> {
-  const auth = await requireAdmin(request);
+  const auth = await requireTeacher(request);
   if (!auth.authorized) return auth.response;
   const lessonId = (await params).id;
   try {

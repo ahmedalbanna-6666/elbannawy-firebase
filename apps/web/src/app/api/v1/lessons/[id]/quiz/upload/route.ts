@@ -6,35 +6,33 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> },
 ): Promise<NextResponse> {
   const { id } = await params;
-  let body: Record<string, unknown>;
-  try {
-    body = await request.json() as Record<string, unknown>;
-  } catch {
-    return NextResponse.json(
-      { success: false, error: { code: 'INVALID_INPUT', message: 'Invalid JSON body' }, timestamp: new Date().toISOString() },
-      { status: 400 },
-    );
-  }
 
   try {
+    const formData = await request.formData();
+    const file = formData.get('file') as File | null;
+    const title = formData.get('title') as string | null;
+    const instructions = formData.get('instructions') as string | null;
+    const passingScore = formData.get('passingScore') as string | null;
+    const maxAttempts = formData.get('maxAttempts') as string | null;
+
     const db = getAdminDb();
     const existing = await db.collection('quizzes').where('lessonId', '==', id).limit(1).get();
 
     const now = new Date().toISOString();
-    const quizData = {
+    const quizData: Record<string, unknown> = {
       lessonId: id,
       ownerType: 'LESSON',
       ownerId: id,
-      title: body.title ?? 'End Lesson Assessment',
-      instructions: body.instructions ?? null,
-      passingScore: body.passingScore ?? 60,
-      maxAttempts: body.maxAttempts ?? null,
-      unlimitedAttempts: body.unlimitedAttempts ?? true,
-      published: body.published ?? false,
-      allowRetry: body.allowRetry ?? true,
-      showAnswers: body.showAnswers ?? false,
-      xpReward: body.xpReward ?? 20,
-      requiredForCompletion: body.requiredForCompletion ?? true,
+      title: title ?? (file ? file.name.replace(/\.[^.]+$/, '') : 'End Lesson Assessment'),
+      instructions: instructions ?? null,
+      passingScore: passingScore ? parseInt(passingScore, 10) : 60,
+      maxAttempts: maxAttempts ? parseInt(maxAttempts, 10) : null,
+      unlimitedAttempts: true,
+      published: false,
+      allowRetry: true,
+      showAnswers: false,
+      xpReward: 20,
+      requiredForCompletion: true,
       contentVersion: 1,
       createdAt: now,
       updatedAt: now,

@@ -1,5 +1,21 @@
 export type QuestionPreviewStatus = "VALID" | "WARNING" | "INVALID";
 
+export interface QuestionPreviewActivity {
+  readonly order: number;
+  readonly type: string;
+  readonly title: string;
+  readonly content: Record<string, unknown>;
+  readonly warnings: readonly string[];
+  readonly errors: readonly string[];
+}
+
+export interface QuestionPreviewResult {
+  readonly documentTitle: string;
+  readonly activities: readonly QuestionPreviewActivity[];
+  readonly errors: readonly string[];
+  readonly warnings: readonly string[];
+}
+
 export type QuestionPreviewType =
   | "MCQ" | "TRUE_FALSE" | "FILL_IN_BLANK" | "GRAMMAR"
   | "READING" | "READING_QUESTION" | "DIALOGUE" | "DIALOGUE_QUESTION"

@@ -70,9 +70,14 @@ export async function authenticateRequest(request: NextRequest): Promise<AuthUse
 }
 
 const ADMIN_ROLES = new Set(['admin', 'administrator', 'ADMINISTRATOR']);
+const TEACHER_ROLES = new Set(['admin', 'administrator', 'ADMINISTRATOR', 'teacher', 'TEACHER']);
 
 export function isAdminRole(role?: string): boolean {
   return !!role && ADMIN_ROLES.has(role.toLowerCase());
+}
+
+export function isTeacherRole(role?: string): boolean {
+  return !!role && TEACHER_ROLES.has(role);
 }
 
 export type AuthResult = { authorized: true; user: AuthUser } | { authorized: false; response: NextResponse };
@@ -84,6 +89,17 @@ export async function requireAdmin(request: NextRequest): Promise<AuthResult> {
   }
   if (!isAdminRole(decoded.role)) {
     return { authorized: false, response: NextResponse.json({ success: false, error: { code: 'FORBIDDEN', message: 'Admin access required' } }, { status: 403 }) };
+  }
+  return { authorized: true, user: decoded };
+}
+
+export async function requireTeacher(request: NextRequest): Promise<AuthResult> {
+  const decoded = await authenticateRequest(request);
+  if (!decoded) {
+    return { authorized: false, response: NextResponse.json({ success: false, error: { code: 'UNAUTHORIZED', message: 'Authentication required' } }, { status: 401 }) };
+  }
+  if (!isTeacherRole(decoded.role)) {
+    return { authorized: false, response: NextResponse.json({ success: false, error: { code: 'FORBIDDEN', message: 'Teacher or admin access required' } }, { status: 403 }) };
   }
   return { authorized: true, user: decoded };
 }

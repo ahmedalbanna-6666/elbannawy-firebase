@@ -25,11 +25,12 @@ import {
   FileText,
 } from "lucide-react";
 import type {
-  QuestionImportPreview,
-  QuestionPreviewGroup,
+  QuestionPreviewResult,
+  QuestionPreviewActivity,
   EditableQuestionItem,
   EditableQuestionGroup,
   QuestionPreviewType,
+  QuestionPreviewStatus,
 } from "./question-preview.types";
 import { QuestionImportSummary } from "./question-import-summary";
 import { QuestionImportGroup } from "./question-import-group";
@@ -40,30 +41,91 @@ function generateId(): string {
   return "q_" + Math.random().toString(36).substring(2, 11);
 }
 
-function mapPreviewToEditable(preview: QuestionImportPreview): EditableQuestionGroup[] {
-  return preview.groups.map((g: QuestionPreviewGroup) => ({
-    id: g.id,
-    title: g.title,
-    displayOrder: g.displayOrder,
-    isExpanded: true,
-    items: g.items.map((item) => ({
-      clientDraftId: item.clientDraftId,
-      questionType: item.questionType,
-      prompt: item.prompt,
-      instruction: item.instruction,
-      explanation: item.explanation,
-      options: item.options.map((o) => ({ ...o })),
-      correctAnswer: item.correctAnswer,
-      acceptableAnswers: [...item.acceptableAnswers],
-      passageText: item.passageText,
-      status: item.status,
-      warnings: [...item.warnings],
-      errors: [...item.errors],
-      groupId: item.groupId,
-      displayOrder: item.displayOrder,
-      isSelected: false,
-    })),
-  }));
+function mapActivityTypeToPreviewType(type: string): QuestionPreviewType {
+  const map: Record<string, QuestionPreviewType> = {
+    MCQ: "MCQ",
+    TRUE_FALSE: "TRUE_FALSE",
+    DRAG_DROP: "DRAG_DROP",
+    READING: "READING",
+    REWRITE: "WRITING",
+    CORRECT: "GRAMMAR",
+    DIALOGUE: "DIALOGUE",
+    WRITING: "ESSAY",
+  };
+  return map[type] ?? "UNKNOWN";
+}
+
+function extractActivityPrompt(activity: QuestionPreviewActivity): string {
+  const content = activity.content as Record<string, unknown>;
+  if (activity.type === "MCQ") {
+    const categories = content.categories as Array<{ name: string; questions: Array<{ question: string }> }> | undefined;
+    const firstQ = categories?.[0]?.questions?.[0];
+    if (firstQ?.question) return firstQ.question;
+  }
+  if (activity.type === "TRUE_FALSE") {
+    const questions = content.questions as Array<{ statement: string }> | undefined;
+    if (questions?.[0]?.statement) return questions[0].statement;
+  }
+  if (activity.type === "WRITING" && typeof content.topic === "string") {
+    return content.topic;
+  }
+  if (activity.type === "READING" && typeof content.passage === "string") {
+    const excerpt = content.passage.slice(0, 120);
+    return excerpt + (content.passage.length > 120 ? "..." : "");
+  }
+  if (activity.type === "DIALOGUE") {
+    const lines = content.lines as Array<{ speaker: string; text: string }> | undefined;
+    if (lines && lines.length > 0) {
+      return lines.slice(0, 2).map((l) => `${l.speaker}: ${l.text}`).join(" | ");
+    }
+  }
+  return activity.title || `${activity.type} Activity #${activity.order}`;
+}
+
+function mapActivitiesToEditableGroups(activities: readonly QuestionPreviewActivity[]): EditableQuestionGroup[] {
+  return activities.map((activity, idx) => {
+    const groupId = `group_${idx}`;
+    const questionType = mapActivityTypeToPreviewType(activity.type);
+    const status: QuestionPreviewStatus = activity.errors.length > 0 ? "INVALID" : "VALID";
+    const prompt = extractActivityPrompt(activity);
+    const content = activity.content as Record<string, unknown>;
+    let options: Array<{ label: string; text: string; isCorrect: boolean }> = [];
+    const contentCategories = content.categories as Array<{ name: string; questions: Array<{ options: Array<{ label: string; text: string }>; number: number }> }> | undefined;
+    const contentAnswers = content.answers as Record<string, string> | undefined;
+    if (activity.type === "MCQ" && contentCategories?.[0]?.questions?.[0]) {
+      const firstQ = contentCategories[0].questions[0];
+      const answerLabel = contentAnswers?.[String(firstQ.number)];
+      options = firstQ.options?.map((o) => ({
+        label: o.label,
+        text: o.text,
+        isCorrect: o.label === answerLabel,
+      })) ?? [];
+    }
+    const item: EditableQuestionItem = {
+      clientDraftId: generateId(),
+      questionType,
+      prompt,
+      instruction: typeof content.instruction === "string" ? content.instruction : null,
+      explanation: null,
+      options,
+      correctAnswer: null,
+      acceptableAnswers: [],
+      passageText: activity.type === "READING" && typeof content.passage === "string" ? content.passage : null,
+      status,
+      warnings: [...activity.warnings],
+      errors: [...activity.errors],
+      groupId,
+      displayOrder: activity.order,
+      isSelected: status === "VALID",
+    };
+    return {
+      id: groupId,
+      title: activity.title || `${activity.type} Activity #${activity.order}`,
+      displayOrder: activity.order,
+      isExpanded: true,
+      items: [item],
+    };
+  });
 }
 
 interface QuestionImportPreviewDialogProps {
@@ -76,10 +138,12 @@ export function QuestionImportPreviewDialog({
   onClose,
 }: QuestionImportPreviewDialogProps): ReactNode {
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [previewData, setPreviewData] = useState<QuestionImportPreview | null>(null);
+  const [previewData, setPreviewData] = useState<QuestionPreviewResult | null>(null);
   const [editableGroups, setEditableGroups] = useState<EditableQuestionGroup[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isCommitting, setIsCommitting] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const [commitError, setCommitError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState<QuestionPreviewType | "ALL">("ALL");
   const [statusFilter, setStatusFilter] = useState<"ALL" | "WARNING" | "INVALID">("ALL");
@@ -110,13 +174,50 @@ export function QuestionImportPreviewDialog({
         throw new Error(text || "Failed to upload file");
       }
 
-      const json = (await response.json()) as { data: QuestionImportPreview };
+      const json = (await response.json()) as { data: QuestionPreviewResult };
       setPreviewData(json.data);
-      setEditableGroups(mapPreviewToEditable(json.data));
+      setEditableGroups(mapActivitiesToEditableGroups(json.data.activities));
     } catch (err) {
       setUploadError(err instanceof Error ? err.message : "Upload failed");
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleCommit = async (): Promise<void> => {
+    if (!previewData) return;
+    setIsCommitting(true);
+    setCommitError(null);
+    try {
+      const selectedActivities = previewData.activities.filter(
+        (a) => a.errors.length === 0,
+      );
+      if (selectedActivities.length === 0) {
+        setCommitError("No valid activities to commit");
+        setIsCommitting(false);
+        return;
+      }
+      const token = typeof window !== "undefined" ? localStorage.getItem("accessToken") : null;
+      const response = await fetch(
+        `${API_BASE_URL}/lessons/${lessonId}/questions/import/commit`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+          body: JSON.stringify({ activities: selectedActivities }),
+        },
+      );
+      if (!response.ok) {
+        const text = await response.text().catch(() => "");
+        throw new Error(text || "Commit failed");
+      }
+      onClose();
+    } catch (err) {
+      setCommitError(err instanceof Error ? err.message : "Commit failed");
+    } finally {
+      setIsCommitting(false);
     }
   };
 
@@ -265,6 +366,21 @@ export function QuestionImportPreviewDialog({
     [editableGroups],
   );
 
+  const validCount = useMemo(
+    () => (previewData ? previewData.activities.filter((a) => a.errors.length === 0).length : 0),
+    [previewData],
+  );
+
+  const warningCount = useMemo(
+    () => (previewData ? previewData.activities.filter((a) => a.warnings.length > 0 && a.errors.length === 0).length : 0),
+    [previewData],
+  );
+
+  const invalidCount = useMemo(
+    () => (previewData ? previewData.activities.filter((a) => a.errors.length > 0).length : 0),
+    [previewData],
+  );
+
   const typeOptions: readonly { value: QuestionPreviewType | "ALL"; label: string }[] = [
     { value: "ALL", label: "All types" },
     { value: "MCQ", label: "MCQ" },
@@ -355,9 +471,9 @@ export function QuestionImportPreviewDialog({
             <QuestionImportSummary
               totalQuestions={totalCount}
               groupCount={editableGroups.length}
-              validCount={previewData.counts.valid}
-              warningCount={previewData.counts.warning}
-              invalidCount={previewData.counts.invalid}
+              validCount={validCount}
+              warningCount={warningCount}
+              invalidCount={invalidCount}
               supportedTypes={Array.from(
                 new Set(editableGroups.flatMap((g) => g.items.map((i) => i.questionType))),
               )}
@@ -457,14 +573,30 @@ export function QuestionImportPreviewDialog({
               </div>
             </div>
 
+            {/* Commit error */}
+            {commitError !== null && (
+              <div className="flex items-center gap-2 border-t border-neutral-200 px-6 py-2 dark:border-neutral-700">
+                <AlertCircle className="h-4 w-4 text-danger-500" />
+                <span className="text-sm text-danger-600 dark:text-danger-400">{commitError}</span>
+              </div>
+            )}
+
             {/* Footer */}
             <div className="flex items-center justify-between border-t border-neutral-200 px-6 py-3 dark:border-neutral-700">
               <span className="text-xs text-neutral-500 dark:text-neutral-400">
-                {totalCount} questions in {editableGroups.length} groups
+                {totalCount} items in {editableGroups.length} groups &middot; {validCount} valid
               </span>
               <div className="flex items-center gap-2">
                 <Button variant="outline" onClick={onClose}>Close</Button>
-                <Button variant="primary">Preview is local only</Button>
+                <Button
+                  variant="primary"
+                  loading={isCommitting}
+                  disabled={validCount === 0}
+                  leftIcon={<Upload className="h-4 w-4" />}
+                  onClick={handleCommit}
+                >
+                  Commit {validCount} activities
+                </Button>
               </div>
             </div>
           </>
