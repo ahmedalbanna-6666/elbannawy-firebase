@@ -9,7 +9,6 @@ import { useAuthStore } from "@/lib/auth-store";
 import { useAuth } from "@/providers/auth-provider";
 import { usePermissions } from "@/lib/use-permissions";
 import { getSidebarModules, type NavModule } from "@/lib/nav-registry";
-import { Skeleton } from "@/components/ui/skeleton";
 import {
   LogOut,
   ScrollText,
@@ -43,7 +42,7 @@ interface DashboardLayoutProps {
 export default function DashboardLayout({ children }: DashboardLayoutProps): ReactNode {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const router = useRouter();
-  const { isAuthenticated, hasHydrated } = useAuthStore();
+  const { isAuthenticated, hasHydrated, authReady } = useAuthStore();
   const userId = useAuthStore((s) => s.user?.id);
   const { logout } = useAuth();
 
@@ -72,11 +71,11 @@ export default function DashboardLayout({ children }: DashboardLayoutProps): Rea
     : (ROLE_LABELS[userRole] ?? "طالب");
 
   useEffect(() => {
-    if (!hasHydrated) return;
+    if (!hasHydrated || !authReady) return;
     if (!isAuthenticated) {
       router.push("/login");
     }
-  }, [hasHydrated, isAuthenticated, router]);
+  }, [hasHydrated, authReady, isAuthenticated, router]);
 
   useEffect(() => {
     if (!isAuthenticated || !userId || !profile) return;
@@ -196,14 +195,6 @@ export default function DashboardLayout({ children }: DashboardLayoutProps): Rea
 
     return items;
   }, [router, pathname, userRole]);
-
-  if (!hasHydrated) {
-    return (
-      <div className="flex min-h-screen items-center justify-center p-8">
-        <Skeleton className="h-8 w-48" />
-      </div>
-    );
-  }
 
   return (
     <div className="flex min-h-screen">

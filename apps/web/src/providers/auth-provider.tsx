@@ -79,6 +79,7 @@ export function AuthProvider({ children }: { children: ReactNode }): ReactNode {
     setFirebaseUser,
     setUser,
     setIdToken,
+    setAuthReady,
     logout: clearStore,
   } = useAuthStore();
 
@@ -121,6 +122,7 @@ export function AuthProvider({ children }: { children: ReactNode }): ReactNode {
     initRef.current = true;
 
     const unsubscribe = onAuthStateChanged(getClientAuth(), (fbUser: FirebaseUser | null) => {
+      setAuthReady(true);
       if (fbUser) {
         setFirebaseUser(fbUser);
         void fbUser.getIdToken().then((token: string) => {
@@ -140,7 +142,7 @@ export function AuthProvider({ children }: { children: ReactNode }): ReactNode {
     });
 
     return (): void => { unsubscribe(); };
-  }, [setFirebaseUser, setIdToken, fetchUser]);
+  }, [setFirebaseUser, setIdToken, setAuthReady, fetchUser]);
 
   const login = useCallback(
     async (emailOrMobile: string, password: string, _rememberMe = false): Promise<void> => {

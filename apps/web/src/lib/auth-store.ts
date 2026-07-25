@@ -18,10 +18,12 @@ interface AuthState {
   isAuthenticated: boolean;
   idToken: string | null;
   hasHydrated: boolean;
+  authReady: boolean;
   setFirebaseUser: (firebaseUser: FirebaseUser | null) => void;
   setUser: (user: AuthUser) => void;
   setIdToken: (token: string | null) => void;
   setHasHydrated: (hydrated: boolean) => void;
+  setAuthReady: (ready: boolean) => void;
   logout: () => void;
 }
 
@@ -46,6 +48,7 @@ export const useAuthStore = create<AuthState>()(
       isAuthenticated: false,
       idToken: null,
       hasHydrated: false,
+      authReady: false,
       setFirebaseUser: (firebaseUser: FirebaseUser | null): void => {
         set({ firebaseUser });
       },
@@ -57,6 +60,9 @@ export const useAuthStore = create<AuthState>()(
       },
       setHasHydrated: (hydrated: boolean): void => {
         set({ hasHydrated: hydrated });
+      },
+      setAuthReady: (ready: boolean): void => {
+        set({ authReady: ready });
       },
       logout: (): void => {
         set({
@@ -71,7 +77,6 @@ export const useAuthStore = create<AuthState>()(
       name: "el-bannawy-auth",
       partialize: (state) => ({
         user: state.user,
-        isAuthenticated: state.isAuthenticated,
         idToken: state.idToken,
       }),
       onRehydrateStorage: () => (): void => {
