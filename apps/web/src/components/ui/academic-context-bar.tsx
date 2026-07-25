@@ -82,6 +82,7 @@ export function AcademicContextBar({ className }: AcademicContextBarProps): Reac
       const res = await api.get<{ id: string; name: string; terms: { id: string; name: string }[] }[]>("/admin/academic-years");
       return res.data ?? [];
     },
+    enabled: isAdmin,
     staleTime: 60_000,
   });
 
