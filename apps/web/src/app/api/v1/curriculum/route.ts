@@ -9,10 +9,18 @@ const unitRepo = new UnitRepository();
 const lessonRepo = new LessonRepository();
 
 async function handleCurriculumTree(request: NextRequest): Promise<NextResponse> {
+  let decoded: { uid: string };
   try {
-    const decoded = await authenticateRequest(request);
-    if (!decoded) return NextResponse.json({ success: false, error: { code: 'UNAUTHORIZED', message: 'Unauthorized' } }, { status: 401 });
+    const result = await authenticateRequest(request);
+    if (!result) {
+      return NextResponse.json({ success: false, error: { code: 'UNAUTHORIZED', message: 'Unauthorized' } }, { status: 401 });
+    }
+    decoded = result;
+  } catch {
+    return NextResponse.json({ success: false, error: { code: 'UNAUTHORIZED', message: 'Unauthorized' } }, { status: 401 });
+  }
 
+  try {
     const db = getAdminDb();
     const userDoc = await db.collection('users').doc(decoded.uid).get();
     if (!userDoc.exists) return NextResponse.json({ success: true, data: [] });
@@ -85,7 +93,10 @@ async function handleCurriculumTree(request: NextRequest): Promise<NextResponse>
 
     return NextResponse.json({ success: true, data: result });
   } catch {
-    return NextResponse.json({ success: true, data: [] });
+    return NextResponse.json(
+      { success: false, error: { code: 'SERVER_ERROR', message: 'Internal server error' } },
+      { status: 500 },
+    );
   }
 }
 

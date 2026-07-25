@@ -1,14 +1,24 @@
 "use client";
 
 import { type ReactNode } from "react";
+import dynamic from "next/dynamic";
 import { usePermissions } from "@/lib/use-permissions";
 import { useAuthStore } from "@/lib/auth-store";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
-import { AdminDashboard } from "./_components/admin-dashboard";
-import { TeacherDashboard } from "./_components/teacher-dashboard";
-import { StudentDashboard } from "./_components/student-dashboard";
 import { ShieldX } from "lucide-react";
+
+const AdminDashboard = dynamic(() => import("./_components/admin-dashboard").then((m) => ({ default: m.AdminDashboard })), {
+  loading: () => <Skeleton className="h-48 w-full rounded-xl" />,
+});
+
+const TeacherDashboard = dynamic(() => import("./_components/teacher-dashboard").then((m) => ({ default: m.TeacherDashboard })), {
+  loading: () => <Skeleton className="h-48 w-full rounded-xl" />,
+});
+
+const StudentDashboard = dynamic(() => import("./_components/student-dashboard").then((m) => ({ default: m.StudentDashboard })), {
+  loading: () => <Skeleton className="h-48 w-full rounded-xl" />,
+});
 
 const KNOWN_ROLES = new Set(["ADMINISTRATOR", "TEACHER", "STAFF", "STUDENT"]);
 

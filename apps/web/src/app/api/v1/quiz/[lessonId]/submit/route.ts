@@ -4,13 +4,14 @@ import { QuizService } from '@el-bannawy/lib';
 
 const s = new QuizService();
 export async function POST(request: NextRequest, { params }: { params: Promise<{ lessonId: string }> }): Promise<NextResponse> {
+  const auth = request.headers.get('Authorization');
+  if (!auth?.startsWith('Bearer ')) return NextResponse.json({ success: false, error: { code: 'UNAUTHORIZED', message: 'Unauthorized' } }, { status: 401 });
+  let uid: string;
+  try { const d = await getAdminAuth().verifyIdToken(auth.slice(7)); uid = d.uid; } catch { return NextResponse.json({ success: false, error: { code: 'UNAUTHORIZED', message: 'Unauthorized' } }, { status: 401 }); }
   try {
-    const auth = request.headers.get('Authorization');
-    if (!auth?.startsWith('Bearer ')) return NextResponse.json({ success: false, error: { code: 'UNAUTHORIZED', message: 'Unauthorized' } }, { status: 401 });
-    const d = await getAdminAuth().verifyIdToken(auth.slice(7));
     const body = await request.json() as { answers?: Record<string, unknown>[]; timeSpentSeconds?: number };
-    const r = await s.submitQuiz(d.uid, (await params).lessonId, body.answers ?? [], body.timeSpentSeconds);
+    const r = await s.submitQuiz(uid, (await params).lessonId, body.answers ?? [], body.timeSpentSeconds);
     if (!r.ok) return NextResponse.json({ success: false, error: r.error }, { status: r.error.code === 'FORBIDDEN' ? 403 : 404 });
     return NextResponse.json({ success: true, data: r.value });
-  } catch { return NextResponse.json({ success: false, error: { code: 'UNAUTHORIZED', message: 'Unauthorized' } }, { status: 401 }); }
+  } catch { return NextResponse.json({ success: false, error: { code: 'INTERNAL_ERROR', message: 'Internal server error' } }, { status: 500 }); }
 }

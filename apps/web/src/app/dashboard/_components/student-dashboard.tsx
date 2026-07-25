@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
+import { type ReactNode } from "react";
 import { useRouter } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api-client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -26,7 +27,7 @@ import {
 } from "lucide-react";
 import { useMyBookings } from "@/lib/live-api";
 
-interface DashboardData {
+export interface DashboardData {
   user: { id: string; fullName: string; role: string };
   xp: { total: number; level: number; nextLevelXp: number };
   coins: number;
@@ -41,32 +42,22 @@ interface DashboardData {
 export function StudentDashboard(): ReactNode {
   const router = useRouter();
   const { data: liveBookings } = useMyBookings();
-  const [data, setData] = useState<DashboardData | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { data, isLoading, error } = useQuery<DashboardData>({
+    queryKey: ["home-dashboard"],
+    queryFn: async () => {
+      const response = await api.get<DashboardData>("/home");
+      if (!response.data) throw new Error("فشل تحميل لوحة التحكم");
+      return response.data;
+    },
+    staleTime: 60_000,
+  });
 
-  useEffect(() => {
-    async function fetchDashboard(): Promise<void> {
-      try {
-        const response = await api.get<DashboardData>("/home");
-        if (response.data) {
-          setData(response.data);
-        }
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "فشل تحميل لوحة التحكم");
-      } finally {
-        setLoading(false);
-      }
-    }
-    void fetchDashboard();
-  }, []);
-
-  if (loading) {
+  if (isLoading) {
     return <DashboardSkeleton />;
   }
 
   if (error) {
-    return <ErrorState title="فشل تحميل لوحة التحكم" description={error} />;
+    return <ErrorState title="فشل تحميل لوحة التحكم" description={error instanceof Error ? error.message : "فشل تحميل لوحة التحكم"} />;
   }
 
   if (!data) {

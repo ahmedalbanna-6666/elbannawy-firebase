@@ -56,23 +56,25 @@ export function AcademicContextBar({ className }: AcademicContextBarProps): Reac
     staleTime: 30_000,
   });
 
-  useQuery({
+  const { data: activeCtx } = useQuery({
     queryKey: ["platform-active-context"],
     queryFn: async () => {
       const res = await api.get<{ academicYear: { id: string; name: string } | null; term: { id: string; name: string } | null; termManagementMode: string }>("/academic-context");
-      const ctx = res.data;
-      if (ctx?.academicYear && ctx.term) {
-        applyPlatformContext({
-          academicYearId: ctx.academicYear.id,
-          academicYearName: ctx.academicYear.name,
-          termId: ctx.term.id,
-          termName: ctx.term.name,
-        });
-      }
-      return ctx;
+      return res.data ?? null;
     },
     staleTime: 120_000,
   });
+
+  useEffect(() => {
+    if (activeCtx?.academicYear && activeCtx.term) {
+      applyPlatformContext({
+        academicYearId: activeCtx.academicYear.id,
+        academicYearName: activeCtx.academicYear.name,
+        termId: activeCtx.term.id,
+        termName: activeCtx.term.name,
+      });
+    }
+  }, [activeCtx, applyPlatformContext]);
 
   const { data: academicYears } = useQuery({
     queryKey: ["admin-academic-years"],

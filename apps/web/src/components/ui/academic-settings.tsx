@@ -37,7 +37,7 @@ export function AcademicSettings(): ReactNode {
   const applyPlatformContext = useAcademicContextStore((s) => s.applyPlatformContext);
 
   const { data: activeCtx } = useQuery({
-    queryKey: ["active-academic-context"],
+    queryKey: ["platform-active-context"],
     queryFn: async () => {
       const res = await api.get<ActiveContext>("/academic-context");
       return res.data ?? null;

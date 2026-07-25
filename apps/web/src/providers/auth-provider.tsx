@@ -80,6 +80,8 @@ export function AuthProvider({ children }: { children: ReactNode }): ReactNode {
 
   const queryClient = useQueryClient();
   const initRef = useRef(false);
+  const userRef = useRef(user);
+  userRef.current = user;
 
   const fetchUser = useCallback(async (fbUser: FirebaseUser): Promise<void> => {
     try {
@@ -121,7 +123,7 @@ export function AuthProvider({ children }: { children: ReactNode }): ReactNode {
           const maxAge = 60 * 60 * 24 * 14;
           document.cookie = 'auth_token=' + token + '; path=/; max-age=' + String(maxAge) + '; SameSite=Lax';
         });
-        if (!user) {
+        if (!userRef.current) {
           void fetchUser(fbUser);
         }
       } else {
@@ -131,7 +133,7 @@ export function AuthProvider({ children }: { children: ReactNode }): ReactNode {
     });
 
     return (): void => { unsubscribe(); };
-  }, [setFirebaseUser, fetchUser, user]);
+  }, [setFirebaseUser, fetchUser]);
 
   const login = useCallback(
     async (emailOrMobile: string, password: string, _rememberMe = false): Promise<void> => {

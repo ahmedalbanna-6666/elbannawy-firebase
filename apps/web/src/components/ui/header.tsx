@@ -6,17 +6,12 @@ import { useAuthStore } from "@/lib/auth-store";
 import { usePermissions } from "@/lib/use-permissions";
 import { api } from "@/lib/api-client";
 import { useRouter } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
 import { Moon, Sun, Bell, Menu, Flame, Coins, Zap, Trophy, History } from "lucide-react";
 import { Button } from "./button";
 import { AcademicContextBar } from "./academic-context-bar";
-import { useEffect, useState, type ReactNode } from "react";
-
-interface HeaderStats {
-  streak: number;
-  coins: number;
-  level: number;
-  xp: number;
-}
+import { type ReactNode } from "react";
+import type { DashboardData } from "@/app/dashboard/_components/student-dashboard";
 
 interface HeaderProps {
   title?: string;
@@ -36,31 +31,17 @@ export function Header({
   const { user } = useAuthStore();
   const { isStudent } = usePermissions();
   const router = useRouter();
-  const [stats, setStats] = useState<HeaderStats | null>(null);
 
-  useEffect(() => {
-    if (!isStudent) return;
-    async function fetchStats(): Promise<void> {
-      try {
-        const response = await api.get<{
-          xp: { total: number; level: number };
-          coins: number;
-          streak: number;
-        }>("/home");
-        if (response.data) {
-          setStats({
-            streak: response.data.streak,
-            coins: response.data.coins,
-            level: response.data.xp.level,
-            xp: response.data.xp.total,
-          });
-        }
-      } catch {
-        // Stats unavailable — header works without them
-      }
-    }
-    void fetchStats();
-  }, [isStudent]);
+  const { data: homeData } = useQuery<DashboardData>({
+    queryKey: ["home-dashboard"],
+    queryFn: async () => {
+      const response = await api.get<DashboardData>("/home");
+      if (!response.data) throw new Error("فشل تحميل البيانات");
+      return response.data;
+    },
+    enabled: isStudent,
+    staleTime: 60_000,
+  });
 
   const fullName = user?.fullName ?? "";
   const firstName = fullName ? fullName.split(" ")[0] : "";
@@ -126,26 +107,26 @@ export function Header({
 
       {!isStudent && <AcademicContextBar />}
 
-      {stats && isStudent && (
+      {homeData && isStudent && (
         <div
           className="flex items-center gap-2 overflow-x-auto pb-2"
           style={{ scrollbarWidth: "none" }}
         >
           <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-amber-500/10 px-3 py-1 text-xs font-semibold text-amber-600 dark:text-amber-400">
             <Flame className="h-3.5 w-3.5" />
-            {stats.streak} Days
+            {homeData.streak} Days
           </span>
           <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-warning-500/10 px-3 py-1 text-xs font-semibold text-warning-600 dark:text-warning-400">
             <Coins className="h-3.5 w-3.5" />
-            {stats.coins}
+            {homeData.coins}
           </span>
           <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-primary-500/10 px-3 py-1 text-xs font-semibold text-primary-600 dark:text-primary-400">
             <Zap className="h-3.5 w-3.5" />
-            Level {stats.level}
+            Level {homeData.xp.level}
           </span>
           <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-purple-500/10 px-3 py-1 text-xs font-semibold text-purple-600 dark:text-purple-400">
             <Trophy className="h-3.5 w-3.5" />
-            {stats.xp} XP
+            {homeData.xp.total} XP
           </span>
         </div>
       )}

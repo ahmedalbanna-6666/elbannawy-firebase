@@ -41,7 +41,7 @@ function ensureAdminApp(): App {
   // Strip surrounding quotes
   rawKey = rawKey.replace(/^["']|["']$/g, "");
   // Convert literal \n (backslash + n) to actual newlines
-  if (!rawKey.includes("\n") && rawKey.includes("\\n")) {
+  if (rawKey.includes("\\n")) {
     rawKey = rawKey.replace(/\\n/g, "\n");
   }
   const credentials = {

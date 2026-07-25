@@ -5,21 +5,29 @@ import { LessonProgressRepository, LessonRepository } from '@el-bannawy/lib';
 const progressRepository = new LessonProgressRepository();
 const lessonRepository = new LessonRepository();
 
-function getStudentId(request: NextRequest): Promise<string> {
+async function authenticateStudent(request: NextRequest): Promise<{ studentId: string } | NextResponse> {
   const authHeader = request.headers.get('Authorization');
   if (!authHeader?.startsWith('Bearer ')) {
-    throw new Error('Unauthorized');
+    return NextResponse.json({ success: false, error: { code: 'UNAUTHORIZED', message: 'Unauthorized' } }, { status: 401 });
   }
-  const token = authHeader.slice(7);
-  return getAdminAuth().verifyIdToken(token).then((d) => d.uid);
+  try {
+    const token = authHeader.slice(7);
+    const decoded = await getAdminAuth().verifyIdToken(token);
+    return { studentId: decoded.uid };
+  } catch {
+    return NextResponse.json({ success: false, error: { code: 'UNAUTHORIZED', message: 'Unauthorized' } }, { status: 401 });
+  }
 }
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ lessonId: string }> },
 ): Promise<NextResponse> {
+  const auth = await authenticateStudent(request);
+  if (auth instanceof NextResponse) return auth;
+  const { studentId } = auth;
+
   try {
-    const studentId = await getStudentId(request);
     const { lessonId } = await params;
 
     const lessonResult = await lessonRepository.getLessonById(lessonId);
@@ -49,8 +57,8 @@ export async function GET(
     return NextResponse.json({ success: true, data: result.value });
   } catch {
     return NextResponse.json(
-      { success: false, error: { code: 'UNAUTHORIZED', message: 'Unauthorized' } },
-      { status: 401 },
+      { success: false, error: { code: 'SERVER_ERROR', message: 'Internal server error' } },
+      { status: 500 },
     );
   }
 }
@@ -59,8 +67,11 @@ export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ lessonId: string }> },
 ): Promise<NextResponse> {
+  const auth = await authenticateStudent(request);
+  if (auth instanceof NextResponse) return auth;
+  const { studentId } = auth;
+
   try {
-    const studentId = await getStudentId(request);
     const { lessonId } = await params;
 
     const body = (await request.json()) as Record<string, unknown>;
@@ -131,8 +142,8 @@ export async function PATCH(
     return NextResponse.json({ success: true, data: updateResult.value });
   } catch {
     return NextResponse.json(
-      { success: false, error: { code: 'UNAUTHORIZED', message: 'Unauthorized' } },
-      { status: 401 },
+      { success: false, error: { code: 'SERVER_ERROR', message: 'Internal server error' } },
+      { status: 500 },
     );
   }
 }

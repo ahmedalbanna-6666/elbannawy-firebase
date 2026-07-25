@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo, useCallback, useRef, type ReactNode } from "react";
+import { useState, useEffect, useMemo, useCallback, type ReactNode } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api-client";
@@ -67,8 +67,6 @@ export default function DashboardLayout({ children }: DashboardLayoutProps): Rea
       ?? "طالب")
     : (ROLE_LABELS[userRole] ?? "طالب");
 
-  const onboardingCheckDone = useRef(false);
-
   useEffect(() => {
     setMounted(true);
     if (!isAuthenticated) {
@@ -77,21 +75,13 @@ export default function DashboardLayout({ children }: DashboardLayoutProps): Rea
   }, [isAuthenticated, router]);
 
   useEffect(() => {
-    if (!isAuthenticated || !userId || onboardingCheckDone.current) return;
-    onboardingCheckDone.current = true;
-    fetch("/api/v1/auth/me")
-      .then((r) => r.json())
-      .then((res) => {
-        if (res.success && res.data) {
-          const isStudent = (res.data.role ?? "").toLowerCase() === "student";
-          const hasGrade = !!res.data.gradeId;
-          if (isStudent && !hasGrade) {
-            router.push("/onboarding");
-          }
-        }
-      })
-      .catch(() => {});
-  }, [isAuthenticated, userId, router]);
+    if (!isAuthenticated || !userId || !profile) return;
+    const role = (profile.role ?? "").toLowerCase();
+    const hasGrade = !!(profile.assignedGrade);
+    if (role === "student" && !hasGrade) {
+      router.push("/onboarding");
+    }
+  }, [isAuthenticated, userId, profile, router]);
 
   useEffect(() => {
     if (!sidebarOpen) return;

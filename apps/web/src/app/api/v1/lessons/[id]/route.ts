@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { LessonService, LessonApplicationService, VocabularyItemRepository } from '@el-bannawy/lib';
 import { getAdminDb } from '@/lib/firebase/admin';
+import { authenticateRequest } from '@/lib/firebase/auth-helper';
 
 const lessonService = new LessonService();
 const applicationService = new LessonApplicationService(lessonService);
@@ -28,6 +29,17 @@ export async function GET(
   const { searchParams } = new URL(_request.url);
   const prev = searchParams.get('prev');
   const next = searchParams.get('next');
+
+  let decoded: { uid: string };
+  try {
+    const result = await authenticateRequest(_request);
+    if (!result) {
+      return NextResponse.json({ success: false, error: { code: 'UNAUTHORIZED', message: 'Unauthorized' } }, { status: 401 });
+    }
+    decoded = result;
+  } catch {
+    return NextResponse.json({ success: false, error: { code: 'UNAUTHORIZED', message: 'Unauthorized' } }, { status: 401 });
+  }
 
   try {
     if (prev === 'true') {
@@ -113,6 +125,17 @@ export async function PATCH(
 ): Promise<NextResponse> {
   const { id } = await params;
 
+  let decoded: { uid: string };
+  try {
+    const result = await authenticateRequest(request);
+    if (!result) {
+      return NextResponse.json({ success: false, error: { code: 'UNAUTHORIZED', message: 'Unauthorized' } }, { status: 401 });
+    }
+    decoded = result;
+  } catch {
+    return NextResponse.json({ success: false, error: { code: 'UNAUTHORIZED', message: 'Unauthorized' } }, { status: 401 });
+  }
+
   let body: Record<string, unknown>;
   try {
     body = await request.json() as Record<string, unknown>;
@@ -139,6 +162,17 @@ export async function DELETE(
 ): Promise<NextResponse> {
   const { id } = await params;
   const requestId = `delete-${id}-${String(Date.now())}`;
+
+  let decoded: { uid: string };
+  try {
+    const result = await authenticateRequest(_request);
+    if (!result) {
+      return NextResponse.json({ success: false, error: { code: 'UNAUTHORIZED', message: 'Unauthorized' } }, { status: 401 });
+    }
+    decoded = result;
+  } catch {
+    return NextResponse.json({ success: false, error: { code: 'UNAUTHORIZED', message: 'Unauthorized' } }, { status: 401 });
+  }
 
   try {
     const result = await applicationService.softDeleteLesson(id, requestId);

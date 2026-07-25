@@ -8,19 +8,23 @@ export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ lessonId: string }> },
 ): Promise<NextResponse> {
+  const authHeader = request.headers.get('Authorization');
+  if (!authHeader?.startsWith('Bearer ')) return NextResponse.json({ success: false, error: { code: 'UNAUTHORIZED', message: 'Unauthorized' } }, { status: 401 });
   try {
-    const authHeader = request.headers.get('Authorization');
-    if (!authHeader?.startsWith('Bearer ')) return NextResponse.json({ success: false, error: { code: 'UNAUTHORIZED', message: 'Unauthorized' } }, { status: 401 });
     const token = authHeader.slice(7);
     await getAdminAuth().verifyIdToken(token);
-    const { lessonId } = await params;
+  } catch {
+    return NextResponse.json({ success: false, error: { code: 'UNAUTHORIZED', message: 'Unauthorized' } }, { status: 401 });
+  }
+  const { lessonId } = await params;
 
+  try {
     const result = await homeworkService.getHomework(lessonId);
     if (!result.ok || !result.value) {
       return NextResponse.json({ success: false, error: { code: 'NOT_FOUND', message: 'Homework not found' } }, { status: 404 });
     }
     return NextResponse.json({ success: true, data: result.value });
   } catch {
-    return NextResponse.json({ success: false, error: { code: 'UNAUTHORIZED', message: 'Unauthorized' } }, { status: 401 });
+    return NextResponse.json({ success: false, error: { code: 'INTERNAL', message: 'Internal server error' } }, { status: 500 });
   }
 }

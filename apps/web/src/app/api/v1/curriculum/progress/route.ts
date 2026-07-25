@@ -14,6 +14,7 @@ async function getStudentTermId(studentId: string): Promise<string | null> {
 }
 
 export async function GET(request: NextRequest): Promise<NextResponse> {
+  let studentId: string;
   try {
     const authHeader = request.headers.get('Authorization');
     if (!authHeader?.startsWith('Bearer ')) {
@@ -26,7 +27,15 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const token = authHeader.slice(7);
     const adminAuth = getAdminAuth();
     const decoded = await adminAuth.verifyIdToken(token);
-    const studentId = decoded.uid;
+    studentId = decoded.uid;
+  } catch {
+    return NextResponse.json(
+      { success: false, error: { code: 'UNAUTHORIZED', message: 'Unauthorized' } },
+      { status: 401 },
+    );
+  }
+
+  try {
 
     const termId = await getStudentTermId(studentId);
     if (!termId) {
@@ -96,8 +105,8 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     });
   } catch {
     return NextResponse.json(
-      { success: false, error: { code: 'UNAUTHORIZED', message: 'Unauthorized' } },
-      { status: 401 },
+      { success: false, error: { code: 'SERVER_ERROR', message: 'Internal server error' } },
+      { status: 500 },
     );
   }
 }

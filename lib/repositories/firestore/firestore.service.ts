@@ -35,7 +35,7 @@ export function getFirestoreInstance(): Firestore {
     const projectId = process.env.FIREBASE_PROJECT_ID;
     if (clientEmail && privateKey && projectId) {
       privateKey = privateKey.replace(/^["']|["']$/g, "");
-      if (!privateKey.includes("\n") && privateKey.includes("\\n")) {
+      if (privateKey.includes("\\n")) {
         privateKey = privateKey.replace(/\\n/g, "\n");
       }
       app = initializeApp({
