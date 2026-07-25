@@ -6,6 +6,16 @@ import "plyr/dist/plyr.css";
 import "./plyr-player.css";
 import { Skeleton } from "@/components/ui/skeleton";
 
+function isMobile(): boolean {
+  if (typeof window === "undefined") return false;
+  return "ontouchstart" in window || navigator.maxTouchPoints > 0;
+}
+
+function isStandalone(): boolean {
+  if (typeof window === "undefined") return false;
+  return window.matchMedia("(display-mode: standalone)").matches || ("standalone" in window.navigator && (window.navigator as { standalone?: boolean }).standalone === true);
+}
+
 export function PlyrVideoPlayer({
   providerVideoId,
   startAt = 0,
@@ -90,6 +100,41 @@ export function PlyrVideoPlayer({
       playerRef.current = null;
     };
   }, [providerVideoId, startAt]);
+
+  useEffect(() => {
+    if (!isMobile()) return;
+
+    let fullscreenLocked = false;
+
+    const handleOrientation = (): void => {
+      const plyrEl = containerRef.current?.closest(".plyr") as HTMLElement | null;
+      if (!plyrEl) return;
+
+      const isLandscape = window.innerWidth > window.innerHeight;
+
+      if (isLandscape && !fullscreenLocked) {
+        fullscreenLocked = true;
+        try {
+          void plyrEl.requestFullscreen();
+        } catch {
+          /* not supported */
+        }
+      } else if (!isLandscape && fullscreenLocked) {
+        fullscreenLocked = false;
+        if (document.fullscreenElement) {
+          void document.exitFullscreen();
+        }
+      }
+    };
+
+    window.addEventListener("orientationchange", handleOrientation);
+    window.addEventListener("resize", handleOrientation);
+
+    return (): void => {
+      window.removeEventListener("orientationchange", handleOrientation);
+      window.removeEventListener("resize", handleOrientation);
+    };
+  }, []);
 
   return (
     <div className="aspect-video w-full overflow-hidden rounded-2xl">
