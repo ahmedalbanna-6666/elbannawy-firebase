@@ -65,9 +65,81 @@ export function StudentDashboard(): ReactNode {
   }
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-5">
 
-      {/* SECTION 1 — Curriculum Units */}
+      {/* SECTION 1 — Continue / Start Learning */}
+      {data.continueLearning ? (
+        <section>
+          <Card variant="gradient" padding="none" className="overflow-hidden border-0">
+            <div className="relative bg-gradient-to-l from-primary-600/20 via-primary-500/10 to-transparent px-5 py-4">
+              <div className="flex items-center justify-between gap-4">
+                <div className="min-w-0 flex-1">
+                  <div className="mb-1 flex items-center gap-2">
+                    <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary-500/20">
+                      <Play className="h-3 w-3 text-primary-400" />
+                    </div>
+                    <span className="text-[10px] font-semibold uppercase tracking-wider text-primary-400">واصل التعلم</span>
+                  </div>
+                  <h2 className="truncate text-sm font-bold text-neutral-900 dark:text-neutral-100">
+                    {data.continueLearning.unitName}
+                  </h2>
+                  <p className="truncate text-xs text-neutral-500 dark:text-neutral-400">
+                    {data.continueLearning.lessonName}
+                  </p>
+                </div>
+                <Button
+                  size="sm"
+                  className="shrink-0 rounded-xl px-4 text-xs font-bold shadow-lg shadow-primary-500/20"
+                  onClick={() => { const lessonId = data.continueLearning?.lessonId; if (lessonId) router.push(`/dashboard/lessons/detail/${lessonId}`); }}
+                >
+                  <Play className="h-3.5 w-3.5" />
+                  استكمل
+                </Button>
+              </div>
+              <div className="mt-3 flex items-center gap-2">
+                <Trophy className="h-3 w-3 shrink-0 text-warning-400" />
+                <div className="h-1.5 min-w-0 flex-1 overflow-hidden rounded-full bg-neutral-700/50">
+                  <div
+                    className="h-full rounded-full bg-gradient-to-l from-warning-400 to-primary-500 transition-all duration-500"
+                    style={{ width: `${String(data.continueLearning.progress)}%` }}
+                  />
+                </div>
+                <span className="shrink-0 text-[10px] font-medium text-warning-400">
+                  {Math.round(data.continueLearning.progress)}%
+                </span>
+              </div>
+            </div>
+          </Card>
+        </section>
+      ) : (
+        <section>
+          <Card variant="gradient" padding="none" className="overflow-hidden border-0">
+            <div className="relative bg-gradient-to-l from-primary-600/20 via-primary-500/10 to-transparent px-5 py-5">
+              <div className="flex items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary-500/15 shadow-lg shadow-primary-500/10">
+                    <GraduationCap className="h-6 w-6 text-primary-400" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-neutral-900 dark:text-neutral-100">ابدأ رحلتك التعليمية</p>
+                    <p className="text-xs text-neutral-500 dark:text-neutral-400">اختر وحدة وتابع تقدمك خطوة بخطوة</p>
+                  </div>
+                </div>
+                <Button
+                  size="sm"
+                  className="shrink-0 rounded-xl px-5 text-xs font-bold shadow-lg shadow-primary-500/20"
+                  onClick={() => { router.push("/dashboard/units"); }}
+                >
+                  <Play className="h-3.5 w-3.5" />
+                  ابدأ الآن
+                </Button>
+              </div>
+            </div>
+          </Card>
+        </section>
+      )}
+
+      {/* SECTION 2 — Curriculum Units */}
       <div onClick={(): void => { router.push("/dashboard/units"); }} role="button" tabIndex={0} onKeyDown={(e): void => { if (e.key === "Enter") { router.push("/dashboard/units"); } }}>
       <Card variant="outline" padding="md" className="cursor-pointer transition-colors hover:bg-neutral-50 dark:hover:bg-neutral-800/50">
         <CardContent>
@@ -85,7 +157,7 @@ export function StudentDashboard(): ReactNode {
       </Card>
       </div>
 
-      {/* SECTION 2 — Story */}
+      {/* SECTION 3 — Story */}
       <div onClick={(): void => { router.push("/dashboard/story"); }} role="button" tabIndex={0} onKeyDown={(e): void => { if (e.key === "Enter") { router.push("/dashboard/story"); } }}>
       <Card variant="outline" padding="md" className="cursor-pointer transition-colors hover:bg-neutral-50 dark:hover:bg-neutral-800/50">
         <CardContent>
@@ -103,7 +175,7 @@ export function StudentDashboard(): ReactNode {
       </Card>
       </div>
 
-      {/* SECTION 3 — Final Review */}
+      {/* SECTION 4 — Final Review */}
       <div onClick={(): void => { router.push("/dashboard/final-review"); }} role="button" tabIndex={0} onKeyDown={(e): void => { if (e.key === "Enter") { router.push("/dashboard/final-review"); } }}>
       <Card variant="outline" padding="md" className="cursor-pointer transition-colors hover:bg-neutral-50 dark:hover:bg-neutral-800/50">
         <CardContent>
@@ -121,80 +193,6 @@ export function StudentDashboard(): ReactNode {
       </Card>
       </div>
 
-      {/* SECTION 4 — Continue / Start Learning */}
-      {data.continueLearning ? (
-        <section>
-          <Card variant="gradient" padding="none" className="border-primary-500/20 px-4 py-3">
-            <CardContent>
-              <div className="flex flex-col gap-2">
-                <div className="flex items-center justify-between">
-                  <div className="min-w-0">
-                    <p className="text-[10px] font-medium uppercase tracking-wide text-primary-500/80">
-                      واصل من حيث توقفت
-                    </p>
-                    <h2 className="truncate text-sm font-bold leading-tight tracking-tight text-neutral-900 dark:text-neutral-100">
-                      {data.continueLearning.unitName} · {data.continueLearning.lessonName}
-                    </h2>
-                  </div>
-                  <Button
-                    size="xs"
-                    className="shrink-0 text-xs font-medium"
-                    onClick={() => { const lessonId = data.continueLearning?.lessonId; if (lessonId) router.push(`/dashboard/lessons/detail/${lessonId}`); }}
-                  >
-                    <Play className="h-3 w-3" />
-                    استكمل
-                  </Button>
-                </div>
-
-                <div className="border-t border-primary-500/[0.06]" />
-
-                <div className="flex items-center gap-2">
-                  <Trophy className="h-3 w-3 shrink-0 text-warning-500/70" />
-                  <div className="h-0.5 min-w-0 flex-1 overflow-hidden rounded-full bg-neutral-200 dark:bg-neutral-700">
-                    <div
-                      className="h-full rounded-full bg-gradient-to-r from-warning-400 to-orange-500 transition-all"
-                      style={{ width: `${String(data.continueLearning.progress)}%` }}
-                    />
-                  </div>
-                  <span className="shrink-0 text-[10px] text-neutral-400">
-                    {Math.round(data.continueLearning.progress)}%
-                  </span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </section>
-      ) : (
-        <section>
-          <Card variant="gradient" padding="none" className="border-primary-500/20 px-4 py-3">
-            <CardContent>
-              <div className="flex items-center justify-between gap-3">
-                <div className="flex min-w-0 items-center gap-3">
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary-500/10 text-primary-500">
-                    <GraduationCap className="h-5 w-5" />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-bold leading-tight text-neutral-900 dark:text-neutral-100">
-                      ابدأ رحلتك التعليمية
-                    </p>
-                    <p className="truncate text-xs text-neutral-500">
-                      اختر وحدة وتابع تقدمك خطوة بخطوة
-                    </p>
-                  </div>
-                </div>
-                <Button
-                  size="xs"
-                  className="shrink-0 text-xs font-medium"
-                  onClick={() => { router.push("/dashboard/units"); }}
-                >
-                  <Play className="h-3 w-3" />
-                  ابدأ الآن
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </section>
-      )}
 
       {/* SECTION 5 — Live Classes */}
       {liveBookings && liveBookings.length > 0 && (

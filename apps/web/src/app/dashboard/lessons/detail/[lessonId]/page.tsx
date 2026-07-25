@@ -304,44 +304,6 @@ function LessonHeader({
   );
 }
 
-function VideoProgressBar({
-  percentage,
-  isCompleted,
-}: {
-  percentage: number;
-  isCompleted: boolean;
-}): ReactNode {
-  if (isCompleted) {
-    return (
-      <div className="flex items-center gap-2 rounded-xl bg-success-500/10 px-4 py-2.5">
-        <CheckCircle className="h-4 w-4 text-success-500" />
-        <span className="text-sm font-medium text-success-600 dark:text-success-400">
-          تمت مشاهدة الفيديو بالكامل
-        </span>
-      </div>
-    );
-  }
-
-  if (percentage <= 0) return null;
-
-  return (
-    <div className="flex items-center gap-3">
-      <span className="text-lg font-bold text-primary-500 tabular-nums">
-        {percentage}%
-      </span>
-      <div className="h-3 flex-1 overflow-hidden rounded-full bg-neutral-200 dark:bg-neutral-700">
-        <div
-          className="h-full rounded-full bg-gradient-to-r from-primary-400 to-primary-500 transition-all duration-700"
-          style={{ width: `${String(percentage)}%` }}
-        />
-      </div>
-      <span className="text-sm text-neutral-400 whitespace-nowrap">
-        تمت مشاهدة {percentage}%
-      </span>
-    </div>
-  );
-}
-
 function LearningCards({
   lessonId,
   vocabulary,
@@ -743,12 +705,6 @@ export default function LessonDetailPage(): ReactNode {
           </Card>
         )}
       </section>
-
-      {/* Video Progress */}
-      <VideoProgressBar
-        percentage={videoWatchedPct}
-        isCompleted={videoProgress?.completed ?? false}
-      />
 
       {/* Learning Cards */}
       <LearningCards

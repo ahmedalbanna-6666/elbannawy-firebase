@@ -6,6 +6,7 @@
   height: 200% !important;
   border: 0;
   max-width: none;
+  pointer-events: none;
 }
 
 .plyr__poster {
@@ -29,6 +30,7 @@
   border-radius: 1rem;
   overflow: hidden;
   position: relative;
+  touch-action: manipulation;
 }
 
 .plyr__controls {
@@ -140,4 +142,24 @@
 
 .plyr--fullscreen {
   border-radius: 0 !important;
+}
+
+@media (pointer: coarse) {
+  .plyr__control {
+    padding: 8px !important;
+  }
+  .plyr__control svg {
+    width: 20px !important;
+    height: 20px !important;
+  }
+  .plyr__control--overlaid {
+    padding: 18px !important;
+  }
+  .plyr__control--overlaid svg {
+    width: 28px !important;
+    height: 28px !important;
+  }
+  .plyr__controls {
+    padding: 10px 14px !important;
+  }
 }
