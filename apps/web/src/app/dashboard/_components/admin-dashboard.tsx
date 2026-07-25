@@ -15,8 +15,8 @@ import { ChevronLeft, GraduationCap, UserCog, BookOpen, Layers, BookMarked, Cale
 interface DashboardStats {
   studentsCount: number;
   teachersCount: number;
-  unitsCount: number;
-  lessonsCount: number;
+  unitsCount?: number;
+  lessonsCount?: number;
   academicYearsCount: number;
 }
 
@@ -39,7 +39,7 @@ export function AdminDashboard(): ReactNode {
     queryKey: ["admin-dashboard-stats"],
     queryFn: async () => {
       const res = await api.get<DashboardStats>("/admin/dashboard/stats");
-      return res.data ?? { studentsCount: 0, teachersCount: 0, academicYearsCount: 0 };
+      return res.data ?? { studentsCount: 0, teachersCount: 0, unitsCount: 0, lessonsCount: 0, academicYearsCount: 0 };
     },
     refetchInterval: 60_000,
   });
