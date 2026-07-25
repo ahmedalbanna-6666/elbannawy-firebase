@@ -126,6 +126,14 @@
       ]
     },
     {
+      "collectionGroup": "lessonVideos",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "lessonId", "order": "ASCENDING" },
+        { "fieldPath": "displayOrder", "order": "ASCENDING" }
+      ]
+    },
+    {
       "collectionGroup": "lessonDocuments",
       "queryScope": "COLLECTION",
       "fields": [
