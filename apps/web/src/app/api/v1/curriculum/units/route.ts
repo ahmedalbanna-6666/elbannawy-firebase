@@ -68,12 +68,14 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   const isActiveParam = searchParams.get('isActive');
   const academicTermId = searchParams.get('academicTermId') ?? searchParams.get('termId');
   const gradeId = searchParams.get('gradeId');
+  const academicYearId = searchParams.get('academicYearId');
   const search = searchParams.get('search');
 
   const filter: Record<string, unknown> = {};
   if (isActiveParam !== null) filter.isActive = isActiveParam === 'true';
   if (academicTermId) filter.academicTermId = academicTermId;
   if (gradeId) filter.gradeId = gradeId;
+  if (academicYearId) filter.academicYearId = academicYearId;
   if (search) filter.search = search;
 
   const page: Record<string, unknown> = { limit };

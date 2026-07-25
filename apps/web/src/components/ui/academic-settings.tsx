@@ -28,6 +28,7 @@ export function AcademicSettings(): ReactNode {
   const educationalSystem = useAcademicContextStore((s) => s.educationalSystem);
   const stage = useAcademicContextStore((s) => s.stage);
   const grade = useAcademicContextStore((s) => s.grade);
+  const gradeId = useAcademicContextStore((s) => s.gradeId);
   const term = useAcademicContextStore((s) => s.term);
   const setEducationalSystem = useAcademicContextStore((s) => s.setEducationalSystem);
   const setStage = useAcademicContextStore((s) => s.setStage);
@@ -73,12 +74,12 @@ export function AcademicSettings(): ReactNode {
       const stageKey = stageLabelToKey(g.stage.name) ?? g.stage.name;
       setEducationalSystem("");
       setStage(stageKey);
-      setGrade(g.name);
+      setGrade(g.name, g.id);
     } else if (gs.length > 1) {
       const storedGrade = useAcademicContextStore.getState().grade;
       if (!storedGrade || !gs.some((g) => g.name === storedGrade)) {
         const stageKey = stageLabelToKey(gs[0].stage.name) ?? gs[0].stage.name;
-        setGrade(gs[0].name);
+        setGrade(gs[0].name, gs[0].id);
         setStage(stageKey);
       }
     }
@@ -160,15 +161,19 @@ export function AcademicSettings(): ReactNode {
                     size="sm"
                     options={filteredGradeOptions.length > 0 ? filteredGradeOptions : gradeOptions}
                     placeholder="الصف الدراسي"
-                    value={grade ?? ""}
-                    onChange={(e) => { setGrade(e.target.value); }}
+                    value={gradeId ?? ""}
+                    onChange={(e) => {
+                      const selectedId = e.target.value;
+                      const option = (filteredGradeOptions.length > 0 ? filteredGradeOptions : gradeOptions).find((o) => o.value === selectedId);
+                      setGrade(option?.label ?? selectedId, selectedId);
+                    }}
                   />
                 ) : (
                   <div className="flex flex-col gap-1">
                     <span className="text-[10px] text-neutral-400">الصف الدراسي</span>
                     <div className="flex flex-wrap gap-1.5">
                       {gradesArr.map((g) => {
-                        const isActive = grade === g.name;
+                        const isActive = gradeId === g.id;
                         return (
                           <button
                             key={g.id}
@@ -176,7 +181,7 @@ export function AcademicSettings(): ReactNode {
                             onClick={() => {
                               const stageKey = stageLabelToKey(g.stage.name) ?? g.stage.name;
                               setStage(stageKey);
-                              setGrade(g.name);
+                              setGrade(g.name, g.id);
                             }}
                             className={`rounded-lg border px-2.5 py-1 text-xs transition-colors ${
                               isActive

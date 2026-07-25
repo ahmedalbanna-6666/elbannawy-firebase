@@ -29,6 +29,7 @@ export function AcademicContextBar({ className }: AcademicContextBarProps): Reac
   const educationalSystem = useAcademicContextStore((s) => s.educationalSystem);
   const stage = useAcademicContextStore((s) => s.stage);
   const grade = useAcademicContextStore((s) => s.grade);
+  const gradeIdVal = useAcademicContextStore((s) => s.gradeId);
   const term = useAcademicContextStore((s) => s.term);
   const termId = useAcademicContextStore((s) => s.termId);
   const setAcademicYear = useAcademicContextStore((s) => s.setAcademicYear);
@@ -151,6 +152,7 @@ export function AcademicContextBar({ className }: AcademicContextBarProps): Reac
     if (isTeacher && myGrades && Array.isArray(myGrades.grades)) {
       for (const g of myGrades.grades) {
         map.set(g.name, g.id);
+        map.set(g.id, g.id);
       }
     }
     if (isAdmin && Array.isArray(allStages)) {
@@ -158,6 +160,7 @@ export function AcademicContextBar({ className }: AcademicContextBarProps): Reac
         if (stage && typeof stage === "object" && Array.isArray(stage.grades)) {
           for (const g of stage.grades) {
             map.set(g.name, g.id);
+            map.set(g.id, g.id);
           }
         }
       }
@@ -165,11 +168,11 @@ export function AcademicContextBar({ className }: AcademicContextBarProps): Reac
     return map;
   }, [isTeacher, isAdmin, myGrades, allStages]);
 
-  const assignedGradeNames = new Set(myGrades?.grades.map((g) => g.name) ?? []);
+  const assignedGradeIds = new Set(myGrades?.grades.map((g) => g.id) ?? []);
 
   const gradeOptions = stage ? getGradeOptions(stage) : [];
   const filteredGradeOptions = isTeacher && myGrades
-    ? gradeOptions.filter((g) => assignedGradeNames.has(g.value))
+    ? gradeOptions.filter((g) => assignedGradeIds.has(g.value))
     : gradeOptions;
 
   const stageGradeNames = new Map<string, Set<string>>();
@@ -232,10 +235,11 @@ export function AcademicContextBar({ className }: AcademicContextBarProps): Reac
         size="sm"
         options={filteredGradeOptions}
         placeholder="الصف"
-        value={grade ?? ""}
+        value={gradeIdVal ?? ""}
         onChange={(e): void => {
-          const selected = e.target.value;
-          setGrade(selected, gradeToId.get(selected) ?? null);
+          const selectedId = e.target.value;
+          const option = filteredGradeOptions.find((o) => o.value === selectedId);
+          setGrade(option?.label ?? selectedId, selectedId);
         }}
         disabled={!stage}
         aria-label="الصف"
