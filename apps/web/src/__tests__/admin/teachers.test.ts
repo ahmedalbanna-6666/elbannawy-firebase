@@ -14,8 +14,8 @@ describe('GET /api/v1/admin/teachers', () => {
   it('returns empty list when no teachers exist', async () => {
     const { GET } = await import('@/app/api/v1/admin/teachers/route');
     const response = await GET(new (await import('next/server')).NextRequest('http://localhost/api/v1/admin/teachers'));
-    expect(response.statusCode).toBe(200);
-    const body = response.body as { success: boolean; data: { teachers: unknown[]; meta: Record<string, unknown> } };
+    expect(response.status).toBe(200);
+    const body = await response.json() as { success: boolean; data: { teachers: unknown[]; meta: Record<string, unknown> } };
     expect(body.success).toBe(true);
     expect(body.data.teachers).toEqual([]);
     expect(body.data.meta.total).toBe(0);
@@ -29,8 +29,8 @@ describe('GET /api/v1/admin/teachers', () => {
 
     const { GET } = await import('@/app/api/v1/admin/teachers/route');
     const response = await GET(new (await import('next/server')).NextRequest('http://localhost/api/v1/admin/teachers'));
-    expect(response.statusCode).toBe(200);
-    const body = response.body as { success: boolean; data: { teachers: Array<{ id: string; fullName: string }>; meta: Record<string, unknown> } };
+    expect(response.status).toBe(200);
+    const body = await response.json() as { success: boolean; data: { teachers: Array<{ id: string; fullName: string }>; meta: Record<string, unknown> } };
     expect(body.data.teachers).toHaveLength(2);
     expect(body.data.teachers[0].fullName).toBe('Ahmed');
   });
@@ -43,7 +43,7 @@ describe('GET /api/v1/admin/teachers', () => {
 
     const { GET } = await import('@/app/api/v1/admin/teachers/route');
     const response = await GET(new (await import('next/server')).NextRequest('http://localhost/api/v1/admin/teachers'));
-    const body = response.body as { success: boolean; data: { teachers: unknown[] } };
+    const body = await response.json() as { success: boolean; data: { teachers: unknown[] } };
     expect(body.data.teachers).toHaveLength(1);
   });
 
@@ -55,7 +55,7 @@ describe('GET /api/v1/admin/teachers', () => {
 
     const { GET } = await import('@/app/api/v1/admin/teachers/route');
     const response = await GET(new (await import('next/server')).NextRequest('http://localhost/api/v1/admin/teachers?search=Ahmed'));
-    const body = response.body as { success: boolean; data: { teachers: Array<{ fullName: string }> } };
+    const body = await response.json() as { success: boolean; data: { teachers: Array<{ fullName: string }> } };
     expect(body.data.teachers).toHaveLength(1);
     expect(body.data.teachers[0].fullName).toBe('Ahmed Ali');
   });
@@ -67,7 +67,7 @@ describe('GET /api/v1/admin/teachers', () => {
 
     const { GET } = await import('@/app/api/v1/admin/teachers/route');
     const response = await GET(new (await import('next/server')).NextRequest('http://localhost/api/v1/admin/teachers'));
-    const body = response.body as { success: boolean; data: { teachers: Array<{ fullName: string }> } };
+    const body = await response.json() as { success: boolean; data: { teachers: Array<{ fullName: string }> } };
     expect(body.data.teachers).toHaveLength(1);
     expect(body.data.teachers[0].fullName).toBe('Legacy Teacher');
   });
@@ -93,8 +93,8 @@ describe('POST /api/v1/admin/teachers', () => {
     });
 
     const response = await POST(request);
-    expect(response.statusCode).toBe(201);
-    const body = response.body as { success: boolean; data: { fullName: string; role: unknown } };
+    expect(response.status).toBe(201);
+    const body = await response.json() as { success: boolean; data: { fullName: string; role: unknown } };
     expect(body.data.fullName).toBe('New Teacher');
     expect(body.data.role).toEqual({ role: 'teacher', grantedAt: expect.any(String) });
   });
@@ -109,8 +109,8 @@ describe('POST /api/v1/admin/teachers', () => {
     vi.spyOn(request, 'json').mockResolvedValue({});
 
     const response = await POST(request);
-    expect(response.statusCode).toBe(201);
-    const body = response.body as { success: boolean; data: { fullName: string } };
+    expect(response.status).toBe(201);
+    const body = await response.json() as { success: boolean; data: { fullName: string } };
     expect(body.data.fullName).toBe('');
   });
 });

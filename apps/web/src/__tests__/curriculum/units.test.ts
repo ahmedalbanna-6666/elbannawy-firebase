@@ -13,8 +13,8 @@ describe('GET /api/v1/curriculum/units', () => {
   it('returns empty list when no units exist', async () => {
     const { GET } = await import('@/app/api/v1/curriculum/units/route');
     const response = await GET(new (await import('next/server')).NextRequest('http://localhost/api/v1/curriculum/units'));
-    expect(response.statusCode).toBe(200);
-    const body = response.body as { success: boolean; data: { items: unknown[] } };
+    expect(response.status).toBe(200);
+    const body = await response.json() as { success: boolean; data: { items: unknown[] } };
     expect(body.data.items).toEqual([]);
   });
 
@@ -27,10 +27,10 @@ describe('GET /api/v1/curriculum/units', () => {
 
     const { GET } = await import('@/app/api/v1/curriculum/units/route');
     const response = await GET(new (await import('next/server')).NextRequest('http://localhost/api/v1/curriculum/units?gradeId=grade-1'));
-    expect(response.statusCode).toBe(200);
+    expect(response.status).toBe(200);
 
     // The mock uses in-memory store so filtering by gradeId should work
-    const body = response.body as { success: boolean; data: { items?: Array<{ title: string }>; nextCursor?: unknown } };
+    const body = await response.json() as { success: boolean; data: { items?: Array<{ title: string }>; nextCursor?: unknown } };
     if (body.data.items) {
       expect(body.data.items.length).toBeGreaterThanOrEqual(2);
     }
@@ -44,6 +44,6 @@ describe('GET /api/v1/curriculum/units', () => {
 
     const { GET } = await import('@/app/api/v1/curriculum/units/route');
     const response = await GET(new (await import('next/server')).NextRequest('http://localhost/api/v1/curriculum/units?academicTermId=term-1'));
-    expect(response.statusCode).toBe(200);
+    expect(response.status).toBe(200);
   });
 });

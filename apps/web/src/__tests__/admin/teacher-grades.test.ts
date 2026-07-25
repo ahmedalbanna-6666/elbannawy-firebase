@@ -18,8 +18,8 @@ describe('Teacher Grade Management (admin)', () => {
       vi.spyOn(request, 'json').mockResolvedValue({ gradeIds: ['grade-1', 'grade-2'] });
 
       const response = await POST(request, { params: Promise.resolve({ id: 'teacher-1' }) });
-      expect(response.statusCode).toBe(200);
-      const body = response.body as { success: boolean; data: { gradeIds: string[] } };
+      expect(response.status).toBe(200);
+      const body = await response.json() as { success: boolean; data: { gradeIds: string[] } };
       expect(body.data.gradeIds).toEqual(['grade-1', 'grade-2']);
     });
 
@@ -36,7 +36,7 @@ describe('Teacher Grade Management (admin)', () => {
       vi.spyOn(request, 'json').mockResolvedValue({ gradeIds: ['grade-1', 'grade-2'] });
 
       const response = await POST(request, { params: Promise.resolve({ id: 'teacher-1' }) });
-      expect(response.statusCode).toBe(200);
+      expect(response.status).toBe(200);
 
       // grade-3 should be deactivated
       const result = await (await import('@el-bannawy/lib')).TeacherRepository.prototype.listTeacherAssignments('teacher-1', { limit: 100 });
@@ -59,8 +59,8 @@ describe('Teacher Grade Management (admin)', () => {
         new (await import('next/server')).NextRequest('http://localhost/api/v1/admin/teachers/teacher-1/grades'),
         { params: Promise.resolve({ id: 'teacher-1' }) },
       );
-      expect(response.statusCode).toBe(200);
-      const body = response.body as { success: boolean; data: { gradeIds: string[] } };
+      expect(response.status).toBe(200);
+      const body = await response.json() as { success: boolean; data: { gradeIds: string[] } };
       expect(body.data.gradeIds).toHaveLength(2);
     });
   });
@@ -79,7 +79,7 @@ describe('Teacher Permissions Management', () => {
       vi.spyOn(request, 'json').mockResolvedValue({ permission: 'support.answer' });
 
       const response = await POST(request, { params: Promise.resolve({ id: 'teacher-1' }) });
-      expect(response.statusCode).toBe(200);
+      expect(response.status).toBe(200);
     });
 
     it('adds permission to existing ones', async () => {
@@ -99,7 +99,7 @@ describe('Teacher Permissions Management', () => {
         new (await import('next/server')).NextRequest('http://localhost/api/v1/admin/teachers/teacher-1/permissions'),
         { params: Promise.resolve({ id: 'teacher-1' }) },
       );
-      const body = getResponse.body as { success: boolean; data: { grantedPermissions: string[] } };
+      const body = await getResponse.json() as { success: boolean; data: { grantedPermissions: string[] } };
       expect(body.data.grantedPermissions).toContain('support.answer');
       expect(body.data.grantedPermissions).toContain('units.view');
     });
@@ -123,7 +123,7 @@ describe('Teacher Permissions Management', () => {
         new (await import('next/server')).NextRequest('http://localhost/api/v1/admin/teachers/teacher-1/permissions'),
         { params: Promise.resolve({ id: 'teacher-1' }) },
       );
-      const body = getResponse.body as { success: boolean; data: { grantedPermissions: string[] } };
+      const body = await getResponse.json() as { success: boolean; data: { grantedPermissions: string[] } };
       expect(body.data.grantedPermissions).not.toContain('support.answer');
       expect(body.data.grantedPermissions).toContain('units.view');
     });

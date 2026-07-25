@@ -21,8 +21,8 @@ describe('Teacher Stats API', () => {
 
     const { GET } = await import('@/app/api/v1/teacher/stats/route');
     const response = await GET(new (await import('next/server')).NextRequest(`http://localhost/api/v1/teacher/stats?gradeId=${gradeId}`));
-    expect(response.statusCode).toBe(200);
-    const body = response.body as { success: boolean; data: { totalStudents: number; activeStudents: number; totalUnits: number; totalLessons: number } };
+    expect(response.status).toBe(200);
+    const body = await response.json() as { success: boolean; data: { totalStudents: number; activeStudents: number; totalUnits: number; totalLessons: number } };
     expect(body.data.totalStudents).toBe(3);
     expect(body.data.totalUnits).toBe(2);
     expect(body.data.totalLessons).toBe(3);
@@ -34,8 +34,8 @@ describe('Teacher Stats API', () => {
     ]);
     const { GET } = await import('@/app/api/v1/teacher/stats/route');
     const response = await GET(new (await import('next/server')).NextRequest('http://localhost/api/v1/teacher/stats'));
-    expect(response.statusCode).toBe(200);
-    const body = response.body as { success: boolean; data: { totalStudents: number } };
+    expect(response.status).toBe(200);
+    const body = await response.json() as { success: boolean; data: { totalStudents: number } };
     expect(body.data.totalStudents).toBe(0);
   });
 });

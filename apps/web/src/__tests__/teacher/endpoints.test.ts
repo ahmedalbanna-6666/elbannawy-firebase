@@ -13,8 +13,8 @@ describe('GET /api/v1/teachers/my-grades', () => {
   it('returns empty when teacher has no assignments', async () => {
     const { GET } = await import('@/app/api/v1/teachers/my-grades/route');
     const response = await GET(new (await import('next/server')).NextRequest('http://localhost/api/v1/teachers/my-grades'));
-    expect(response.statusCode).toBe(200);
-    const body = response.body as { success: boolean; data: { gradeIds: string[]; grades: unknown[] } };
+    expect(response.status).toBe(200);
+    const body = await response.json() as { success: boolean; data: { gradeIds: string[]; grades: unknown[] } };
     expect(body.data.gradeIds).toEqual([]);
     expect(body.data.grades).toEqual([]);
   });
@@ -32,8 +32,8 @@ describe('GET /api/v1/teachers/my-grades', () => {
 
     const { GET } = await import('@/app/api/v1/teachers/my-grades/route');
     const response = await GET(new (await import('next/server')).NextRequest('http://localhost/api/v1/teachers/my-grades'));
-    expect(response.statusCode).toBe(200);
-    const body = response.body as { success: boolean; data: { gradeIds: string[]; grades: Array<{ id: string; name: string }> } };
+    expect(response.status).toBe(200);
+    const body = await response.json() as { success: boolean; data: { gradeIds: string[]; grades: Array<{ id: string; name: string }> } };
     expect(body.data.gradeIds).toHaveLength(1);
     expect(body.data.grades[0].name).toBe('الصف الأول');
   });
@@ -59,8 +59,8 @@ describe('GET /api/v1/teacher/leaderboard', () => {
 
     const { GET } = await import('@/app/api/v1/teacher/leaderboard/route');
     const response = await GET(new (await import('next/server')).NextRequest('http://localhost/api/v1/teacher/leaderboard?gradeId=grade-1'));
-    expect(response.statusCode).toBe(200);
-    const body = response.body as { success: boolean; data: { students: Array<{ fullName: string; xp: number }>; stats: { total: number; avgXp: number } } };
+    expect(response.status).toBe(200);
+    const body = await response.json() as { success: boolean; data: { students: Array<{ fullName: string; xp: number }>; stats: { total: number; avgXp: number } } };
     expect(body.data.students).toHaveLength(2);
     expect(body.data.students[0].xp).toBe(1000);
     expect(body.data.students[0].fullName).toBe('Student Two');
@@ -72,8 +72,8 @@ describe('GET /api/v1/teacher/leaderboard', () => {
   it('returns empty when no students in grade', async () => {
     const { GET } = await import('@/app/api/v1/teacher/leaderboard/route');
     const response = await GET(new (await import('next/server')).NextRequest('http://localhost/api/v1/teacher/leaderboard?gradeId=nonexistent'));
-    expect(response.statusCode).toBe(200);
-    const body = response.body as { success: boolean; data: { students: unknown[] } };
+    expect(response.status).toBe(200);
+    const body = await response.json() as { success: boolean; data: { students: unknown[] } };
     expect(body.data.students).toEqual([]);
   });
 });

@@ -1,3 +1,4 @@
+import { expect } from 'vitest';
 import { mockStore } from './setup';
 
 export function seedCollection(collectionPath: string, docs: Array<{ id: string; data: Record<string, unknown> }>): void {
@@ -23,19 +24,19 @@ export function createMockRequest(
   };
 }
 
-export function expectSuccess(response: { statusCode: number; body: unknown }): void {
-  expect(response.statusCode).toBeGreaterThanOrEqual(200);
-  expect(response.statusCode).toBeLessThan(300);
-  if (response.body && typeof response.body === 'object') {
-    const body = response.body as Record<string, unknown>;
+export async function expectSuccess(response: Response): Promise<void> {
+  expect(response.status).toBeGreaterThanOrEqual(200);
+  expect(response.status).toBeLessThan(300);
+  const body = await response.json() as Record<string, unknown>;
+  if (body && typeof body === 'object') {
     expect(body.success).toBe(true);
   }
 }
 
-export function expectError(response: { statusCode: number; body: unknown }, expectedStatus: number): void {
-  expect(response.statusCode).toBe(expectedStatus);
-  if (response.body && typeof response.body === 'object') {
-    const body = response.body as Record<string, unknown>;
+export async function expectError(response: Response, expectedStatus: number): Promise<void> {
+  expect(response.status).toBe(expectedStatus);
+  const body = await response.json() as Record<string, unknown>;
+  if (body && typeof body === 'object') {
     expect(body.success).toBe(false);
   }
 }

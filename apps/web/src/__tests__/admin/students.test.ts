@@ -30,8 +30,8 @@ describe('GET /api/v1/admin/students', () => {
 
     const { GET } = await import('@/app/api/v1/admin/students/route');
     const response = await GET(new (await import('next/server')).NextRequest('http://localhost/api/v1/admin/students'));
-    expect(response.statusCode).toBe(200);
-    const body = response.body as { success: boolean; data: { students: unknown[]; meta: Record<string, unknown> } };
+    expect(response.status).toBe(200);
+    const body = await response.json() as { success: boolean; data: { students: unknown[]; meta: Record<string, unknown> } };
     expect(body.data.students).toHaveLength(5);
     expect(body.data.meta.total).toBe(5);
   });
@@ -44,8 +44,8 @@ describe('GET /api/v1/admin/students', () => {
 
     const { GET } = await import('@/app/api/v1/admin/students/route');
     const response = await GET(new (await import('next/server')).NextRequest('http://localhost/api/v1/admin/students?status=active'));
-    expect(response.statusCode).toBe(200);
-    const body = response.body as { success: boolean; data: { students: Array<{ fullName: string }> } };
+    expect(response.status).toBe(200);
+    const body = await response.json() as { success: boolean; data: { students: Array<{ fullName: string }> } };
     expect(body.data.students).toHaveLength(1);
     expect(body.data.students[0].fullName).toBe('Active Student');
   });
@@ -58,7 +58,7 @@ describe('GET /api/v1/admin/students', () => {
 
     const { GET } = await import('@/app/api/v1/admin/students/route');
     const response = await GET(new (await import('next/server')).NextRequest('http://localhost/api/v1/admin/students?search=Ahmed'));
-    const body = response.body as { success: boolean; data: { students: Array<{ fullName: string }> } };
+    const body = await response.json() as { success: boolean; data: { students: Array<{ fullName: string }> } };
     expect(body.data.students).toHaveLength(1);
   });
 });
@@ -97,7 +97,7 @@ describe('GET /api/v1/admin/students/[id]', () => {
       new (await import('next/server')).NextRequest('http://localhost/api/v1/admin/students/nonexistent'),
       { params: Promise.resolve({ id: 'nonexistent' }) },
     );
-    expect(response.statusCode).toBe(404);
+    expect(response.status).toBe(404);
   });
 });
 
@@ -117,8 +117,8 @@ describe('PATCH /api/v1/admin/students/[id]/status', () => {
     vi.spyOn(request, 'json').mockResolvedValue({ status: 'suspended' });
 
     const response = await PATCH(request, { params: Promise.resolve({ id: 'student-1' }) });
-    expect(response.statusCode).toBe(200);
-    const body = response.body as { success: boolean; data: { status: string } };
+    expect(response.status).toBe(200);
+    const body = await response.json() as { success: boolean; data: { status: string } };
     expect(body.data.status).toBe('suspended');
   });
 
@@ -129,6 +129,6 @@ describe('PATCH /api/v1/admin/students/[id]/status', () => {
     vi.spyOn(request, 'json').mockResolvedValue({ status: 'active' });
 
     const response = await PATCH(request, { params: Promise.resolve({ id: 'nonexistent' }) });
-    expect(response.statusCode).toBe(404);
+    expect(response.status).toBe(404);
   });
 });
