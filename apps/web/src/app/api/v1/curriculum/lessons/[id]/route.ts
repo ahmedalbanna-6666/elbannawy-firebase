@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { LessonService, LessonApplicationService } from '@el-bannawy/lib';
-import { fromFrontendLessonUpdate } from '../../_shared/transforms';
+import { fromFrontendLessonUpdate } from '@/app/api/v1/curriculum/_shared/transforms';
 
 const lessonService = new LessonService();
 const applicationService = new LessonApplicationService(lessonService);
