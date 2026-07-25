@@ -1,119 +1,5 @@
-import JSZip from 'jszip';
+import mammoth from 'mammoth';
 import type { VocabularyDocument, ParsedSection, VocabularyEntry, SynonymEntry } from './types';
-
-interface XmlElement {
-  tag: string;
-  attrs: Record<string, string>;
-  children: XmlElement[];
-  text: string;
-}
-
-function parseXml(xml: string): XmlElement {
-  const cleaned = xml.replace(/<\?xml[^>]*\?>/, '').trim();
-  const root = parseElement(cleaned, 0);
-  return root.element;
-}
-
-function parseElement(xml: string, start: number): { element: XmlElement; end: number } {
-  const tagStart = xml.indexOf('<', start);
-  if (tagStart === -1 || xml[tagStart + 1] === '/') {
-    return { element: { tag: '', attrs: {}, children: [], text: '' }, end: start };
-  }
-
-  const tagEnd = xml.indexOf('>', tagStart);
-  const tagContent = xml.slice(tagStart + 1, tagEnd);
-  const isSelfClosing = tagContent.endsWith('/');
-
-  const spaceIdx = tagContent.indexOf(' ');
-  const tag = (spaceIdx === -1 ? tagContent : tagContent.slice(0, spaceIdx)).replace('/', '');
-
-  const attrs: Record<string, string> = {};
-  if (spaceIdx !== -1) {
-    const attrStr = tagContent.slice(spaceIdx + 1).replace(/\/$/, '').trim();
-    const attrRegex = /([\w:.-]+)\s*=\s*"([^"]*)"/g;
-    let match;
-    while ((match = attrRegex.exec(attrStr)) !== null) {
-      attrs[match[1]] = match[2];
-    }
-  }
-
-  const children: XmlElement[] = [];
-  let text = '';
-  let pos = tagEnd + 1;
-
-  if (isSelfClosing) {
-    return { element: { tag, attrs, children, text }, end: pos };
-  }
-
-  const endTag = `</${tag.split(':').pop()!}>`;
-  const closeTag = `</${tag}>`;
-  let depth = 1;
-
-  while (pos < xml.length && depth > 0) {
-    if (xml[pos] === '<') {
-      if (xml.slice(pos, pos + closeTag.length) === closeTag || xml.slice(pos, pos + endTag.length) === endTag) {
-        depth--;
-        if (depth === 0) {
-          pos += closeTag.length;
-          break;
-        }
-        pos += closeTag.length;
-      } else if (xml[pos + 1] === '/') {
-        depth--;
-        const ctEnd = xml.indexOf('>', pos);
-        pos = ctEnd + 1;
-      } else if (xml.slice(pos, pos + 4) === '<!--') {
-        const commentEnd = xml.indexOf('-->', pos);
-        pos = commentEnd + 3;
-      } else if (xml[pos + 1] === '!') {
-        const ctEnd = xml.indexOf('>', pos);
-        pos = ctEnd + 1;
-      } else {
-        const result = parseElement(xml, pos);
-        children.push(result.element);
-        pos = result.end;
-      }
-    } else {
-      const nextTag = xml.indexOf('<', pos);
-      if (nextTag === -1) break;
-      const textContent = xml.slice(pos, nextTag).replace(/\s+/g, ' ').trim();
-      if (textContent) text += textContent;
-      pos = nextTag;
-    }
-  }
-
-  return { element: { tag: tag.split(':').pop()!, attrs, children, text }, end: pos };
-}
-
-function findChildren(el: XmlElement, tag: string): XmlElement[] {
-  return el.children.filter(c => c.tag === tag);
-}
-
-function findFirstChild(el: XmlElement, tag: string): XmlElement | undefined {
-  return el.children.find(c => c.tag === tag);
-}
-
-function getText(el: XmlElement): string {
-  const tElements = findChildren(el, 't');
-  return tElements.map(t => t.text).join('').trim();
-}
-
-function getParagraphStyle(el: XmlElement): string {
-  const pPr = findFirstChild(el, 'pPr');
-  if (!pPr) return '';
-  const pStyle = findFirstChild(pPr, 'pStyle');
-  return pStyle?.attrs['w:val'] ?? '';
-}
-
-function extractCellText(cell: XmlElement): string {
-  const parts: string[] = [];
-  function walk(e: XmlElement): void {
-    if (e.tag === 't' && e.text) parts.push(e.text);
-    for (const c of e.children) walk(c);
-  }
-  walk(cell);
-  return parts.join('').trim();
-}
 
 function dedupeCells(cells: string[]): string[] {
   const result: string[] = [];
@@ -133,7 +19,7 @@ function splitArabic(text: string): string | string[] {
   let current = '';
   let depth = 0;
   for (let i = 0; i < normalized.length; i++) {
-    const ch = normalized[i];
+    const ch: string = normalized[i] ?? '';
     if ('({['.includes(ch)) { depth++; current += ch; }
     else if (')}]'.includes(ch)) { depth = Math.max(0, depth - 1); current += ch; }
     else if ('/|'.includes(ch) || (depth === 0 && '–—ـ'.includes(ch))) {
@@ -154,7 +40,9 @@ function parseVocabularyRow(cells: string[]): VocabularyEntry[] {
   const deduped = dedupeCells(cells);
   const pairs: VocabularyEntry[] = [];
   for (let i = 0; i + 1 < deduped.length; i += 2) {
-    pairs.push({ english: deduped[i], arabic: splitArabic(deduped[i + 1]) });
+    const a = deduped[i] ?? '';
+    const b = deduped[i + 1] ?? '';
+    pairs.push({ english: a, arabic: splitArabic(b) });
   }
   return pairs;
 }
@@ -162,11 +50,16 @@ function parseVocabularyRow(cells: string[]): VocabularyEntry[] {
 function parseSynonymRow(cells: string[]): SynonymEntry | null {
   const deduped = dedupeCells(cells);
   if (deduped.length < 6) return null;
+  const word = deduped[0] ?? '';
+  const arabic = deduped[1] ?? '';
+  const synonyms = deduped[2] ?? '';
+  const antonyms = deduped[4] ?? '';
+  if (!word || !arabic) return null;
   return {
-    word: deduped[0],
-    arabic: splitArabic(deduped[1]),
-    synonyms: splitLines(deduped[2]),
-    antonyms: splitLines(deduped[4]),
+    word,
+    arabic: splitArabic(arabic),
+    synonyms: splitLines(synonyms),
+    antonyms: splitLines(antonyms),
   };
 }
 
@@ -176,32 +69,59 @@ function classifySection(heading: string): 'vocabulary' | 'synonym-antonym' {
   return 'vocabulary';
 }
 
-export async function parseVocabularyDocBuffer(buffer: Buffer): Promise<VocabularyDocument> {
-  const zip = await JSZip.loadAsync(buffer);
-  const docFile = zip.file('word/document.xml');
-  if (!docFile) {
-    throw new Error('DOCX file does not contain word/document.xml');
-  }
-  const xmlStr = await docFile.async('string');
+function extractHtmlTables(html: string): string[][][] {
+  const tables: string[][][] = [];
+  const tableRegex = /<table[^>]*>([\s\S]*?)<\/table>/gi;
+  const rowRegex = /<tr[^>]*>([\s\S]*?)<\/tr>/gi;
+  const cellRegex = /<t[dh][^>]*>([\s\S]*?)<\/t[dh]>/gi;
 
-  const root = parseXml(xmlStr);
-  const body = findFirstChild(root, 'body');
-  if (!body) throw new Error('Cannot find document body');
-
-  const tables: XmlElement[] = [];
-  const headingTexts: string[] = [];
-
-  for (const child of body.children) {
-    if (child.tag === 'tbl') {
-      tables.push(child);
-    } else if (child.tag === 'p') {
-      const style = getParagraphStyle(child);
-      if (style.startsWith('Heading')) {
-        const text = getText(child);
-        if (text) headingTexts.push(text);
+  let tableMatch: RegExpExecArray | null;
+  while ((tableMatch = tableRegex.exec(html)) !== null) {
+    const rows: string[][] = [];
+    let rowMatch: RegExpExecArray | null;
+    const rowHtml: string = tableMatch[1] ?? '';
+    while ((rowMatch = rowRegex.exec(rowHtml)) !== null) {
+      const cells: string[] = [];
+      let cellMatch: RegExpExecArray | null;
+      const cellHtml: string = rowMatch[1] ?? '';
+      while ((cellMatch = cellRegex.exec(cellHtml)) !== null) {
+        const raw: string = cellMatch[1] ?? '';
+        const content = raw
+          .replace(/<[^>]+>/g, ' ')
+          .replace(/&amp;/g, '&')
+          .replace(/&lt;/g, '<')
+          .replace(/&gt;/g, '>')
+          .replace(/&quot;/g, '"')
+          .replace(/&#39;/g, "'")
+          .replace(/\s+/g, ' ')
+          .trim();
+        cells.push(content);
       }
+      if (cells.length > 0) rows.push(cells);
     }
+    if (rows.length > 0) tables.push(rows);
   }
+  return tables;
+}
+
+function extractHeadings(html: string): string[] {
+  const headings: string[] = [];
+  const headingRegex = /<h[1-6][^>]*>([\s\S]*?)<\/h[1-6]>/gi;
+  let match: RegExpExecArray | null;
+  while ((match = headingRegex.exec(html)) !== null) {
+    const raw = match[1] ?? '';
+    const text = raw.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
+    if (text) headings.push(text);
+  }
+  return headings;
+}
+
+export async function parseVocabularyDocBuffer(buffer: Buffer): Promise<VocabularyDocument> {
+  const result = await mammoth.convertToHtml({ buffer });
+  const html = result.value ?? '';
+
+  const headingTexts = extractHeadings(html);
+  const allTables = extractHtmlTables(html);
 
   const sections: ParsedSection[] = [];
   let tableIndex = 0;
@@ -214,16 +134,17 @@ export async function parseVocabularyDocBuffer(buffer: Buffer): Promise<Vocabula
       items: [],
     };
 
-    if (tableIndex < tables.length) {
-      const table = tables[tableIndex];
+    const rows: string[][] | undefined = allTables[tableIndex];
+    if (rows) {
       tableIndex++;
-      const rows = findChildren(table, 'tr');
-
       if (sectionType === 'synonym-antonym') {
         for (let r = 0; r < rows.length; r++) {
-          const cells = findChildren(rows[r], 'tc').map(extractCellText);
+          const cells = rows[r];
+          if (!cells) continue;
           if (r === 0) {
-            const headerText = (cells[0] ?? '').toLowerCase() + ' ' + (cells[1] ?? '').toLowerCase();
+            const c0 = cells[0] ?? '';
+            const c1 = cells[1] ?? '';
+            const headerText = c0.toLowerCase() + ' ' + c1.toLowerCase();
             if (headerText.includes('word') || headerText.includes('synonym')) continue;
           }
           const item = parseSynonymRow(cells);
@@ -231,10 +152,12 @@ export async function parseVocabularyDocBuffer(buffer: Buffer): Promise<Vocabula
         }
       } else {
         let isFirst = true;
-        for (const row of rows) {
-          const cells = findChildren(row, 'tc').map(extractCellText);
+        for (const cells of rows) {
+          if (!cells) continue;
           if (isFirst) {
-            const combined = (cells[0] ?? '').toLowerCase() + ' ' + (cells[1] ?? '').toLowerCase();
+            const c0 = cells[0] ?? '';
+            const c1 = cells[1] ?? '';
+            const combined = c0.toLowerCase() + ' ' + c1.toLowerCase();
             if (combined.includes('word') || combined.includes('english') || combined.includes('synonym')) {
               isFirst = false;
               continue;
