@@ -41,15 +41,11 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   if (cursor) page.cursor = cursor;
 
   try {
-    const unitsResult = academicTermId
-      ? await applicationService.getUnitsByTerm(academicTermId)
-      : await applicationService.listUnits(filter, page);
+    filter.academicTermId = academicTermId ?? filter.academicTermId;
+    const unitsResult = await applicationService.listUnits(filter, page);
     if (!unitsResult.ok) return NextResponse.json({ success: false, error: unitsResult.error }, { status: mapErrorCode(unitsResult.error.code) });
 
-    const rawItems = academicTermId
-      ? (unitsResult.value as unknown as Record<string, unknown>[])
-      : ((unitsResult.value as unknown as { items: Record<string, unknown>[] }).items);
-
+    const rawItems = (unitsResult.value as unknown as { items: Record<string, unknown>[] }).items;
     const unitIds = rawItems.map((u) => u.id as string).filter(Boolean);
     let lessonCounts = new Map<string, number>();
     if (unitIds.length > 0) {
@@ -58,7 +54,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     }
 
     const items = rawItems.map((u) => toFrontendUnit({ ...u, _lessonCount: lessonCounts.get(u.id as string) ?? 0 }));
-    const nextCursor = academicTermId ? null : (unitsResult.value as unknown as { nextCursor: string | null }).nextCursor;
+    const nextCursor = (unitsResult.value as unknown as { nextCursor: string | null }).nextCursor;
     return NextResponse.json({ success: true, data: { items, nextCursor } });
   } catch (error) {
     return NextResponse.json({ success: false, error: { code: 'INTERNAL', message: error instanceof Error ? error.message : 'Unknown error' } }, { status: 500 });

@@ -39,6 +39,28 @@ async function handleCurriculumTree(request: NextRequest): Promise<NextResponse>
     if (!stagesResult.ok) return NextResponse.json({ success: true, data: [] });
     const stages = stagesResult.value.items;
 
+    let unitEntries: Array<Record<string, unknown>> = [];
+    if (termId) {
+      const unitsResult = await unitRepo.getUnitsByTerm(termId);
+      if (unitsResult.ok) {
+        const unitIds = unitsResult.value.map((u) => u.id);
+        const lessonsByUnitResult = await lessonRepo.getPublishedLessonsByUnitIds(unitIds);
+        const lessonsByUnit = lessonsByUnitResult.ok ? lessonsByUnitResult.value! : new Map<string, ILesson[]>();
+        unitEntries = unitsResult.value.map((unit) => ({
+          id: unit.id, title: unit.name, description: unit.nameAr ?? unit.name,
+          displayOrder: unit.order, isPremium: unit.isPremium,
+          unlocked: isUnlocked(!!unit.isPremium, 'UNIT', unit.id),
+          lessons: (lessonsByUnit.get(unit.id) ?? []).map((l) => ({
+            id: l.id, title: l.title, displayOrder: l.displayOrder,
+            estimatedDuration: l.estimatedDuration ?? 30,
+            isPremium: false, sequentialMode: true,
+            homeworkEnabled: false, quizEnabled: false,
+            unlocked: isUnlocked(false, 'LESSON', l.id),
+          })),
+        }));
+      }
+    }
+
     const result: Array<Record<string, unknown>> = [];
 
     for (const stage of stages) {
@@ -47,37 +69,9 @@ async function handleCurriculumTree(request: NextRequest): Promise<NextResponse>
 
       const gradeEntries: Array<Record<string, unknown>> = [];
       for (const grade of grades) {
-        let units: Array<Record<string, unknown>> = [];
-
-        if (termId) {
-          const unitsResult = await unitRepo.getUnitsByTerm(termId);
-          if (unitsResult.ok) {
-            const unitIds = unitsResult.value.map((u) => u.id);
-            const lessonsByUnitResult = await lessonRepo.getPublishedLessonsByUnitIds(unitIds);
-            const lessonsByUnit = lessonsByUnitResult.ok ? lessonsByUnitResult.value! : new Map<string, ILesson[]>();
-            const unitEntries: Array<Record<string, unknown>> = [];
-            for (const unit of unitsResult.value) {
-              const lessonItems = (lessonsByUnit.get(unit.id) ?? []).map((l) => ({
-                id: l.id, title: l.title, displayOrder: l.displayOrder,
-                estimatedDuration: l.estimatedDuration ?? 30,
-                isPremium: false, sequentialMode: true,
-                homeworkEnabled: false, quizEnabled: false,
-                unlocked: isUnlocked(false, 'LESSON', l.id),
-              }));
-              unitEntries.push({
-                id: unit.id, title: unit.name, description: unit.nameAr ?? unit.name,
-                displayOrder: unit.order, isPremium: unit.isPremium,
-                unlocked: isUnlocked(!!unit.isPremium, 'UNIT', unit.id),
-                lessons: lessonItems,
-              });
-            }
-            units = unitEntries;
-          }
-        }
-
         if (stageId === stage.id && (!gradeId || gradeId === grade.id)) {
           gradeEntries.push({
-            id: grade.id, name: grade.name, displayOrder: grade.order, units,
+            id: grade.id, name: grade.name, displayOrder: grade.order, units: termId ? unitEntries : [],
           });
         }
       }

@@ -69,6 +69,11 @@ export function toFrontendLesson(l: Record<string, unknown>): Record<string, unk
     quizEnabled: l.quizEnabled ?? false,
     estimatedDuration: l.estimatedDuration ?? null,
     createdAt: l.createdAt ?? new Date().toISOString(),
+    updatedAt: l.updatedAt ?? l.createdAt ?? new Date().toISOString(),
+    _count: { videos: (l._count as Record<string, number>)?.videos ?? 0, vocabulary: (l._count as Record<string, number>)?.vocabulary ?? 0 },
+    document: (l.document as Record<string, string> | null) ?? null,
+    homework: (l.homework as Record<string, string> | null) ?? null,
+    quiz: (l.quiz as Record<string, string> | null) ?? null,
   };
 }
 
