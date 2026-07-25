@@ -175,6 +175,67 @@ export class LessonRepository implements ILessonRepository {
     }
   }
 
+  async getPublishedLessonCounts(unitIds: string[]): Promise<RepositoryResult<Map<string, number>>> {
+    try {
+      if (unitIds.length === 0) return { ok: true, value: new Map() };
+      const db = this.getDb();
+      const counts = new Map<string, number>();
+      for (let i = 0; i < unitIds.length; i += 10) {
+        const batch = unitIds.slice(i, i + 10);
+        const snapshot = await db.collection(COLLECTION)
+          .where('unitId', 'in', batch)
+          .where('deletedAt', '==', null)
+          .get();
+        const batchCounts = new Map<string, number>();
+        snapshot.forEach((doc) => {
+          const data = doc.data();
+          const uid = data.unitId as string;
+          if (data.isPublished === true || data.status === 'published') {
+            batchCounts.set(uid, (batchCounts.get(uid) ?? 0) + 1);
+          }
+        });
+        for (const [uid, c] of batchCounts) {
+          counts.set(uid, c);
+        }
+      }
+      return { ok: true, value: counts };
+    } catch (error) {
+      const err = toRepositoryError(error);
+      return { ok: false, error: { ...err } } as unknown as RepositoryResult<Map<string, number>>;
+    }
+  }
+
+  async getPublishedLessonsByUnitIds(unitIds: string[]): Promise<RepositoryResult<Map<string, ILesson[]>>> {
+    try {
+      if (unitIds.length === 0) return { ok: true, value: new Map() };
+      const db = this.getDb();
+      const grouped = new Map<string, ILesson[]>();
+      for (let i = 0; i < unitIds.length; i += 10) {
+        const batch = unitIds.slice(i, i + 10);
+        const snapshot = await db.collection(COLLECTION)
+          .where('unitId', 'in', batch)
+          .where('deletedAt', '==', null)
+          .where('isPublished', '==', true)
+          .where('status', '==', 'published')
+          .get();
+        snapshot.forEach((doc) => {
+          const data = { ...doc.data(), id: doc.id } as LessonFirestoreDoc;
+          const lesson = this.mapper.toDomain(data);
+          const uid = data.unitId;
+          if (!grouped.has(uid)) grouped.set(uid, []);
+          grouped.get(uid)!.push(lesson);
+        });
+      }
+      for (const [, lessons] of grouped) {
+        lessons.sort((a, b) => a.displayOrder - b.displayOrder);
+      }
+      return { ok: true, value: grouped };
+    } catch (error) {
+      const err = toRepositoryError(error);
+      return { ok: false, error: { ...err } } as unknown as RepositoryResult<Map<string, ILesson[]>>;
+    }
+  }
+
   async searchLessons(searchTerm: string, page: PageQuery): Promise<RepositoryResult<Page<ILessonSummary>>> {
     try {
       const allResults = await this.listLessons({}, { limit: 1000 });

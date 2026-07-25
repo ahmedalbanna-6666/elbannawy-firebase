@@ -365,7 +365,7 @@ export default function AdminSettingsPage(): ReactNode {
                     <div className="flex items-center gap-2">
                       <span className="font-semibold text-neutral-900 dark:text-neutral-100">{year.name}</span>
                       {year.isActive && (
-                        <span className="rounded-full bg-green-100 dark:bg-green-900 px-2 py-0.5 text-xs text-green-700 dark:text-green-300">
+                        <span className="rounded-full bg-success-100 dark:bg-success-900 px-2 py-0.5 text-xs text-success-700 dark:text-success-300">
                           نشط
                         </span>
                       )}
@@ -387,7 +387,7 @@ export default function AdminSettingsPage(): ReactNode {
                       <Button size="sm" variant="outline" onClick={() => { setEditYearId(year.id); setEditYearName(year.name); }}>
                         <Pencil className="h-4 w-4" />
                       </Button>
-                      <Button size="sm" variant="outline" onClick={() => { deleteYearMutation.mutate(year.id); }} className="text-red-500">
+                      <Button size="sm" variant="outline" onClick={() => { deleteYearMutation.mutate(year.id); }} className="text-danger-500">
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
@@ -427,7 +427,7 @@ export default function AdminSettingsPage(): ReactNode {
                             <Button size="sm" variant="ghost" onClick={() => { setEditTermId(term.id); setEditTermName(term.name); setEditTermOrder(String(term.displayOrder)); }}>
                               <Pencil className="h-3 w-3" />
                             </Button>
-                            <Button size="sm" variant="ghost" onClick={() => { deleteTermMutation.mutate(term.id); }} className="text-red-500">
+                            <Button size="sm" variant="ghost" onClick={() => { deleteTermMutation.mutate(term.id); }} className="text-danger-500">
                               <Trash2 className="h-3 w-3" />
                             </Button>
                           </div>

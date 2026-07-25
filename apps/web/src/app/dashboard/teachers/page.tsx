@@ -456,7 +456,7 @@ function TeacherProfileTab({
                 <Button size="sm" variant="outline" className="text-amber-500" onClick={() => { setDialog({ type: "status" }); }}>
                   تغيير الحالة
                 </Button>
-                <Button size="sm" variant="outline" className="text-red-500" onClick={() => { setDialog({ type: "delete" }); }}>
+                <Button size="sm" variant="outline" className="text-danger-500" onClick={() => { setDialog({ type: "delete" }); }}>
                   حذف الحساب
                 </Button>
               </>
@@ -908,7 +908,7 @@ function ActionDialogs({
                   onChange={(e) => { setDeleteReason(e.target.value); }}
                 />
               </div>
-              <p className="text-sm text-red-500 mt-3">سيتم حذف حساب {teacherName} نهائياً. لا يمكن التراجع عن هذا الإجراء.</p>
+              <p className="text-sm text-danger-500 mt-3">سيتم حذف حساب {teacherName} نهائياً. لا يمكن التراجع عن هذا الإجراء.</p>
             </>
           ),
           action: (): void => {

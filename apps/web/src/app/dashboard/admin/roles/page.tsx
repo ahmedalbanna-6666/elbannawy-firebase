@@ -62,7 +62,7 @@ export default function AdminRolesPage(): ReactNode {
           <Card key={role.role} variant="elevated" padding="none">
             <CardContent className="p-4">
               <div className="flex items-center gap-2 mb-2">
-                <Shield className={`h-5 w-5 ${role.role === "ADMINISTRATOR" ? "text-yellow-500" : role.role === "TEACHER" ? "text-blue-500" : "text-neutral-500"}`} />
+                <Shield className={`h-5 w-5 ${role.role === "ADMINISTRATOR" ? "text-warning-500" : role.role === "TEACHER" ? "text-primary-500" : "text-neutral-500"}`} />
                 <h3 className="font-semibold text-neutral-900 dark:text-neutral-100">{role.label}</h3>
                 <Badge variant="secondary">{role.role}</Badge>
               </div>

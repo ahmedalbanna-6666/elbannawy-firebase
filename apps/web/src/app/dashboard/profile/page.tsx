@@ -403,7 +403,7 @@ export default function ProfilePage(): ReactNode {
       <Card variant="glass" padding="lg">
         <CardHeader>
           <div className="flex items-center gap-2">
-            <Crown className="h-4 w-4 text-yellow-400" />
+            <Crown className="h-4 w-4 text-warning-400" />
             <h2 className="text-base font-extrabold text-neutral-100">الاشتراك</h2>
           </div>
         </CardHeader>

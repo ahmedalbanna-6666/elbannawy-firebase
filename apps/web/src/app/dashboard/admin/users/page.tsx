@@ -54,8 +54,8 @@ export default function AdminUsersPage(): ReactNode {
         >
           <CardEdge variant="orange" />
           <div className="flex flex-col gap-3 px-5 py-4">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-500/10 ring-1 ring-blue-500/10">
-              <UserCog className="h-5 w-5 text-blue-500" />
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary-500/10 ring-1 ring-primary-500/10">
+              <UserCog className="h-5 w-5 text-primary-500" />
             </div>
             <div className="min-w-0">
               <h3 className="text-sm font-bold text-neutral-900 dark:text-neutral-100">المعلمون</h3>

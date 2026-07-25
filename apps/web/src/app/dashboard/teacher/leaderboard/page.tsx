@@ -44,7 +44,7 @@ interface LeaderboardData {
 const RANK_STYLES: Record<number, { ring: string; bg: string; icon: ReactNode; label: string }> = {
   1: {
     ring: "ring-yellow-400/60",
-    bg: "from-yellow-400 to-amber-500",
+    bg: "from-warning-400 to-amber-500",
     icon: <Crown className="h-4 w-4 text-yellow-500" />,
     label: "البطل",
   },

@@ -23,10 +23,10 @@ import type {
 } from "./question-preview.types";
 
 const TYPE_BADGE_COLORS: Record<QuestionPreviewType, string> = {
-  MCQ: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300",
+  MCQ: "bg-primary-100 text-primary-700 dark:bg-blue-900/30 dark:text-blue-300",
   TRUE_FALSE: "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300",
   FILL_IN_BLANK: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300",
-  GRAMMAR: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300",
+  GRAMMAR: "bg-success-100 text-success-700 dark:bg-success-900/30 dark:text-success-300",
   READING: "bg-cyan-100 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-300",
   READING_QUESTION: "bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-300",
   DIALOGUE: "bg-pink-100 text-pink-700 dark:bg-pink-900/30 dark:text-pink-300",

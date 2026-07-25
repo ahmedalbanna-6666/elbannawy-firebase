@@ -319,7 +319,7 @@ export default function MistakesPage(): ReactNode {
               />
             </div>
             {createExam.isError && (
-              <p className="text-sm text-red-500">{createExam.error.message}</p>
+              <p className="text-sm text-danger-500">{createExam.error.message}</p>
             )}
             <div className="flex gap-3">
               <Button onClick={handleCreateExam} loading={createExam.isPending}>ابدأ الاختبار</Button>
@@ -433,13 +433,13 @@ function MistakeCard({ item }: { item: WrongAnswerItem }): ReactNode {
 
         <div className="flex flex-col gap-2 text-xs">
           {hasWrongAnswer && (
-            <span className="flex items-center gap-1 text-red-500">
+            <span className="flex items-center gap-1 text-danger-500">
               <X className="h-3.5 w-3.5" />
               إجابتك: {item.studentAnswer}
             </span>
           )}
           {item.correctAnswer && (
-            <span className="flex items-center gap-1 text-green-600 dark:text-green-500">
+            <span className="flex items-center gap-1 text-success-600 dark:text-success-500">
               <CheckCircle2 className="h-3.5 w-3.5" />
               الإجابة الصحيحة: {item.correctAnswer}
             </span>

@@ -199,8 +199,8 @@ export default function AchievementsPage(): ReactNode {
             <Card variant="elevated" padding="md">
               <CardContent>
                 <div className="flex items-center gap-3">
-                  <div className="rounded-xl bg-yellow-500/10 p-2">
-                    <Zap className="h-5 w-5 text-yellow-500" />
+                  <div className="rounded-xl bg-warning-500/10 p-2">
+                    <Zap className="h-5 w-5 text-warning-500" />
                   </div>
                   <div>
                     <p className="text-xs text-neutral-500">نقاط الخبرة</p>
@@ -215,8 +215,8 @@ export default function AchievementsPage(): ReactNode {
             <Card variant="elevated" padding="md">
               <CardContent>
                 <div className="flex items-center gap-3">
-                  <div className="rounded-xl bg-yellow-500/10 p-2">
-                    <Coins className="h-5 w-5 text-yellow-500" />
+                  <div className="rounded-xl bg-warning-500/10 p-2">
+                    <Coins className="h-5 w-5 text-warning-500" />
                   </div>
                   <div>
                     <p className="text-xs text-neutral-500">العملات</p>

@@ -591,6 +591,8 @@ export interface ILessonRepository {
   ): Promise<RepositoryResult<Page<ILessonSummary>>>;
   getLessonsByUnit(unitId: string): Promise<RepositoryResult<ILesson[]>>;
   getPublishedLessons(unitId: string): Promise<RepositoryResult<ILesson[]>>;
+  getPublishedLessonCounts(unitIds: string[]): Promise<RepositoryResult<Map<string, number>>>;
+  getPublishedLessonsByUnitIds(unitIds: string[]): Promise<RepositoryResult<Map<string, ILesson[]>>>;
   searchLessons(
     searchTerm: string,
     page: PageQuery,

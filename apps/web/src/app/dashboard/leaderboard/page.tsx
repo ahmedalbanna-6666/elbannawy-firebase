@@ -44,7 +44,7 @@ interface LeaderboardResponse {
 const PODIUM_STYLES: Record<number, { ring: string; bg: string; icon: LucideIcon; label: string }> = {
   1: {
     ring: "ring-yellow-400/60 shadow-[0_0_30px_rgba(250,204,21,0.35)]",
-    bg: "from-yellow-400 to-amber-500",
+    bg: "from-warning-400 to-amber-500",
     icon: Crown,
     label: "البطل",
   },

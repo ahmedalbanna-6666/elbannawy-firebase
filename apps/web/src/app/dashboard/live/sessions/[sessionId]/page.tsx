@@ -222,7 +222,7 @@ export default function SessionControlPage(): ReactNode {
                         </div>
                       </div>
                       {isLive && (
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-neutral-400 hover:text-red-500" onClick={() => { void handleRemoveParticipant(student.id); }} title="إزالة المشارك">
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-neutral-400 hover:text-danger-500" onClick={() => { void handleRemoveParticipant(student.id); }} title="إزالة المشارك">
                           <UserX className="h-4 w-4" />
                         </Button>
                       )}

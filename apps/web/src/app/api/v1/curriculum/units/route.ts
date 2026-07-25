@@ -50,13 +50,11 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       ? (unitsResult.value as unknown as Record<string, unknown>[])
       : ((unitsResult.value as unknown as { items: Record<string, unknown>[] }).items);
 
-    const lessonCounts = new Map<string, number>();
     const unitIds = rawItems.map((u) => u.id as string).filter(Boolean);
+    let lessonCounts = new Map<string, number>();
     if (unitIds.length > 0) {
-      await Promise.all(unitIds.map(async (uid) => {
-        const lessonsResult = await lessonRepo.getPublishedLessons(uid);
-        if (lessonsResult.ok) lessonCounts.set(uid, lessonsResult.value.length);
-      }));
+      const countsResult = await lessonRepo.getPublishedLessonCounts(unitIds);
+      if (countsResult.ok) lessonCounts = countsResult.value!;
     }
 
     const items = rawItems.map((u) => toFrontendUnit({ ...u, _lessonCount: lessonCounts.get(u.id as string) ?? 0 }));

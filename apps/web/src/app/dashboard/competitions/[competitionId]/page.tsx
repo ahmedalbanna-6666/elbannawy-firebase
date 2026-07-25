@@ -348,7 +348,7 @@ function StudentActions({
 
 function CheckCircle(): ReactNode {
   return (
-    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-green-500/10 text-green-600">
+    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-success-500/10 text-success-600">
       <Trophy className="h-5 w-5" />
     </div>
   );
@@ -415,7 +415,7 @@ function Leaderboard({ entries }: LeaderboardProps): ReactNode {
     <Card variant="elevated" padding="none">
       <CardContent className="flex flex-col gap-3 p-5">
         <div className="flex items-center gap-2">
-          <Crown className="h-5 w-5 text-yellow-500" />
+          <Crown className="h-5 w-5 text-warning-500" />
           <h2 className="font-semibold text-neutral-800 dark:text-neutral-100">
             لوحة المتصدرين
           </h2>
@@ -432,7 +432,7 @@ function Leaderboard({ entries }: LeaderboardProps): ReactNode {
               >
                 <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary-500/10 text-xs font-bold text-primary-600">
                   {e.rank === 1 ? (
-                    <Crown className="h-4 w-4 text-yellow-500" />
+                    <Crown className="h-4 w-4 text-warning-500" />
                   ) : e.rank === 2 ? (
                     <Medal className="h-4 w-4 text-neutral-400" />
                   ) : (

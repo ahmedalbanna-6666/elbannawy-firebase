@@ -135,7 +135,7 @@ export function Header({
             <Flame className="h-3.5 w-3.5" />
             {stats.streak} Days
           </span>
-          <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-yellow-500/10 px-3 py-1 text-xs font-semibold text-yellow-600 dark:text-yellow-400">
+          <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-warning-500/10 px-3 py-1 text-xs font-semibold text-warning-600 dark:text-warning-400">
             <Coins className="h-3.5 w-3.5" />
             {stats.coins}
           </span>

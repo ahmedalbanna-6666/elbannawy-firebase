@@ -103,10 +103,10 @@ export function StudentDashboard(): ReactNode {
                 <div className="border-t border-primary-500/[0.06]" />
 
                 <div className="flex items-center gap-2">
-                  <Trophy className="h-3 w-3 shrink-0 text-yellow-500/70" />
+                  <Trophy className="h-3 w-3 shrink-0 text-warning-500/70" />
                   <div className="h-0.5 min-w-0 flex-1 overflow-hidden rounded-full bg-neutral-200 dark:bg-neutral-700">
                     <div
-                      className="h-full rounded-full bg-gradient-to-r from-yellow-400 to-orange-500 transition-all"
+                      className="h-full rounded-full bg-gradient-to-r from-warning-400 to-orange-500 transition-all"
                       style={{ width: `${String(data.continueLearning.progress)}%` }}
                     />
                   </div>
@@ -256,8 +256,8 @@ export function StudentDashboard(): ReactNode {
           <Card variant="outline" padding="md" className="cursor-pointer transition-colors hover:bg-neutral-50 dark:hover:bg-neutral-800/50 h-full">
             <CardContent>
               <div className="flex items-center gap-4">
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-green-500/10">
-                  <Users className="h-6 w-6 text-green-500" />
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-success-500/10">
+                  <Users className="h-6 w-6 text-success-500" />
                 </div>
                 <div className="flex-1">
                   <h3 className="font-semibold text-neutral-900 dark:text-neutral-100">احجز حصة مباشرة</h3>
@@ -273,8 +273,8 @@ export function StudentDashboard(): ReactNode {
           <Card variant="outline" padding="md" className="cursor-pointer transition-colors hover:bg-neutral-50 dark:hover:bg-neutral-800/50 h-full">
             <CardContent>
               <div className="flex items-center gap-4">
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-red-500/10">
-                  <RefreshCw className="h-6 w-6 text-red-500" />
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-danger-500/10">
+                  <RefreshCw className="h-6 w-6 text-danger-500" />
                 </div>
                 <div className="flex-1">
                   <h3 className="font-semibold text-neutral-900 dark:text-neutral-100">تعلم من أخطائك</h3>
@@ -310,8 +310,8 @@ export function StudentDashboard(): ReactNode {
       <Card variant="outline" padding="md" className="cursor-pointer transition-colors hover:bg-neutral-50 dark:hover:bg-neutral-800/50">
         <CardContent>
           <div className="flex items-center gap-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-500/10">
-              <BookOpen className="h-6 w-6 text-blue-500" />
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary-500/10">
+              <BookOpen className="h-6 w-6 text-primary-500" />
             </div>
             <div className="flex-1">
               <h3 className="font-semibold text-neutral-900 dark:text-neutral-100">الوحدات التعليمية</h3>

@@ -52,18 +52,19 @@ async function handleCurriculumTree(request: NextRequest): Promise<NextResponse>
         if (termId) {
           const unitsResult = await unitRepo.getUnitsByTerm(termId);
           if (unitsResult.ok) {
+            const unitIds = unitsResult.value.map((u) => u.id);
+            const lessonsByUnit = (await lessonRepo.getPublishedLessonsByUnitIds(unitIds)).ok
+              ? (await lessonRepo.getPublishedLessonsByUnitIds(unitIds)).value!
+              : new Map<string, ILesson[]>();
             const unitEntries: Array<Record<string, unknown>> = [];
             for (const unit of unitsResult.value) {
-              const lessonsResult = await lessonRepo.getPublishedLessons(unit.id);
-              const lessonItems = lessonsResult.ok
-                ? lessonsResult.value.map((l) => ({
-                    id: l.id, title: l.title, displayOrder: l.displayOrder,
-                    estimatedDuration: l.estimatedDuration ?? 30,
-                    isPremium: false, sequentialMode: true,
-                    homeworkEnabled: false, quizEnabled: false,
-                    unlocked: isUnlocked(false, 'LESSON', l.id),
-                  }))
-                : [];
+              const lessonItems = (lessonsByUnit.get(unit.id) ?? []).map((l) => ({
+                id: l.id, title: l.title, displayOrder: l.displayOrder,
+                estimatedDuration: l.estimatedDuration ?? 30,
+                isPremium: false, sequentialMode: true,
+                homeworkEnabled: false, quizEnabled: false,
+                unlocked: isUnlocked(false, 'LESSON', l.id),
+              }));
               unitEntries.push({
                 id: unit.id, title: unit.name, description: unit.nameAr ?? unit.name,
                 displayOrder: unit.order, isPremium: unit.isPremium,

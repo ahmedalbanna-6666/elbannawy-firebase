@@ -431,7 +431,7 @@ export function AssessmentPlayer({ lessonId, type: t }: AssessmentPlayerProps): 
                   {result.passed ? "ناجح" : "حاول مرة أخرى"}
                 </Badge>
                 {t.showXP && result.xpAwarded !== undefined && result.xpAwarded > 0 && (
-                  <p className="mt-2 flex items-center justify-center gap-1 text-sm font-medium text-yellow-600">
+                  <p className="mt-2 flex items-center justify-center gap-1 text-sm font-medium text-warning-600">
                     <Zap className="h-4 w-4" />+{result.xpAwarded} XP مكتسبة
                   </p>
                 )}

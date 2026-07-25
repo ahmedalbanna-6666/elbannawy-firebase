@@ -492,7 +492,7 @@ function StudentProfileTab({
                   <AlertTriangle className="h-4 w-4 ml-1" />
                   {detail.status === "SUSPENSED" || detail.status === "BANNED" ? "إعادة تنشيط" : detail.status === "ACTIVE" ? "تعليق" : "تغيير الحالة"}
                 </Button>
-                <Button size="sm" variant="outline" className="text-red-500" onClick={() => { setDialog({ type: "delete" }); }}>
+                <Button size="sm" variant="outline" className="text-danger-500" onClick={() => { setDialog({ type: "delete" }); }}>
                   <Trash2 className="h-4 w-4 ml-1" />
                   حذف الحساب
                 </Button>
@@ -536,7 +536,7 @@ function StudentProgressTab({ studentId }: { studentId: string }): ReactNode {
       <Card>
         <CardHeader><h3 className="font-semibold">الاختبارات</h3></CardHeader>
         <CardContent>
-          <p className="text-2xl font-bold text-green-500">
+          <p className="text-2xl font-bold text-success-500">
             {data.quizAttempts.filter((q) => q.passed).length} / {data.quizAttempts.length}
           </p>
           <p className="text-sm text-neutral-500">اختبارات ناجحة</p>
@@ -787,7 +787,7 @@ function ActionDialogs({
           </div>
         ))}
         {dialog.type === "delete" && (
-          <p className="text-sm text-red-500">سيتم حذف حساب {studentName} نهائياً. لا يمكن التراجع عن هذا الإجراء.</p>
+          <p className="text-sm text-danger-500">سيتم حذف حساب {studentName} نهائياً. لا يمكن التراجع عن هذا الإجراء.</p>
         )}
       </DialogContent>
       <DialogFooter>

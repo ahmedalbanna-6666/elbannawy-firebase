@@ -52,8 +52,8 @@ export function AdminDashboard(): ReactNode {
 
   const statsCards = [
     { label: "الطلاب", value: stats?.studentsCount ?? 0, icon: GraduationCap, color: "text-primary-500" },
-    { label: "المعلمون", value: stats?.teachersCount ?? 0, icon: UserCog, color: "text-blue-500" },
-    { label: "الوحدات", value: stats?.unitsCount ?? 0, icon: BookOpen, color: "text-green-500" },
+    { label: "المعلمون", value: stats?.teachersCount ?? 0, icon: UserCog, color: "text-primary-500" },
+    { label: "الوحدات", value: stats?.unitsCount ?? 0, icon: BookOpen, color: "text-success-500" },
     { label: "الدروس", value: stats?.lessonsCount ?? 0, icon: Layers, color: "text-purple-500" },
     { label: "السنوات الدراسية", value: stats?.academicYearsCount ?? 0, icon: Calendar, color: "text-rose-500" },
   ];

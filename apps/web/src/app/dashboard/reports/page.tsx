@@ -73,7 +73,7 @@ export default function ReportsPage(): ReactNode {
         <Card variant="elevated" padding="md">
           <CardHeader>
             <div className="flex items-center gap-2">
-              <Zap className="h-5 w-5 text-yellow-500" />
+              <Zap className="h-5 w-5 text-warning-500" />
               <h3 className="font-semibold text-neutral-900 dark:text-neutral-100">تقدم XP</h3>
             </div>
           </CardHeader>
@@ -85,7 +85,7 @@ export default function ReportsPage(): ReactNode {
         <Card variant="elevated" padding="md">
           <CardHeader>
             <div className="flex items-center gap-2">
-              <Coins className="h-5 w-5 text-yellow-500" />
+              <Coins className="h-5 w-5 text-warning-500" />
               <h3 className="font-semibold text-neutral-900 dark:text-neutral-100">عملات</h3>
             </div>
           </CardHeader>

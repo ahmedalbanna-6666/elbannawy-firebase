@@ -288,7 +288,7 @@ export function CompetitionFormDialog({
           )}
 
           {error && (
-            <p className="text-xs text-red-500" dir="rtl">
+            <p className="text-xs text-danger-500" dir="rtl">
               {error}
             </p>
           )}
