@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/lib/auth-store";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -11,17 +11,16 @@ export default function AuthLayout({
   children: ReactNode;
 }): ReactNode {
   const router = useRouter();
-  const { isAuthenticated } = useAuthStore();
-  const [mounted, setMounted] = useState(false);
+  const { isAuthenticated, hasHydrated } = useAuthStore();
 
   useEffect(() => {
-    setMounted(true);
+    if (!hasHydrated) return;
     if (isAuthenticated) {
       router.push("/dashboard");
     }
-  }, [isAuthenticated, router]);
+  }, [hasHydrated, isAuthenticated, router]);
 
-  if (!mounted) {
+  if (!hasHydrated) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-neutral-50 p-4 dark:bg-neutral-950">
         <Skeleton className="h-8 w-48" />

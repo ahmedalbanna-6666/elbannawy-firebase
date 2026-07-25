@@ -126,19 +126,21 @@ export function AuthProvider({ children }: { children: ReactNode }): ReactNode {
         void fbUser.getIdToken().then((token: string) => {
           const maxAge = 60 * 60 * 24 * 14;
           document.cookie = 'auth_token=' + token + '; path=/; max-age=' + String(maxAge) + '; SameSite=Lax';
+          setIdToken(token);
         });
         if (!userRef.current) {
           void fetchUser(fbUser);
         }
       } else if (!userRef.current) {
         setFirebaseUser(null);
+        setIdToken(null);
         document.cookie = "auth_token=; path=/; max-age=0";
         fetch('/api/v1/auth/sign-out', { method: 'POST' }).catch(() => {});
       }
     });
 
     return (): void => { unsubscribe(); };
-  }, [setFirebaseUser, fetchUser]);
+  }, [setFirebaseUser, setIdToken, fetchUser]);
 
   const login = useCallback(
     async (emailOrMobile: string, password: string, _rememberMe = false): Promise<void> => {

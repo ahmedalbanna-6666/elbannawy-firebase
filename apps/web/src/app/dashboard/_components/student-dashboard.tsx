@@ -68,78 +68,69 @@ export function StudentDashboard(): ReactNode {
     <div className="flex flex-col gap-5">
 
       {/* SECTION 1 — Continue / Start Learning */}
-      {data.continueLearning ? (
-        <section>
-          <Card variant="gradient" padding="none" className="overflow-hidden border-0">
-            <div className="relative bg-gradient-to-l from-success-700/25 via-success-600/15 to-transparent px-5 py-4">
-              <div className="flex items-center justify-between gap-4">
-                <div className="min-w-0 flex-1">
-                  <div className="mb-1 flex items-center gap-2">
-                    <div className="flex h-6 w-6 items-center justify-center rounded-full bg-success-500/20">
-                      <Play className="h-3 w-3 text-success-400" />
+      {/* SECTION 1 — Continue / Start Learning */}
+      <section>
+        <Card variant="outline" padding="none" className="overflow-hidden border border-neutral-200 dark:border-neutral-700">
+          <div className="bg-white px-5 py-4 dark:bg-neutral-900">
+            <div className="flex items-center justify-between gap-4">
+              <div className="min-w-0 flex-1">
+                {data.continueLearning ? (
+                  <>
+                    <div className="mb-1 flex items-center gap-2">
+                      <div className="flex h-6 w-6 items-center justify-center rounded-full bg-violet-500/20">
+                        <Play className="h-3 w-3 text-violet-500" />
+                      </div>
+                      <span className="text-[10px] font-semibold uppercase tracking-wider text-violet-500">واصل التعلم</span>
                     </div>
-                    <span className="text-[10px] font-semibold uppercase tracking-wider text-success-400">واصل التعلم</span>
+                    <h2 className="truncate text-sm font-bold text-neutral-900 dark:text-white">
+                      {data.continueLearning.unitName}
+                    </h2>
+                    <p className="truncate text-xs text-neutral-500 dark:text-neutral-400">
+                      {data.continueLearning.lessonName}
+                    </p>
+                  </>
+                ) : (
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-violet-500/10">
+                      <GraduationCap className="h-6 w-6 text-violet-500" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold text-neutral-900 dark:text-white">ابدأ رحلتك التعليمية</p>
+                      <p className="text-xs text-neutral-500 dark:text-neutral-400">اختر وحدة وتابع تقدمك خطوة بخطوة</p>
+                    </div>
                   </div>
-                  <h2 className="truncate text-sm font-bold text-neutral-900 dark:text-white">
-                    {data.continueLearning.unitName}
-                  </h2>
-                  <p className="truncate text-xs text-neutral-600 dark:text-neutral-300">
-                    {data.continueLearning.lessonName}
-                  </p>
-                </div>
-                <Button
-                  size="sm"
-                  variant="primary"
-                  className="shrink-0 rounded-xl px-4 text-xs font-bold shadow-lg shadow-success-500/25"
-                  onClick={() => { const lessonId = data.continueLearning?.lessonId; if (lessonId) router.push(`/dashboard/lessons/detail/${lessonId}`); }}
-                >
-                  <Play className="h-3.5 w-3.5" />
-                  استكمل
-                </Button>
+                )}
               </div>
-              <div className="mt-3 flex items-center gap-2">
-                <Trophy className="h-3 w-3 shrink-0 text-emerald-400" />
-                <div className="h-1.5 min-w-0 flex-1 overflow-hidden rounded-full bg-neutral-700/50">
-                  <div
-                    className="h-full rounded-full bg-gradient-to-l from-emerald-400 to-success-500 transition-all duration-500"
-                    style={{ width: `${String(data.continueLearning.progress)}%` }}
-                  />
-                </div>
-                <span className="shrink-0 text-[10px] font-medium text-emerald-400">
-                  {Math.round(data.continueLearning.progress)}%
-                </span>
-              </div>
+              <Button
+                size="sm"
+                className="shrink-0 rounded-xl bg-violet-600 px-4 text-xs font-bold text-white shadow-lg shadow-violet-600/25 hover:bg-violet-700"
+                onClick={() => {
+                  if (data.continueLearning?.lessonId) {
+                    router.push(`/dashboard/lessons/detail/${data.continueLearning.lessonId}`);
+                  } else {
+                    router.push("/dashboard/units");
+                  }
+                }}
+              >
+                <Play className="h-3.5 w-3.5" />
+                {data.continueLearning ? "استكمل" : "ابدأ الآن"}
+              </Button>
             </div>
-          </Card>
-        </section>
-      ) : (
-        <section>
-          <Card variant="gradient" padding="none" className="overflow-hidden border-0">
-            <div className="relative bg-gradient-to-l from-success-700/25 via-success-600/15 to-transparent px-5 py-5">
-              <div className="flex items-center justify-between gap-4">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-success-500/15 shadow-lg shadow-success-500/10">
-                    <GraduationCap className="h-6 w-6 text-success-400" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-bold text-neutral-900 dark:text-white">ابدأ رحلتك التعليمية</p>
-                    <p className="text-xs text-neutral-600 dark:text-neutral-300">اختر وحدة وتابع تقدمك خطوة بخطوة</p>
-                  </div>
-                </div>
-                <Button
-                  size="sm"
-                  variant="primary"
-                  className="shrink-0 rounded-xl px-5 text-xs font-bold shadow-lg shadow-success-500/25"
-                  onClick={() => { router.push("/dashboard/units"); }}
-                >
-                  <Play className="h-3.5 w-3.5" />
-                  ابدأ الآن
-                </Button>
+            <div className="mt-3 flex items-center gap-2">
+              <Trophy className="h-4 w-4 shrink-0 text-violet-500" />
+              <div className="h-2.5 min-w-0 flex-1 overflow-hidden rounded-full bg-neutral-200 dark:bg-neutral-700">
+                <div
+                  className="h-full rounded-full bg-violet-500 transition-all duration-500"
+                  style={{ width: `${String(Math.min(Math.max(data.continueLearning?.progress ?? 0, 2), 100))}%` }}
+                />
               </div>
+              <span className="shrink-0 text-xs font-bold text-violet-700 dark:text-violet-300" style={{ minWidth: '40px', textAlign: 'right' as const }}>
+                {Math.round(data.continueLearning?.progress ?? 0)}%
+              </span>
             </div>
-          </Card>
-        </section>
-      )}
+          </div>
+        </Card>
+      </section>
 
       {/* SECTION 2 — Curriculum Units */}
       <div onClick={(): void => { router.push("/dashboard/units"); }} role="button" tabIndex={0} onKeyDown={(e): void => { if (e.key === "Enter") { router.push("/dashboard/units"); } }}>

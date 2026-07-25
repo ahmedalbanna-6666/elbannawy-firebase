@@ -28,7 +28,8 @@ function LoginForm(): ReactNode {
 
     try {
       await login(mobile, password, rememberMe);
-      router.push("/dashboard");
+      const redirectTo = searchParams.get("redirect") || "/dashboard";
+      router.push(redirectTo);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Login failed");
     } finally {

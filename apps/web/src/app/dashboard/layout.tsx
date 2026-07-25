@@ -43,10 +43,9 @@ interface DashboardLayoutProps {
 export default function DashboardLayout({ children }: DashboardLayoutProps): ReactNode {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const router = useRouter();
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, hasHydrated } = useAuthStore();
   const userId = useAuthStore((s) => s.user?.id);
   const { logout } = useAuth();
-  const [mounted, setMounted] = useState(false);
 
   const { data: profile } = useQuery<{
     role: string;
@@ -73,11 +72,11 @@ export default function DashboardLayout({ children }: DashboardLayoutProps): Rea
     : (ROLE_LABELS[userRole] ?? "طالب");
 
   useEffect(() => {
-    setMounted(true);
+    if (!hasHydrated) return;
     if (!isAuthenticated) {
       router.push("/login");
     }
-  }, [isAuthenticated, router]);
+  }, [hasHydrated, isAuthenticated, router]);
 
   useEffect(() => {
     if (!isAuthenticated || !userId || !profile) return;
@@ -198,7 +197,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps): Rea
     return items;
   }, [router, pathname, userRole]);
 
-  if (!mounted || !isAuthenticated) {
+  if (!hasHydrated) {
     return (
       <div className="flex min-h-screen items-center justify-center p-8">
         <Skeleton className="h-8 w-48" />

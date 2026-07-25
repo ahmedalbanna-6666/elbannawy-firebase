@@ -17,9 +17,11 @@ interface AuthState {
   user: AuthUser | null;
   isAuthenticated: boolean;
   idToken: string | null;
+  hasHydrated: boolean;
   setFirebaseUser: (firebaseUser: FirebaseUser | null) => void;
   setUser: (user: AuthUser) => void;
   setIdToken: (token: string | null) => void;
+  setHasHydrated: (hydrated: boolean) => void;
   logout: () => void;
 }
 
@@ -43,6 +45,7 @@ export const useAuthStore = create<AuthState>()(
       user: null,
       isAuthenticated: false,
       idToken: null,
+      hasHydrated: false,
       setFirebaseUser: (firebaseUser: FirebaseUser | null): void => {
         set({ firebaseUser });
       },
@@ -51,6 +54,9 @@ export const useAuthStore = create<AuthState>()(
       },
       setIdToken: (token: string | null): void => {
         set({ idToken: token, isAuthenticated: token !== null });
+      },
+      setHasHydrated: (hydrated: boolean): void => {
+        set({ hasHydrated: hydrated });
       },
       logout: (): void => {
         set({
@@ -68,6 +74,9 @@ export const useAuthStore = create<AuthState>()(
         isAuthenticated: state.isAuthenticated,
         idToken: state.idToken,
       }),
+      onRehydrateStorage: () => (): void => {
+        useAuthStore.getState().setHasHydrated(true);
+      },
     },
   ),
 );

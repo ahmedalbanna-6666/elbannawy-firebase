@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAdminDb } from '@/lib/firebase/admin';
-import { QuestionImportService, HomeworkQuestionRepository } from '@el-bannawy/lib';
+import { QuestionImportService, HomeworkQuestionRepository, HomeworkRepository } from '@el-bannawy/lib';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
+
+const hwRepo = new HomeworkRepository();
+const questionRepo = new HomeworkQuestionRepository();
 
 function mapMcqToQuestions(content: Record<string, unknown>): { prompt: string; options: Record<string, string>; questionType: string }[] {
   const categories = content.categories as Array<{ name: string; questions: Array<{ number: number; question: string; options: Array<{ label: string; text: string }> }> }> | undefined;
@@ -19,11 +21,7 @@ function mapMcqToQuestions(content: Record<string, unknown>): { prompt: string; 
       }
       const correctLabel = answers?.[q.number];
       if (correctLabel) opts.correct = correctLabel;
-      return {
-        prompt: q.question,
-        options: opts,
-        questionType: 'MULTIPLE_CHOICE',
-      };
+      return { prompt: q.question, options: opts, questionType: 'MULTIPLE_CHOICE' };
     })
   );
 }
@@ -47,7 +45,6 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> },
 ): Promise<NextResponse> {
   const { id } = await params;
-
   try {
     const formData = await request.formData();
     const file = formData.get('file') as File | null;
@@ -60,64 +57,57 @@ export async function POST(
       return NextResponse.json({ success: false, error: { code: 'INVALID_INPUT', message: 'No file provided' } }, { status: 400 });
     }
 
-    const ext = path.extname(file.name) || '.docx';
-    const tempDir = os.tmpdir();
-    const tempPath = path.join(tempDir, 'hw-import-' + id + '-' + String(Date.now()) + ext);
-    const buffer = Buffer.from(await file.arrayBuffer());
-    fs.writeFileSync(tempPath, buffer);
-
     let questions: { prompt: string; options: Record<string, string>; questionType: string }[] = [];
-
     try {
-      if (ext === '.docx') {
-        const importService = new QuestionImportService();
-        const preview = await importService.preview(tempPath);
-        if (preview.ok) {
-          for (const activity of preview.value.activities) {
-            const mapped = mapContentToQuestions(activity.content as unknown as Record<string, unknown>, activity.type);
-            questions.push(...mapped);
+      const ext = path.extname(file.name) || '.docx';
+      const tempDir = os.tmpdir();
+      const tempPath = path.join(tempDir, 'hw-import-' + id + '-' + String(Date.now()) + ext);
+      const buffer = Buffer.from(await file.arrayBuffer());
+      fs.writeFileSync(tempPath, buffer);
+      try {
+        if (ext === '.docx') {
+          const importService = new QuestionImportService();
+          const preview = await importService.preview(tempPath);
+          if (preview.ok) {
+            for (const activity of preview.value.activities) {
+              const mapped = mapContentToQuestions(activity.content as unknown as Record<string, unknown>, activity.type);
+              questions.push(...mapped);
+            }
           }
         }
+      } finally {
+        try { fs.unlinkSync(tempPath); } catch { /* ignore */ }
       }
-    } finally {
-      try { fs.unlinkSync(tempPath); } catch { /* ignore */ }
-    }
+    } catch { /* if parsing fails, still create homework with 0 questions */ }
 
-    const db = getAdminDb();
-    const existing = await db.collection('homework').where('lessonId', '==', id).limit(1).get();
-
-    const now = new Date().toISOString();
-    const homeworkData: Record<string, unknown> = {
-      lessonId: id,
-      ownerType: 'LESSON',
-      ownerId: id,
-      title: title ?? file.name.replace(/\.[^.]+$/, ''),
-      instructions: instructions ?? null,
-      passingScore: passingScore ? parseInt(passingScore, 10) : 50,
-      maxAttempts: maxAttempts ? parseInt(maxAttempts, 10) : null,
-      unlimitedAttempts: true,
-      published: false,
-      allowRetry: true,
-      showAnswers: false,
-      xpReward: 10,
-      contentVersion: 1,
-      createdAt: now,
-      updatedAt: now,
-    };
-
+    const existing = await hwRepo.getByLessonId(id);
     let homeworkId: string;
 
-    if (!existing.empty) {
-      const docRef = existing.docs[0].ref;
-      await docRef.update({ ...homeworkData, updatedAt: now, contentVersion: ((existing.docs[0].data().contentVersion ?? 0) as number) + 1 });
-      homeworkId = existing.docs[0].id;
+    if (existing.ok && existing.value) {
+      homeworkId = existing.value.id;
+      await hwRepo.update(homeworkId, {
+        title: title ?? file.name.replace(/\.[^.]+$/, ''),
+        instructions: instructions ?? '',
+        passingScore: passingScore ? parseInt(passingScore, 10) : 50,
+        published: true,
+      }, 0);
     } else {
-      const docRef = db.collection('homework').doc();
-      await docRef.set(homeworkData);
-      homeworkId = docRef.id;
+      const createResult = await hwRepo.create({
+        id: 'hw-' + id + '-' + String(Date.now()),
+        lessonId: id,
+        title: title ?? file.name.replace(/\.[^.]+$/, ''),
+        instructions: instructions ?? '',
+        passingScore: passingScore ? parseInt(passingScore, 10) : 50,
+        maxAttempts: maxAttempts ? parseInt(maxAttempts, 10) : 1,
+        published: true,
+        xpReward: 10,
+      });
+      if (!createResult.ok) {
+        return NextResponse.json({ success: false, error: createResult.error }, { status: 500 });
+      }
+      homeworkId = createResult.value.id;
     }
 
-    const questionRepo = new HomeworkQuestionRepository();
     const savedQuestions: string[] = [];
     for (let i = 0; i < questions.length; i++) {
       const q = questions[i];
@@ -135,14 +125,12 @@ export async function POST(
 
     return NextResponse.json({
       success: true,
-      data: {
-        homeworkId,
-        title: homeworkData.title,
-        questionCount: savedQuestions.length,
-      },
-      timestamp: now,
-    }, { status: existing.empty ? 201 : 200 });
+      data: { homeworkId, title: title ?? file.name.replace(/\.[^.]+$/, ''), questionCount: savedQuestions.length },
+    });
   } catch (error) {
-    return NextResponse.json({ success: false, error: { code: 'INTERNAL', message: error instanceof Error ? error.message : 'Unknown error' }, timestamp: new Date().toISOString() }, { status: 500 });
+    return NextResponse.json({
+      success: false,
+      error: { code: 'INTERNAL', message: error instanceof Error ? error.message : 'Unknown error' },
+    }, { status: 500 });
   }
 }
