@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo, useCallback, useRef, type ReactNode } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api-client";
 import { useAuthStore } from "@/lib/auth-store";
@@ -166,16 +166,41 @@ export default function DashboardLayout({ children }: DashboardLayoutProps): Rea
     [router, handleLogout, can],
   );
 
-  const bottomNavItems: BottomNavItem[] = useMemo(
-    () => [
-      { id: "home", label: "الرئيسية", icon: Home, onClick: (): void => { router.push("/dashboard"); } },
-      { id: "courses", label: "الكورسات", icon: BookOpen, onClick: (): void => { router.push("/dashboard/units"); } },
-      { id: "homework", label: "الواجبات", icon: ClipboardList, onClick: (): void => { router.push("/dashboard/units"); } },
-      { id: "quizzes", label: "الاختبارات", icon: GraduationCap, onClick: (): void => { router.push("/dashboard/units"); } },
-      { id: "profile", label: "الحساب", icon: UserCircle, onClick: (): void => { router.push("/dashboard/profile"); } },
-    ],
-    [router],
-  );
+  const pathname = usePathname();
+
+  const isActive = (route: string): boolean => pathname === route || pathname.startsWith(route + "/");
+
+  const bottomNavItems: BottomNavItem[] = useMemo(() => {
+    const isStudent = userRole === "STUDENT";
+    const isTeacher = userRole === "TEACHER" || userRole === "STAFF";
+
+    const items: BottomNavItem[] = [];
+
+    items.push({ id: "home", label: "الرئيسية", icon: Home, onClick: (): void => { router.push("/dashboard"); }, active: pathname === "/dashboard" });
+
+    if (isStudent) {
+      items.push(
+        { id: "courses", label: "الكورسات", icon: BookOpen, onClick: (): void => { router.push("/dashboard/units"); }, active: isActive("/dashboard/units") },
+      );
+    } else if (isTeacher) {
+      items.push(
+        { id: "units", label: "الوحدات", icon: BookOpen, onClick: (): void => { router.push("/dashboard/units"); }, active: isActive("/dashboard/units") },
+        { id: "homework", label: "الواجبات", icon: ClipboardList, onClick: (): void => { router.push("/dashboard/teacher/homework"); }, active: isActive("/dashboard/teacher/homework") },
+        { id: "quizzes", label: "الاختبارات", icon: GraduationCap, onClick: (): void => { router.push("/dashboard/teacher/quiz"); }, active: isActive("/dashboard/teacher/quiz") },
+        { id: "students", label: "الطلاب", icon: UserCircle, onClick: (): void => { router.push("/dashboard/students"); }, active: isActive("/dashboard/students") },
+      );
+    } else {
+      items.push(
+        { id: "units", label: "الوحدات", icon: BookOpen, onClick: (): void => { router.push("/dashboard/units"); }, active: isActive("/dashboard/units") },
+        { id: "students", label: "الطلاب", icon: UserCircle, onClick: (): void => { router.push("/dashboard/students"); }, active: isActive("/dashboard/students") },
+        { id: "settings", label: "الإعدادات", icon: ScrollText, onClick: (): void => { router.push("/dashboard/admin/settings"); }, active: isActive("/dashboard/admin/settings") },
+      );
+    }
+
+    items.push({ id: "profile", label: "الحساب", icon: UserCircle, onClick: (): void => { router.push("/dashboard/profile"); }, active: isActive("/dashboard/profile") });
+
+    return items;
+  }, [router, pathname, userRole]);
 
   if (!mounted || !isAuthenticated) {
     return (

@@ -221,6 +221,17 @@
     outline: none;
   }
 
+  [role="button"]:focus-visible,
+  button:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--color-ring), 0 0 0 4px var(--color-white);
+  }
+
+  .dark [role="button"]:focus-visible,
+  .dark button:focus-visible {
+    box-shadow: 0 0 0 2px var(--color-ring), 0 0 0 4px var(--color-neutral-900);
+  }
+
   .dark body {
     --color-surface: #0c121e;
     --color-surface-elevated: #0e1422;

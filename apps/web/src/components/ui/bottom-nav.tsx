@@ -34,8 +34,9 @@ export function BottomNav({ items, className }: BottomNavProps): ReactNode {
           <button
             key={item.id}
             onClick={item.onClick}
+            aria-label={item.label}
             className={cn(
-              "relative flex flex-col items-center gap-0.5 px-3 py-2 text-xs font-medium transition-colors",
+              "relative flex flex-col items-center gap-0.5 px-3 py-2 text-xs font-medium transition-colors focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2",
               item.active
                 ? "text-primary-600 dark:text-primary-400"
                 : "text-neutral-400 dark:text-neutral-500",
