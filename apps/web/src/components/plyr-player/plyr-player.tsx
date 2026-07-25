@@ -91,8 +91,13 @@ export function PlyrVideoPlayer({
     };
   }, [providerVideoId, startAt]);
 
+  const posterUrl = `https://img.youtube.com/vi/${providerVideoId}/maxresdefault.jpg`;
+
   return (
-    <div className="aspect-video w-full overflow-hidden rounded-2xl bg-black">
+    <div
+      className="aspect-video w-full overflow-hidden rounded-2xl bg-cover bg-center"
+      style={{ backgroundImage: `url(${posterUrl})` }}
+    >
       <div
         ref={containerRef}
         data-plyr-provider="youtube"
