@@ -47,7 +47,7 @@ export function PlyrVideoPlayer({
       ratio: "16:9",
       resetOnEnd: true,
       clickToPlay: true,
-      hideControls: false,
+      hideControls: true,
       tooltips: { controls: true, seek: true },
     });
 

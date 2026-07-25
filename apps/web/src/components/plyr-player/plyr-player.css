@@ -48,4 +48,23 @@
 .plyr__controls {
   position: static !important;
   order: 1;
+  background: rgba(0, 0, 0, 0.5) !important;
+  backdrop-filter: blur(4px);
+}
+
+.plyr--fullscreen .plyr {
+  display: block !important;
+}
+
+.plyr--fullscreen .plyr__video-wrapper {
+  aspect-ratio: unset;
+  height: 100%;
+}
+
+.plyr--fullscreen .plyr__controls {
+  position: absolute !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  order: unset;
 }
