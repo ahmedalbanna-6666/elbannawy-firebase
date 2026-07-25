@@ -21,24 +21,35 @@
   visibility: visible !important;
 }
 
-.plyr--paused .plyr__video-embed {
-  opacity: 0.99;
-}
-
 .plyr {
+  display: flex !important;
+  flex-direction: column !important;
   border-radius: 1rem;
   overflow: hidden;
   position: relative;
 }
 
+.plyr__video-wrapper {
+  aspect-ratio: 16 / 9;
+  position: relative;
+}
+
 .plyr__controls {
-  position: absolute !important;
-  bottom: 0 !important;
-  left: 0 !important;
-  right: 0 !important;
-  padding: 0 !important;
-  background: transparent !important;
-  z-index: 5;
+  position: static !important;
+  order: 1;
+  height: 32px;
+  display: flex !important;
+  align-items: center !important;
+  padding: 0 12px !important;
+  background: rgba(20, 20, 20, 0.9) !important;
+  transition: opacity 0.25s ease, visibility 0.25s ease !important;
+}
+
+.plyr.plyr--hide-controls .plyr__controls {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  transform: none !important;
+  pointer-events: none !important;
 }
 
 .plyr__controls .plyr__controls__item.plyr__progress__container {
@@ -47,7 +58,7 @@
 
 .plyr__progress {
   height: 4px !important;
-  border-radius: 0 !important;
+  border-radius: 2px !important;
   background: rgba(255, 255, 255, 0.15) !important;
   cursor: pointer;
   transition: height 0.15s ease;
@@ -83,10 +94,26 @@
 }
 
 .plyr__progress__buffer {
-  border-radius: 0 !important;
+  border-radius: 2px !important;
   background: rgba(255, 255, 255, 0.08) !important;
 }
 
 .plyr--fullscreen {
   border-radius: 0 !important;
+}
+
+.plyr--fullscreen .plyr__video-wrapper {
+  aspect-ratio: unset;
+  height: 100%;
+}
+
+.plyr--fullscreen .plyr__controls {
+  position: absolute !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  order: unset;
+  height: auto;
+  padding: 10px 14px !important;
+  background: linear-gradient(180deg, transparent, rgba(0, 0, 0, 0.85)) !important;
 }
