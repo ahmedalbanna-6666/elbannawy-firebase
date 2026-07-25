@@ -62,6 +62,16 @@
       ]
     },
     {
+      "collectionGroup": "units",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "deletedAt", "order": "ASCENDING" },
+        { "fieldPath": "academicTermId", "order": "ASCENDING" },
+        { "fieldPath": "gradeId", "order": "ASCENDING" },
+        { "fieldPath": "order", "order": "ASCENDING" }
+      ]
+    },
+    {
       "collectionGroup": "lessons",
       "queryScope": "COLLECTION",
       "fields": [

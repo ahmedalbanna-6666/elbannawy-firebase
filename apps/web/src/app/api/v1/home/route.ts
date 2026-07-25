@@ -12,20 +12,21 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const db = getAdminDb();
     const studentId = decoded.uid;
 
-    const [userDoc, progressSnap, xpSnap, walletSnap, statsSnap, achievementsSnap, bookingsSnap] = await Promise.all([
+    const [userDoc, progressSnap, xpSnap, walletSnap, statsSnap, achievementsSnap, bookingsSnap, pendingHomeworkSnap] = await Promise.all([
       db.collection('users').doc(studentId).get(),
       db.collection('lessonProgress').where('studentId', '==', studentId).get(),
       db.collection('xpAccounts').doc(studentId).get(),
       db.collection('wallets').doc(studentId).get(),
       db.collection('studentStats').doc(studentId).get(),
       db.collection('userAchievements').where('studentId', '==', studentId).get(),
-      db.collection('liveBookings').where('studentId', '==', studentId).where('status', '==', 'confirmed').get(),
+      db.collection('liveBookings').where('studentId', '==', studentId).where('status', '==', 'CONFIRMED').get(),
+      db.collection('homeworkAttempts').where('studentId', '==', studentId).where('status', '==', 'in_progress').get(),
     ]);
 
     const userData = userDoc.data() ?? { fullName: 'User', role: 'student' };
     const xpData = xpSnap.exists ? (xpSnap.data() as { totalXp: number; level: number }) : null;
     const walletData = walletSnap.exists ? (walletSnap.data() as { balance: number }) : null;
-    const statsData = statsSnap.exists ? (statsSnap.data() as { completedLessons: number; homeworkCompletionRate: number; averageQuizScore: number; attendanceRate: number }) : null;
+    const statsData = statsSnap.exists ? (statsSnap.data() as { completedLessons: number; homeworkCompletionRate: number; averageQuizScore: number; attendanceRate: number; streakDays: number }) : null;
 
     const progressDocs = progressSnap.docs.map((d) => d.data() as { lessonId: string; status: string; percentage: number; unitId: string; completedAt?: string; updatedAt: string });
     const completedLessons = progressDocs.filter((p) => p.status === 'completed').length;
@@ -65,21 +66,36 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         createdAt: p.completedAt ?? p.updatedAt,
       }));
 
-    const sessionIds = bookingsSnap.docs.map((d) => (d.data() as { liveSessionId: string }).liveSessionId);
+    const sessionIds = bookingsSnap.docs.map((d) => (d.data() as { sessionId: string }).sessionId);
     const sessionDocs = await Promise.all(
       sessionIds.map((sid) => db.collection('liveSessions').doc(sid).get().catch(() => null))
     );
+    const teacherIds = new Set<string>();
     const upcomingLiveClasses = sessionDocs
       .filter((s): s is FirebaseFirestore.DocumentSnapshot => s !== null && s.exists)
       .map((s) => {
         const data = s.data() as { title: string; scheduledAt: string; teacherId: string; status: string };
+        if (data.teacherId) teacherIds.add(data.teacherId);
         return {
           id: s.id,
           title: data.title ?? 'حصة مباشرة',
           date: data.scheduledAt ?? new Date().toISOString(),
-          teacherName: 'المعلم',
+          teacherId: data.teacherId,
         };
       });
+
+    const teacherNameMap = new Map<string, string>();
+    if (teacherIds.size > 0) {
+      const teacherDocs = await Promise.all(
+        Array.from(teacherIds).map((tid) => db.collection('users').doc(tid).get().catch(() => null))
+      );
+      for (const doc of teacherDocs) {
+        if (doc?.exists) {
+          const d = doc.data() as { fullName: string };
+          teacherNameMap.set(doc.id, d.fullName ?? 'المعلم');
+        }
+      }
+    }
 
     return NextResponse.json({
       success: true,
@@ -96,20 +112,28 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         },
         coins: walletData?.balance ?? 0,
         achievements: achievementsSnap.size,
-        streak: statsData?.attendanceRate ?? 0,
+        streak: statsData?.streakDays ?? 0,
         continueLearning,
         recentActivity,
-        upcomingLiveClasses,
+        upcomingLiveClasses: upcomingLiveClasses.map((c) => ({
+          id: c.id,
+          title: c.title,
+          date: c.date,
+          teacherName: teacherNameMap.get(c.teacherId) ?? 'المعلم',
+        })),
         stats: {
           completedLessons,
           totalLessons: progressDocs.length,
-          homeworkPending: 0,
+          homeworkPending: pendingHomeworkSnap.size,
           quizPassRate: statsData?.averageQuizScore ?? 0,
           attendanceRate: statsData?.attendanceRate ?? 0,
         },
       },
     });
   } catch {
-    return NextResponse.json({ success: false, error: { code: 'UNAUTHORIZED', message: 'Invalid token' } }, { status: 401 });
+    return NextResponse.json(
+      { success: false, error: { code: 'SERVER_ERROR', message: 'Internal server error' } },
+      { status: 500 },
+    );
   }
 }
