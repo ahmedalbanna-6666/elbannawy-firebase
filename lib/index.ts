@@ -22,6 +22,8 @@ export * from "./repositories/subscriptions";
 export * from "./repositories/competitions";
 export * from "./repositories/support";
 export * from "./repositories/gamification";
+export * from "./repositories/homework";
+export * from "./repositories/quiz";
 export * from "./services/user";
 export * from "./services/curriculum";
 export * from "./services/units";
