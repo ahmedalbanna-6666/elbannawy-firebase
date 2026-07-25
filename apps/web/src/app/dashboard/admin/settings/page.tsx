@@ -115,6 +115,8 @@ export default function AdminSettingsPage(): ReactNode {
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ["admin-settings"] });
+      void queryClient.invalidateQueries({ queryKey: ["platform-active-context"] });
+      void queryClient.invalidateQueries({ queryKey: ["active-academic-context"] });
     },
   });
 

@@ -8,7 +8,6 @@ import { useAcademicContextStore } from "@/lib/academic-context-store";
 import { useAuthStore } from "@/lib/auth-store";
 import {
   ACADEMIC_YEAR_OPTIONS,
-  ACADEMIC_TERMS,
   STAGE_OPTIONS,
   TERM_OPTIONS,
   SYSTEM_OPTIONS,
@@ -33,6 +32,7 @@ export function AcademicContextBar({ className }: AcademicContextBarProps): Reac
   const stage = useAcademicContextStore((s) => s.stage);
   const grade = useAcademicContextStore((s) => s.grade);
   const term = useAcademicContextStore((s) => s.term);
+  const termId = useAcademicContextStore((s) => s.termId);
   const setAcademicYear = useAcademicContextStore((s) => s.setAcademicYear);
   const setAcademicYearId = useAcademicContextStore((s) => s.setAcademicYearId);
   const setEducationalSystem = useAcademicContextStore((s) => s.setEducationalSystem);
@@ -76,58 +76,67 @@ export function AcademicContextBar({ className }: AcademicContextBarProps): Reac
   });
 
   const { data: academicYears } = useQuery({
-    queryKey: ["admin-academic-context-years"],
+    queryKey: ["admin-academic-years"],
     queryFn: async () => {
       const res = await api.get<{ id: string; name: string; terms: { id: string; name: string }[] }[]>("/admin/academic-years");
       return res.data ?? [];
     },
-    enabled: isAdmin,
     staleTime: 60_000,
   });
 
+  const yearOptions = useMemo(() => {
+    if (!Array.isArray(academicYears)) return ACADEMIC_YEAR_OPTIONS;
+    return academicYears.map((y) => ({ value: y.name, label: y.name }));
+  }, [academicYears]);
+
   const yearToId = useMemo(() => {
     const map = new Map<string, string>();
-    if (isAdmin && Array.isArray(academicYears)) {
+    if (Array.isArray(academicYears)) {
       for (const y of academicYears) {
         if (y && typeof y === "object" && y.name) {
           map.set(y.name, y.id);
-          const dashName = y.name.replace(/\//g, "-");
-          if (dashName !== y.name) map.set(dashName, y.id);
-          const slashName = y.name.replace(/-/g, "/");
-          if (slashName !== y.name) map.set(slashName, y.id);
         }
       }
     }
     return map;
-  }, [isAdmin, academicYears]);
+  }, [academicYears]);
+
+  const termOptions = useMemo(() => {
+    if (!Array.isArray(academicYears) || !academicYear) return TERM_OPTIONS;
+    const yearId = yearToId.get(academicYear);
+    const year = academicYears.find((y) => y.id === yearId || y.name === academicYear);
+    if (year && Array.isArray(year.terms) && year.terms.length > 0) {
+      return year.terms.map((t) => ({ value: t.name, label: t.name }));
+    }
+    return TERM_OPTIONS;
+  }, [academicYears, academicYear, yearToId]);
 
   const termToId = useMemo(() => {
     const map = new Map<string, string>();
-    if (isAdmin && academicYear && Array.isArray(academicYears)) {
+    if (academicYear && Array.isArray(academicYears)) {
       const yearId = yearToId.get(academicYear);
       const year = academicYears.find((y) => y.id === yearId || y.name === academicYear);
       if (year && Array.isArray(year.terms)) {
         for (const t of year.terms) {
           map.set(t.name, t.id);
+          map.set(t.id, t.id);
         }
       }
     }
     return map;
-  }, [isAdmin, academicYears, academicYear, yearToId]);
+  }, [academicYears, academicYear, yearToId]);
 
   useEffect(() => {
-    if (!isAdmin || !Array.isArray(academicYears) || !academicYear) return;
+    if (!Array.isArray(academicYears) || !academicYear) return;
     const id = yearToId.get(academicYear);
-    if (id) setAcademicYearId(id);
-  }, [isAdmin, academicYears, academicYear, yearToId, setAcademicYearId]);
+    if (id && id !== academicYearId) setAcademicYearId(id);
+  }, [academicYears, academicYear, yearToId, academicYearId, setAcademicYearId]);
 
   useEffect(() => {
-    if (!isAdmin || !Array.isArray(academicYears) || !academicYear || !term) return;
-    const termLabel = ACADEMIC_TERMS.find((t) => t.id === term)?.label;
-    if (!termLabel) return;
-    const id = termToId.get(termLabel);
-    if (id) setTermId(id);
-  }, [isAdmin, academicYears, academicYear, term, termToId, setTermId]);
+    if (!Array.isArray(academicYears) || !academicYear || !term) return;
+    const id = termToId.get(term);
+    if (id && id !== termId) setTermId(id);
+  }, [academicYears, academicYear, term, termToId, termId, setTermId]);
 
   const { data: allStages } = useQuery({
     queryKey: ["curriculum-stages"],
@@ -194,7 +203,7 @@ export function AcademicContextBar({ className }: AcademicContextBarProps): Reac
       {isAdmin && (
         <Select
           size="sm"
-          options={ACADEMIC_YEAR_OPTIONS}
+          options={yearOptions}
           placeholder="السنة الدراسية"
           value={academicYear ?? ""}
           onChange={(e): void => {
@@ -236,14 +245,13 @@ export function AcademicContextBar({ className }: AcademicContextBarProps): Reac
       {isAdmin && (
         <Select
           size="sm"
-          options={TERM_OPTIONS}
+          options={termOptions}
           placeholder="الترم"
           value={term ?? ""}
           onChange={(e): void => {
             const selected = e.target.value;
             setTerm(selected);
-            const termLabel = ACADEMIC_TERMS.find((t) => t.id === selected)?.label;
-            setTermId(termLabel ? (termToId.get(termLabel) ?? null) : null);
+            setTermId(termToId.get(selected) ?? null);
           }}
           aria-label="الترم"
         />
