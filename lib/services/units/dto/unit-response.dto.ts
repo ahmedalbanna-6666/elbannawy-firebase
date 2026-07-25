@@ -8,6 +8,7 @@ export interface UnitOutput {
   readonly isActive: boolean;
   readonly isPremium: boolean;
   readonly published: boolean;
+  readonly lockedOverride: boolean | null;
   readonly createdAt: string;
   readonly updatedAt: string;
 }
@@ -21,6 +22,7 @@ export interface UnitSummaryOutput {
   readonly isActive: boolean;
   readonly isPremium: boolean;
   readonly published: boolean;
+  readonly lockedOverride: boolean | null;
   readonly createdAt: string;
 }
 

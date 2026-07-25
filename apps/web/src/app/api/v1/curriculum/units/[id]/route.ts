@@ -13,7 +13,7 @@ function toFrontendUnit(u: Record<string, unknown>): Record<string, unknown> {
     displayOrder: u.order ?? 0,
     published: u.published ?? false,
     isPremium: u.isPremium ?? false,
-    lockedOverride: null,
+    lockedOverride: (u.lockedOverride as boolean | null) ?? null,
     createdAt: u.createdAt ?? new Date().toISOString(),
     updatedAt: u.updatedAt ?? new Date().toISOString(),
     grade: { id: u.gradeId ?? '', name: '', stage: { id: '', name: '' } },
@@ -57,7 +57,7 @@ export async function GET(
   try {
     const [unitResult, lessonsResult] = await Promise.all([
       applicationService.getUnitById(id),
-      lessonRepo.getPublishedLessons(id),
+      lessonRepo.getLessonsByUnit(id),
     ]);
     if (!unitResult.ok) return NextResponse.json({ success: false, error: unitResult.error }, { status: 404 });
     const unit = toFrontendUnit(unitResult.value as unknown as Record<string, unknown>);

@@ -12,6 +12,10 @@ export interface LessonFirestoreDoc {
   status: string;
   isPublished: boolean;
   isVisible: boolean;
+  isPremium: boolean;
+  lockedOverride: boolean | null;
+  homeworkEnabled: boolean;
+  quizEnabled: boolean;
   estimatedDuration?: number | null;
   createdAt: Timestamp | string;
   updatedAt: Timestamp | string;
@@ -34,6 +38,10 @@ export class LessonFirestoreMapper {
       status: doc.status as Lesson['status'],
       isPublished: doc.isPublished,
       isVisible: doc.isVisible,
+      isPremium: doc.isPremium ?? false,
+      lockedOverride: doc.lockedOverride ?? null,
+      homeworkEnabled: doc.homeworkEnabled ?? false,
+      quizEnabled: doc.quizEnabled ?? false,
       estimatedDuration: doc.estimatedDuration ?? undefined,
       createdAt: formatFirestoreTimestamp(doc.createdAt),
       updatedAt: formatFirestoreTimestamp(doc.updatedAt),
@@ -52,6 +60,10 @@ export class LessonFirestoreMapper {
       status: doc.status as Lesson['status'],
       isPublished: doc.isPublished,
       isVisible: doc.isVisible,
+      isPremium: doc.isPremium ?? false,
+      lockedOverride: doc.lockedOverride ?? null,
+      homeworkEnabled: doc.homeworkEnabled ?? false,
+      quizEnabled: doc.quizEnabled ?? false,
       estimatedDuration: doc.estimatedDuration ?? undefined,
       createdAt: formatFirestoreTimestamp(doc.createdAt),
     };

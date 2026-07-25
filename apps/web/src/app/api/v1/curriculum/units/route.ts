@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { UnitService, UnitApplicationService, LessonRepository } from '@el-bannawy/lib';
+import { toFrontendUnit, fromFrontendUnitCreate } from '../_shared/transforms';
 
 const unitService = new UnitService();
 const applicationService = new UnitApplicationService(unitService);
@@ -17,48 +18,6 @@ function mapErrorCode(code: string): number {
     case 'UNAVAILABLE': return 503;
     default: return 500;
   }
-}
-
-function toFrontendUnit(u: Record<string, unknown>): Record<string, unknown> {
-  return {
-    id: u.id,
-    title: u.name ?? u.nameAr ?? '',
-    description: u.description ?? null,
-    displayOrder: u.order ?? 0,
-    published: u.published ?? false,
-    isPremium: u.isPremium ?? false,
-    priceCoins: u.priceCoins ?? (u.isPremium ? 50 : 0),
-    lockedOverride: null,
-    gradeId: u.gradeId ?? null,
-    academicYearId: u.academicYearId ?? null,
-    educationalSystemId: u.educationalSystemId ?? null,
-    createdAt: u.createdAt ?? new Date().toISOString(),
-    updatedAt: u.updatedAt ?? new Date().toISOString(),
-    grade: { id: u.gradeId ?? '', name: '', stage: { id: '', name: '' } },
-    _count: { lessons: u._lessonCount as number ?? 0 },
-  };
-}
-
-function fromFrontendUnit(body: Record<string, unknown>): Record<string, unknown> {
-  const payload: Record<string, unknown> = {
-    id: body.id ?? `unit-${String(Date.now())}`,
-    name: body.title ?? body.name ?? '',
-    nameAr: body.title ?? body.name ?? '',
-    description: body.description ?? '',
-    order: body.displayOrder ?? body.order ?? 0,
-    academicTermId: body.termId ?? body.academicTermId ?? '',
-    isActive: true,
-    isPremium: body.isPremium ?? false,
-    priceCoins: body.priceCoins ?? (body.isPremium ? 50 : undefined),
-    published: body.published ?? false,
-  };
-  if (body.isActive !== undefined) payload.isActive = body.isActive;
-  if (body.lockedOverride !== undefined) payload.lockedOverride = body.lockedOverride;
-  if (body.gradeId) payload.gradeId = body.gradeId;
-  if (body.academicYearId) payload.academicYearId = body.academicYearId;
-  if (body.educationalSystemId) payload.educationalSystemId = body.educationalSystemId;
-  else if (body.educationalSystem) payload.educationalSystemId = body.educationalSystem;
-  return payload;
 }
 
 export async function GET(request: NextRequest): Promise<NextResponse> {

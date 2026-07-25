@@ -51,6 +51,7 @@ export class UnitRepository implements IUnitRepository {
         isPremium: input.isPremium ?? false,
         priceCoins: input.priceCoins ?? null,
         published: input.published ?? false,
+        lockedOverride: input.lockedOverride ?? null,
         createdAt: now,
         updatedAt: now,
         schemaVersion: UnitFirestoreMapper.SCHEMA_VERSION,
@@ -86,6 +87,7 @@ export class UnitRepository implements IUnitRepository {
       if (input.academicYearId !== undefined) updateData.academicYearId = input.academicYearId ?? null;
       if (input.educationalSystemId !== undefined) updateData.educationalSystemId = input.educationalSystemId ?? null;
       if (input.published !== undefined) updateData.published = input.published;
+      if (input.lockedOverride !== undefined) updateData.lockedOverride = input.lockedOverride;
       await docRef.update(updateData);
       const saved = await docRef.get();
       const doc = formatDoc(saved);

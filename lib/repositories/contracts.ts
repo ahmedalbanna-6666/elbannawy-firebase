@@ -416,6 +416,7 @@ export interface IUnit {
   readonly isPremium: boolean;
   readonly priceCoins?: number;
   readonly published: boolean;
+  readonly lockedOverride: boolean | null;
   readonly createdAt: string;
   readonly updatedAt: string;
   readonly schemaVersion: number;
@@ -435,6 +436,7 @@ export interface IUnitSummary {
   readonly isPremium: boolean;
   readonly priceCoins?: number;
   readonly published: boolean;
+  readonly lockedOverride: boolean | null;
   readonly createdAt: string;
 }
 
@@ -452,6 +454,7 @@ export interface CreateUnitInput {
   readonly isPremium?: boolean;
   readonly priceCoins?: number;
   readonly published?: boolean;
+  readonly lockedOverride?: boolean | null;
 }
 
 export interface UpdateUnitInput {
@@ -466,6 +469,7 @@ export interface UpdateUnitInput {
   readonly academicYearId?: string;
   readonly educationalSystemId?: string;
   readonly published?: boolean;
+  readonly lockedOverride?: boolean | null;
 }
 
 export interface UnitFilter {
@@ -505,6 +509,10 @@ export interface ILesson {
   readonly status: LessonStatus;
   readonly isPublished: boolean;
   readonly isVisible: boolean;
+  readonly isPremium: boolean;
+  readonly lockedOverride: boolean | null;
+  readonly homeworkEnabled: boolean;
+  readonly quizEnabled: boolean;
   readonly estimatedDuration?: number;
   readonly createdAt: string;
   readonly updatedAt: string;
@@ -521,6 +529,10 @@ export interface ILessonSummary {
   readonly status: LessonStatus;
   readonly isPublished: boolean;
   readonly isVisible: boolean;
+  readonly isPremium: boolean;
+  readonly lockedOverride: boolean | null;
+  readonly homeworkEnabled: boolean;
+  readonly quizEnabled: boolean;
   readonly estimatedDuration?: number;
   readonly createdAt: string;
 }
@@ -535,6 +547,10 @@ export interface CreateLessonInput {
   readonly status?: LessonStatus;
   readonly isPublished?: boolean;
   readonly isVisible?: boolean;
+  readonly isPremium?: boolean;
+  readonly lockedOverride?: boolean | null;
+  readonly homeworkEnabled?: boolean;
+  readonly quizEnabled?: boolean;
   readonly estimatedDuration?: number;
 }
 
@@ -546,6 +562,10 @@ export interface UpdateLessonInput {
   readonly status?: LessonStatus;
   readonly isPublished?: boolean;
   readonly isVisible?: boolean;
+  readonly isPremium?: boolean;
+  readonly lockedOverride?: boolean | null;
+  readonly homeworkEnabled?: boolean;
+  readonly quizEnabled?: boolean;
   readonly estimatedDuration?: number;
 }
 

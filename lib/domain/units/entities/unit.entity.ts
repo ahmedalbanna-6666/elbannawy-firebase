@@ -14,6 +14,7 @@ export interface Unit extends IBaseEntity {
   readonly isPremium: boolean;
   readonly priceCoins?: number;
   readonly published: boolean;
+  readonly lockedOverride: boolean | null;
 }
 
 export interface UnitSummary {
@@ -29,5 +30,6 @@ export interface UnitSummary {
   readonly isPremium: boolean;
   readonly priceCoins?: number;
   readonly published: boolean;
+  readonly lockedOverride: boolean | null;
   readonly createdAt: string;
 }

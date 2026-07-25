@@ -28,6 +28,7 @@ function mapUnit(entity: IUnit): UnitOutput {
     isActive: entity.isActive,
     isPremium: entity.isPremium,
     published: entity.published,
+    lockedOverride: entity.lockedOverride,
     createdAt: entity.createdAt,
     updatedAt: entity.updatedAt,
   };
@@ -43,6 +44,7 @@ function mapUnitSummary(entity: IUnitSummary): UnitSummaryOutput {
     isActive: entity.isActive,
     isPremium: entity.isPremium,
     published: entity.published,
+    lockedOverride: entity.lockedOverride,
     createdAt: entity.createdAt,
   };
 }

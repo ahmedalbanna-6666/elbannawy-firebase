@@ -108,6 +108,51 @@ describe('UnitRepository', () => {
       }
     });
 
+    it('creates unit with gradeId', async () => {
+      mockDoc.get
+        .mockResolvedValueOnce({ exists: false })
+        .mockResolvedValueOnce({
+          exists: true,
+          data: () => ({
+            academicTermId: 'term-1',
+            gradeId: 'GRADE_7',
+            academicYearId: 'year-2025',
+            educationalSystemId: 'GENERAL',
+            name: 'Grade 7 Unit',
+            nameAr: 'وحدة الصف السابع',
+            description: null,
+            order: 1,
+            isActive: true,
+            isPremium: false,
+            published: false,
+            createdAt: now,
+            updatedAt: now,
+            schemaVersion: 1,
+            deletedAt: null,
+          }),
+          id: 'unit-grade7',
+        });
+
+      const result = await repository.createUnit({
+        id: 'unit-grade7',
+        academicTermId: 'term-1',
+        gradeId: 'GRADE_7',
+        academicYearId: 'year-2025',
+        educationalSystemId: 'GENERAL',
+        name: 'Grade 7 Unit',
+        nameAr: 'وحدة الصف السابع',
+        order: 1,
+      });
+
+      expect(result.ok).toBe(true);
+      if (result.ok) {
+        expect(result.value.id).toBe('unit-grade7');
+        expect(result.value.gradeId).toBe('GRADE_7');
+        expect(result.value.academicYearId).toBe('year-2025');
+        expect(result.value.educationalSystemId).toBe('GENERAL');
+      }
+    });
+
     it('returns ALREADY_EXISTS for duplicate id', async () => {
       mockDoc.get.mockResolvedValueOnce({ exists: true });
 
@@ -203,6 +248,27 @@ describe('UnitRepository', () => {
         expect(result.value.items).toEqual([]);
         expect(result.value.nextCursor).toBeNull();
       }
+    });
+
+    it('filters by gradeId', async () => {
+      const filter = { gradeId: 'GRADE_7' };
+      const result = await repository.listUnits(filter, { limit: 20 });
+
+      expect(result.ok).toBe(true);
+    });
+
+    it('filters by academicTermId', async () => {
+      const filter = { academicTermId: 'term-1' };
+      const result = await repository.listUnits(filter, { limit: 20 });
+
+      expect(result.ok).toBe(true);
+    });
+
+    it('filters by gradeId and academicTermId together', async () => {
+      const filter = { gradeId: 'GRADE_7', academicTermId: 'term-1' };
+      const result = await repository.listUnits(filter, { limit: 20 });
+
+      expect(result.ok).toBe(true);
     });
   });
 

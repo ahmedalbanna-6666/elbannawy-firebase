@@ -3,7 +3,7 @@ import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const require = createRequire(resolve(__dirname, "..", "apps", "web"));
+const require = createRequire(resolve(__dirname, "..", "node_modules"));
 
 const { google } = require("googleapis");
 const { JWT } = require("google-auth-library");

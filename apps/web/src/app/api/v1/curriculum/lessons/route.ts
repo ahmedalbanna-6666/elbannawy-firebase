@@ -40,6 +40,10 @@ function fromFrontendLesson(body: Record<string, unknown>): Record<string, unkno
     isPublished: body.published === true || body.isPublished === true,
     status: body.status ?? (body.published === true ? 'published' : 'draft'),
     isVisible: body.isVisible !== false,
+    isPremium: body.isPremium === true,
+    lockedOverride: body.lockedOverride === true ? true : body.lockedOverride === false ? false : null,
+    homeworkEnabled: body.homeworkEnabled === true,
+    quizEnabled: body.quizEnabled === true,
     estimatedDuration: (body.estimatedDuration as number) ?? undefined,
   };
 }

@@ -48,6 +48,10 @@ export class LessonRepository implements ILessonRepository {
         status: input.status ?? 'draft',
         isPublished: input.isPublished ?? false,
         isVisible: input.isVisible ?? true,
+        isPremium: input.isPremium ?? false,
+        lockedOverride: input.lockedOverride ?? null,
+        homeworkEnabled: input.homeworkEnabled ?? false,
+        quizEnabled: input.quizEnabled ?? false,
         estimatedDuration: input.estimatedDuration ?? null,
         createdAt: now,
         updatedAt: now,
@@ -81,6 +85,10 @@ export class LessonRepository implements ILessonRepository {
       if (input.isPublished !== undefined) updateData.isPublished = input.isPublished;
       if (input.isVisible !== undefined) updateData.isVisible = input.isVisible;
       if (input.estimatedDuration !== undefined) updateData.estimatedDuration = input.estimatedDuration ?? null;
+      if (input.isPremium !== undefined) updateData.isPremium = input.isPremium;
+      if (input.lockedOverride !== undefined) updateData.lockedOverride = input.lockedOverride;
+      if (input.homeworkEnabled !== undefined) updateData.homeworkEnabled = input.homeworkEnabled;
+      if (input.quizEnabled !== undefined) updateData.quizEnabled = input.quizEnabled;
       await docRef.update(updateData);
       const saved = await docRef.get();
       const doc = formatDoc(saved);

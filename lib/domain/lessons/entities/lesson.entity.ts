@@ -18,6 +18,10 @@ export interface Lesson extends IBaseEntity {
   readonly status: LessonStatus;
   readonly isPublished: boolean;
   readonly isVisible: boolean;
+  readonly isPremium: boolean;
+  readonly lockedOverride: boolean | null;
+  readonly homeworkEnabled: boolean;
+  readonly quizEnabled: boolean;
   readonly estimatedDuration?: number;
 }
 
@@ -30,6 +34,10 @@ export interface LessonSummary {
   readonly status: LessonStatus;
   readonly isPublished: boolean;
   readonly isVisible: boolean;
+  readonly isPremium: boolean;
+  readonly lockedOverride: boolean | null;
+  readonly homeworkEnabled: boolean;
+  readonly quizEnabled: boolean;
   readonly estimatedDuration?: number;
   readonly createdAt: string;
 }

@@ -16,6 +16,7 @@ export interface UnitFirestoreDoc {
   isPremium: boolean;
   priceCoins?: number;
   published: boolean;
+  lockedOverride: boolean | null;
   createdAt: Timestamp | string;
   updatedAt: Timestamp | string;
   schemaVersion: number;
@@ -40,6 +41,7 @@ export class UnitFirestoreMapper {
       isPremium: doc.isPremium,
       priceCoins: doc.priceCoins,
       published: doc.published,
+      lockedOverride: doc.lockedOverride ?? null,
       createdAt: formatFirestoreTimestamp(doc.createdAt),
       updatedAt: formatFirestoreTimestamp(doc.updatedAt),
       schemaVersion: doc.schemaVersion,
@@ -61,6 +63,7 @@ export class UnitFirestoreMapper {
       isPremium: doc.isPremium,
       priceCoins: doc.priceCoins,
       published: doc.published,
+      lockedOverride: doc.lockedOverride ?? null,
       createdAt: formatFirestoreTimestamp(doc.createdAt),
     };
   }

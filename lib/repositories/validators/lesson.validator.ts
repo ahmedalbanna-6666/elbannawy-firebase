@@ -12,6 +12,10 @@ export const CreateLessonInputSchema = z.object({
   status: LessonStatusEnum.optional().default('draft'),
   isPublished: z.boolean().optional().default(false),
   isVisible: z.boolean().optional().default(true),
+  isPremium: z.boolean().optional().default(false),
+  lockedOverride: z.boolean().nullable().optional().default(null),
+  homeworkEnabled: z.boolean().optional().default(false),
+  quizEnabled: z.boolean().optional().default(false),
   estimatedDuration: z.number().int().min(1).optional(),
 });
 
@@ -23,6 +27,10 @@ export const UpdateLessonInputSchema = z.object({
   status: LessonStatusEnum.optional(),
   isPublished: z.boolean().optional(),
   isVisible: z.boolean().optional(),
+  isPremium: z.boolean().optional(),
+  lockedOverride: z.boolean().nullable().optional(),
+  homeworkEnabled: z.boolean().optional(),
+  quizEnabled: z.boolean().optional(),
   estimatedDuration: z.number().int().min(1).optional(),
 });
 
