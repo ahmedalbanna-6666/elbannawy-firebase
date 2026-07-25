@@ -29,7 +29,7 @@ export function PlyrVideoPlayer({
     if (!element) return;
 
     const player = new Plyr(element, {
-      controls: ["progress"],
+      controls: ["play-large", "play", "progress", "current-time", "mute", "volume", "fullscreen"],
       youtube: {
         noCookie: true,
         rel: 0,
