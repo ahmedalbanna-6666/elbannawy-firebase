@@ -106,11 +106,11 @@ function EditableField({
   }, [draft, value, fieldKey, onSave, normalizeOnSave]);
 
   return (
-    <div className="flex items-center justify-between rounded-xl border border-neutral-800 bg-neutral-900/50 p-3 transition-colors hover:border-neutral-700">
+    <div className="flex items-center justify-between rounded-xl border border-gray-200 bg-white p-3 transition-colors hover:border-gray-300 dark:border-neutral-800 dark:bg-neutral-900/50 dark:hover:border-neutral-700">
       <div className="flex min-w-0 flex-1 items-center gap-3">
-        <span className="shrink-0 text-neutral-500">{icon}</span>
+        <span className="shrink-0 text-gray-400 dark:text-neutral-500">{icon}</span>
         <div className="min-w-0 flex-1">
-          <p className="text-xs text-neutral-400">{label}</p>
+          <p className="text-xs text-gray-500 dark:text-neutral-400">{label}</p>
           {editing ? (
             renderEditor ? (
               <div className="mt-1">
@@ -127,8 +127,8 @@ function EditableField({
               />
             )
           ) : (
-            <p className="truncate text-sm font-medium text-neutral-100">
-              {value || <span className="text-neutral-500">غير محدد</span>}
+            <p className="truncate text-sm font-medium text-gray-800 dark:text-neutral-100">
+              {value || <span className="text-gray-400 dark:text-neutral-500">غير محدد</span>}
             </p>
           )}
         </div>
@@ -148,7 +148,7 @@ function EditableField({
               <button
                 onClick={handleCancel}
                 disabled={saving}
-                className="rounded-lg p-1.5 text-neutral-400 hover:bg-neutral-800 transition-colors"
+                className="rounded-lg p-1.5 text-gray-500 hover:bg-gray-100 dark:text-neutral-400 dark:hover:bg-neutral-800 transition-colors"
                 aria-label="إلغاء"
               >
                 <X className="h-4 w-4" />
@@ -157,7 +157,7 @@ function EditableField({
           ) : (
             <button
               onClick={handleEdit}
-              className="rounded-lg p-1.5 text-neutral-400 hover:bg-neutral-800 hover:text-primary-400 transition-colors"
+              className="rounded-lg p-1.5 text-gray-500 hover:bg-gray-100 hover:text-primary-600 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-primary-400 transition-colors"
               aria-label={`تعديل ${label}`}
             >
               <Pencil className="h-4 w-4" />
@@ -249,8 +249,8 @@ export default function ProfilePage(): ReactNode {
       <Card variant="glass" padding="lg">
         <CardHeader>
           <div className="flex items-center gap-2">
-            <User className="h-4 w-4 text-primary-400" />
-            <h2 className="text-base font-extrabold text-neutral-100">المعلومات الشخصية</h2>
+            <User className="h-4 w-4 text-primary-500 dark:text-primary-400" />
+            <h2 className="text-base font-extrabold text-gray-900 dark:text-neutral-100">المعلومات الشخصية</h2>
           </div>
         </CardHeader>
         <CardContent>
@@ -262,8 +262,8 @@ export default function ProfilePage(): ReactNode {
             />
             <div className="flex flex-1 flex-col gap-3 text-center sm:text-start">
               <div>
-                <p className="text-lg font-extrabold text-neutral-50">{p.fullName}</p>
-                <p className="text-sm text-neutral-300">
+                <p className="text-lg font-extrabold text-gray-900 dark:text-neutral-50">{p.fullName}</p>
+                <p className="text-sm text-gray-600 dark:text-neutral-300">
                   {getRoleLabel()}
                 </p>
               </div>
@@ -277,13 +277,13 @@ export default function ProfilePage(): ReactNode {
                   placeholder="الاسم الكامل"
                 />
                 {p.email && (
-                  <span className="flex items-center gap-2 px-1 text-sm text-neutral-300">
-                    <Mail className="h-4 w-4 text-neutral-500" />
+                  <span className="flex items-center gap-2 px-1 text-sm text-gray-700 dark:text-neutral-300">
+                    <Mail className="h-4 w-4 text-gray-400 dark:text-neutral-500" />
                     {p.email}
                   </span>
                 )}
-                <span className="flex items-center gap-2 px-1 text-sm text-neutral-300">
-                  <Phone className="h-4 w-4 text-neutral-500" />
+                <span className="flex items-center gap-2 px-1 text-sm text-gray-700 dark:text-neutral-300">
+                  <Phone className="h-4 w-4 text-gray-400 dark:text-neutral-500" />
                   {p.mobileNumber}
                 </span>
                 <EditableField
@@ -316,8 +316,8 @@ export default function ProfilePage(): ReactNode {
       <Card variant="glass" padding="lg">
         <CardHeader>
           <div className="flex items-center gap-2">
-            <MapPin className="h-4 w-4 text-primary-400" />
-            <h2 className="text-base font-extrabold text-neutral-100">الموقع</h2>
+            <MapPin className="h-4 w-4 text-primary-500 dark:text-primary-400" />
+            <h2 className="text-base font-extrabold text-gray-900 dark:text-neutral-100">الموقع</h2>
           </div>
         </CardHeader>
         <CardContent>
@@ -353,25 +353,25 @@ export default function ProfilePage(): ReactNode {
       <Card variant="glass" padding="lg">
         <CardHeader>
           <div className="flex items-center gap-2">
-            <Shield className="h-4 w-4 text-primary-400" />
-            <h2 className="text-base font-extrabold text-neutral-100">معلومات الحساب</h2>
+            <Shield className="h-4 w-4 text-primary-500 dark:text-primary-400" />
+            <h2 className="text-base font-extrabold text-gray-900 dark:text-neutral-100">معلومات الحساب</h2>
           </div>
         </CardHeader>
         <CardContent>
           <div className="flex flex-col gap-2">
-            <div className="flex items-center justify-between rounded-xl border border-neutral-800 bg-neutral-900/50 p-3">
-              <span className="text-sm text-neutral-400">حالة الحساب</span>
-              <span className={`text-sm font-extrabold ${p.status === "ACTIVE" ? "text-success-500" : "text-warning-500"}`}>
+            <div className="flex items-center justify-between rounded-xl border border-gray-200 bg-white p-3 dark:border-neutral-800 dark:bg-neutral-900/50">
+              <span className="text-sm text-gray-500 dark:text-neutral-400">حالة الحساب</span>
+              <span className={`text-sm font-extrabold ${p.status === "ACTIVE" ? "text-success-600 dark:text-success-500" : "text-warning-600 dark:text-warning-500"}`}>
                 {statusLabel}
               </span>
             </div>
-            <div className="flex items-center justify-between rounded-xl border border-neutral-800 bg-neutral-900/50 p-3">
-              <span className="text-sm text-neutral-400">تاريخ التسجيل</span>
-              <span className="text-sm font-semibold text-neutral-200">{formattedDate}</span>
+            <div className="flex items-center justify-between rounded-xl border border-gray-200 bg-white p-3 dark:border-neutral-800 dark:bg-neutral-900/50">
+              <span className="text-sm text-gray-500 dark:text-neutral-400">تاريخ التسجيل</span>
+              <span className="text-sm font-semibold text-gray-800 dark:text-neutral-200">{formattedDate}</span>
             </div>
-            <div className="flex items-center justify-between rounded-xl border border-neutral-800 bg-neutral-900/50 p-3">
-              <span className="text-sm text-neutral-400">نوع الحساب</span>
-              <span className="text-sm font-extrabold text-primary-400">مجاني</span>
+            <div className="flex items-center justify-between rounded-xl border border-gray-200 bg-white p-3 dark:border-neutral-800 dark:bg-neutral-900/50">
+              <span className="text-sm text-gray-500 dark:text-neutral-400">نوع الحساب</span>
+              <span className="text-sm font-extrabold text-primary-600 dark:text-primary-400">مجاني</span>
             </div>
           </div>
         </CardContent>
@@ -381,8 +381,8 @@ export default function ProfilePage(): ReactNode {
       <Card variant="glass" padding="lg">
         <CardHeader>
           <div className="flex items-center gap-2">
-            <Lock className="h-4 w-4 text-primary-400" />
-            <h2 className="text-base font-extrabold text-neutral-100">الأمان</h2>
+            <Lock className="h-4 w-4 text-primary-500 dark:text-primary-400" />
+            <h2 className="text-base font-extrabold text-gray-900 dark:text-neutral-100">الأمان</h2>
           </div>
         </CardHeader>
         <CardContent>
@@ -403,15 +403,15 @@ export default function ProfilePage(): ReactNode {
       <Card variant="glass" padding="lg">
         <CardHeader>
           <div className="flex items-center gap-2">
-            <Crown className="h-4 w-4 text-warning-400" />
-            <h2 className="text-base font-extrabold text-neutral-100">الاشتراك</h2>
+            <Crown className="h-4 w-4 text-warning-500 dark:text-warning-400" />
+            <h2 className="text-base font-extrabold text-gray-900 dark:text-neutral-100">الاشتراك</h2>
           </div>
         </CardHeader>
         <CardContent>
           <div className="flex flex-col gap-3">
-            <div className="flex items-center justify-between rounded-xl border border-neutral-800 bg-neutral-900/50 p-3">
-              <span className="text-sm text-neutral-400">الخطة الحالية</span>
-              <span className="text-sm font-extrabold text-primary-400">مجاني</span>
+            <div className="flex items-center justify-between rounded-xl border border-gray-200 bg-white p-3 dark:border-neutral-800 dark:bg-neutral-900/50">
+              <span className="text-sm text-gray-500 dark:text-neutral-400">الخطة الحالية</span>
+              <span className="text-sm font-extrabold text-primary-600 dark:text-primary-400">مجاني</span>
             </div>
             <Button variant="primary" size="sm" fullWidth className="mt-1">
               <Crown className="h-4 w-4" />

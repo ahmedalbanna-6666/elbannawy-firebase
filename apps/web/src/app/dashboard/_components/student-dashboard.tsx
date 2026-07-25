@@ -67,7 +67,61 @@ export function StudentDashboard(): ReactNode {
   return (
     <div className="flex flex-col gap-6">
 
-      {/* SECTION 1 — Continue / Start Learning */}
+      {/* SECTION 1 — Curriculum Units */}
+      <div onClick={(): void => { router.push("/dashboard/units"); }} role="button" tabIndex={0} onKeyDown={(e): void => { if (e.key === "Enter") { router.push("/dashboard/units"); } }}>
+      <Card variant="outline" padding="md" className="cursor-pointer transition-colors hover:bg-neutral-50 dark:hover:bg-neutral-800/50">
+        <CardContent>
+          <div className="flex items-center gap-4">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary-500/10">
+              <BookOpen className="h-6 w-6 text-primary-500" />
+            </div>
+            <div className="flex-1">
+              <h3 className="font-semibold text-neutral-900 dark:text-neutral-100">الوحدات التعليمية</h3>
+              <p className="text-sm text-neutral-500">تصفح جميع الوحدات وتابع تقدمك</p>
+            </div>
+            <ChevronRight className="h-5 w-5 text-neutral-400" />
+          </div>
+        </CardContent>
+      </Card>
+      </div>
+
+      {/* SECTION 2 — Story */}
+      <div onClick={(): void => { router.push("/dashboard/story"); }} role="button" tabIndex={0} onKeyDown={(e): void => { if (e.key === "Enter") { router.push("/dashboard/story"); } }}>
+      <Card variant="outline" padding="md" className="cursor-pointer transition-colors hover:bg-neutral-50 dark:hover:bg-neutral-800/50">
+        <CardContent>
+          <div className="flex items-center gap-4">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-orange-500/10">
+              <ScrollText className="h-6 w-6 text-orange-500" />
+            </div>
+            <div className="flex-1">
+              <h3 className="font-semibold text-neutral-900 dark:text-neutral-100">قصة المنهج</h3>
+              <p className="text-sm text-neutral-500">تابع قصة المنهج التعليمي</p>
+            </div>
+            <ChevronRight className="h-5 w-5 text-neutral-400" />
+          </div>
+        </CardContent>
+      </Card>
+      </div>
+
+      {/* SECTION 3 — Final Review */}
+      <div onClick={(): void => { router.push("/dashboard/final-review"); }} role="button" tabIndex={0} onKeyDown={(e): void => { if (e.key === "Enter") { router.push("/dashboard/final-review"); } }}>
+      <Card variant="outline" padding="md" className="cursor-pointer transition-colors hover:bg-neutral-50 dark:hover:bg-neutral-800/50">
+        <CardContent>
+          <div className="flex items-center gap-4">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-500/10">
+              <BookMarked className="h-6 w-6 text-amber-500" />
+            </div>
+            <div className="flex-1">
+              <h3 className="font-semibold text-neutral-900 dark:text-neutral-100">المراجعة النهائية</h3>
+              <p className="text-sm text-neutral-500">راجع المنهج بالكامل واستعد للاختبارات</p>
+            </div>
+            <ChevronRight className="h-5 w-5 text-neutral-400" />
+          </div>
+        </CardContent>
+      </Card>
+      </div>
+
+      {/* SECTION 4 — Continue / Start Learning */}
       {data.continueLearning ? (
         <section>
           <Card variant="gradient" padding="none" className="border-primary-500/20 px-4 py-3">
@@ -142,7 +196,7 @@ export function StudentDashboard(): ReactNode {
         </section>
       )}
 
-      {/* SECTION 2 — Live Classes */}
+      {/* SECTION 5 — Live Classes */}
       {liveBookings && liveBookings.length > 0 && (
         <section>
           <div className="mb-3 flex items-center justify-between">
@@ -224,7 +278,7 @@ export function StudentDashboard(): ReactNode {
         </section>
       )}
 
-      {/* SECTION 4 — Quick Learning Tools */}
+      {/* SECTION 6 — Quick Learning Tools */}
       <AnimatedContainer animation="fade-slide-up" delay={120}>
         <section className="grid grid-cols-1 gap-4 md:grid-cols-2">
 
@@ -297,62 +351,6 @@ export function StudentDashboard(): ReactNode {
         </div>
 
       </section>
-      </AnimatedContainer>
-
-      {/* SECTION 5 — Curriculum Units */}
-      <AnimatedContainer animation="fade-slide-up" delay={200}>
-      <div onClick={(): void => { router.push("/dashboard/units"); }} role="button" tabIndex={0} onKeyDown={(e): void => { if (e.key === "Enter") { router.push("/dashboard/units"); } }}>
-      <Card variant="outline" padding="md" className="cursor-pointer transition-colors hover:bg-neutral-50 dark:hover:bg-neutral-800/50">
-        <CardContent>
-          <div className="flex items-center gap-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary-500/10">
-              <BookOpen className="h-6 w-6 text-primary-500" />
-            </div>
-            <div className="flex-1">
-              <h3 className="font-semibold text-neutral-900 dark:text-neutral-100">الوحدات التعليمية</h3>
-              <p className="text-sm text-neutral-500">تصفح جميع الوحدات وتابع تقدمك</p>
-            </div>
-            <ChevronRight className="h-5 w-5 text-neutral-400" />
-          </div>
-        </CardContent>
-      </Card>
-      </div>
-
-      {/* SECTION 6 — Story */}
-      <div onClick={(): void => { router.push("/dashboard/story"); }} role="button" tabIndex={0} onKeyDown={(e): void => { if (e.key === "Enter") { router.push("/dashboard/story"); } }}>
-      <Card variant="outline" padding="md" className="cursor-pointer transition-colors hover:bg-neutral-50 dark:hover:bg-neutral-800/50">
-        <CardContent>
-          <div className="flex items-center gap-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-orange-500/10">
-              <ScrollText className="h-6 w-6 text-orange-500" />
-            </div>
-            <div className="flex-1">
-              <h3 className="font-semibold text-neutral-900 dark:text-neutral-100">قصة المنهج</h3>
-              <p className="text-sm text-neutral-500">تابع قصة المنهج التعليمي</p>
-            </div>
-            <ChevronRight className="h-5 w-5 text-neutral-400" />
-          </div>
-        </CardContent>
-      </Card>
-      </div>
-
-      {/* SECTION 7 — Final Review */}
-      <div onClick={(): void => { router.push("/dashboard/final-review"); }} role="button" tabIndex={0} onKeyDown={(e): void => { if (e.key === "Enter") { router.push("/dashboard/final-review"); } }}>
-      <Card variant="outline" padding="md" className="cursor-pointer transition-colors hover:bg-neutral-50 dark:hover:bg-neutral-800/50">
-        <CardContent>
-          <div className="flex items-center gap-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-500/10">
-              <BookMarked className="h-6 w-6 text-amber-500" />
-            </div>
-            <div className="flex-1">
-              <h3 className="font-semibold text-neutral-900 dark:text-neutral-100">المراجعة النهائية</h3>
-              <p className="text-sm text-neutral-500">راجع المنهج بالكامل واستعد للاختبارات</p>
-            </div>
-            <ChevronRight className="h-5 w-5 text-neutral-400" />
-          </div>
-        </CardContent>
-      </Card>
-      </div>
       </AnimatedContainer>
 
     </div>

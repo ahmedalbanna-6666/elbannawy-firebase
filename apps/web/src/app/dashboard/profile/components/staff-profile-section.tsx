@@ -21,12 +21,12 @@ export function StaffProfileSection({ profile }: Props): ReactNode {
       </CardHeader>
       <CardContent>
         <div className="flex flex-col gap-4">
-          <div className="flex items-center gap-3 rounded-xl border border-neutral-800 bg-neutral-900/50 p-3">
-            <Briefcase className="h-5 w-5 text-primary-400" />
+          <div className="flex items-center gap-3 rounded-xl border border-gray-200 bg-white p-3 dark:border-neutral-800 dark:bg-neutral-900/50">
+            <Briefcase className="h-5 w-5 text-primary-500 dark:text-primary-400" />
             <div>
-              <p className="text-xs text-neutral-400">المسمى الوظيفي</p>
-              <p className="text-sm font-medium text-neutral-100">
-                {profile.jobTitle ?? <span className="text-neutral-500">غير محدد</span>}
+              <p className="text-xs text-gray-500 dark:text-neutral-400">المسمى الوظيفي</p>
+              <p className="text-sm font-medium text-gray-800 dark:text-neutral-100">
+                {profile.jobTitle ?? <span className="text-gray-400 dark:text-neutral-500">غير محدد</span>}
               </p>
             </div>
           </div>
@@ -45,7 +45,7 @@ export function StaffProfileSection({ profile }: Props): ReactNode {
                 ))}
               </div>
             ) : (
-              <p className="text-sm text-neutral-500">لا توجد صلاحيات ممنوحة</p>
+              <p className="text-sm text-gray-400 dark:text-neutral-500">لا توجد صلاحيات ممنوحة</p>
             )}
           </div>
         </div>
