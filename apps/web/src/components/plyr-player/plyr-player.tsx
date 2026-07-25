@@ -11,11 +11,6 @@ function isMobile(): boolean {
   return "ontouchstart" in window || navigator.maxTouchPoints > 0;
 }
 
-function isStandalone(): boolean {
-  if (typeof window === "undefined") return false;
-  return window.matchMedia("(display-mode: standalone)").matches || ("standalone" in window.navigator && (window.navigator as { standalone?: boolean }).standalone === true);
-}
-
 export function PlyrVideoPlayer({
   providerVideoId,
   startAt = 0,
@@ -53,7 +48,7 @@ export function PlyrVideoPlayer({
       ratio: "16:9",
       resetOnEnd: true,
       clickToPlay: true,
-      hideControls: true,
+      hideControls: false,
       tooltips: { controls: true, seek: true },
     });
 
