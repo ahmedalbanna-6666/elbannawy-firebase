@@ -1,11 +1,6 @@
 .plyr__video-embed {
   position: relative;
   overflow: hidden;
-  pointer-events: none;
-}
-
-.plyr__video-embed > * {
-  pointer-events: auto;
 }
 
 .plyr__video-embed iframe {
@@ -16,6 +11,7 @@
   height: 200% !important;
   border: 0;
   max-width: none;
+  pointer-events: none;
 }
 
 .plyr__poster {
@@ -39,6 +35,7 @@
   border-radius: 1rem;
   overflow: hidden;
   position: relative;
+  touch-action: manipulation;
 }
 
 .plyr__controls {
@@ -52,7 +49,7 @@
   padding: 8px 12px !important;
   background: linear-gradient(180deg, transparent, rgba(0, 0, 0, 0.75)) !important;
   z-index: 5;
-  pointer-events: auto;
+  touch-action: manipulation;
 }
 
 .plyr__controls .plyr__controls__item.plyr__progress__container {
@@ -126,10 +123,16 @@
 }
 
 .plyr__control {
-  padding: 4px !important;
+  padding: 6px !important;
   border-radius: 4px !important;
   color: rgba(255, 255, 255, 0.8) !important;
   transition: all 0.15s ease;
+  touch-action: manipulation;
+  min-width: 36px;
+  min-height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .plyr__control:hover {
@@ -138,21 +141,24 @@
 }
 
 .plyr__control svg {
-  width: 16px !important;
-  height: 16px !important;
+  width: 18px !important;
+  height: 18px !important;
 }
 
 .plyr__control--overlaid {
   background: rgba(0, 0, 0, 0.6) !important;
   border: 2px solid rgba(255, 255, 255, 0.2) !important;
   border-radius: 50% !important;
-  padding: 14px !important;
+  padding: 16px !important;
   transition: all 0.2s ease !important;
+  touch-action: manipulation;
+  min-width: 56px;
+  min-height: 56px;
 }
 
 .plyr__control--overlaid svg {
-  width: 22px !important;
-  height: 22px !important;
+  width: 24px !important;
+  height: 24px !important;
   fill: #fff;
 }
 
@@ -209,19 +215,33 @@
   position: relative;
 }
 
-.plyr--fullscreen .plyr__controls {
-  pointer-events: auto;
-}
-
-@media (orientation: portrait) and (pointer: coarse) {
-  .plyr--fullscreen .plyr__controls {
-    padding: 12px 16px !important;
+@media (pointer: coarse) {
+  .plyr__control {
+    padding: 8px !important;
+    min-width: 44px;
+    min-height: 44px;
   }
-  .plyr--fullscreen .plyr__control svg {
+  .plyr__control svg {
     width: 20px !important;
     height: 20px !important;
   }
-  .plyr--fullscreen .plyr__progress {
+  .plyr__control--overlaid {
+    padding: 18px !important;
+    min-width: 64px;
+    min-height: 64px;
+  }
+  .plyr__control--overlaid svg {
+    width: 28px !important;
+    height: 28px !important;
+  }
+  .plyr__controls {
+    padding: 10px 14px !important;
+  }
+  .plyr__progress {
     height: 6px !important;
+  }
+  .plyr__volume input[type="range"] {
+    width: 60px !important;
+    height: 4px !important;
   }
 }
