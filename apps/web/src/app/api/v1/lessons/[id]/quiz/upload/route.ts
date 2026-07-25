@@ -5,30 +5,37 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
 
-const TYPE_MAP: Record<string, string> = {
-  MCQ: 'MULTIPLE_CHOICE',
-  TRUE_FALSE: 'TRUE_FALSE',
-};
-
 function mapMcqToQuestions(content: Record<string, unknown>): { prompt: string; options: Record<string, string>; questionType: string }[] {
-  const categories = content.categories as Array<{ title: string; questions: Array<{ number: number; text: string; options: Record<string, string> }> }> | undefined;
+  const categories = content.categories as Array<{ name: string; questions: Array<{ number: number; question: string; options: Array<{ label: string; text: string }> }> }> | undefined;
+  const answers = content.answers as Record<number, string> | undefined;
   if (!categories) return [];
   return categories.flatMap((cat) =>
-    (cat.questions ?? []).map((q) => ({
-      prompt: q.text,
-      options: { ...q.options },
-      questionType: 'MULTIPLE_CHOICE',
-    }))
+    (cat.questions ?? []).map((q) => {
+      const opts: Record<string, string> = {};
+      if (q.options) {
+        for (const opt of q.options) {
+          opts[opt.label] = opt.text;
+        }
+      }
+      const correctLabel = answers?.[q.number];
+      if (correctLabel) opts.correct = correctLabel;
+      return {
+        prompt: q.question,
+        options: opts,
+        questionType: 'MULTIPLE_CHOICE',
+      };
+    })
   );
 }
 
 function mapContentToQuestions(content: Record<string, unknown>, activityType: string): { prompt: string; options: Record<string, string>; questionType: string }[] {
   if (activityType === 'MCQ') return mapMcqToQuestions(content);
   if (activityType === 'TRUE_FALSE') {
-    const questions = content.questions as Array<{ number: number; text: string }> | undefined;
+    const questions = content.questions as Array<{ number: number; statement: string }> | undefined;
+    const answers = content.answers as Record<number, boolean> | undefined;
     return (questions ?? []).map((q) => ({
-      prompt: q.text,
-      options: { correct: '' },
+      prompt: q.statement,
+      options: { correct: answers?.[q.number] === true ? 'true' : 'false' },
       questionType: 'TRUE_FALSE',
     }));
   }

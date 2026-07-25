@@ -71,25 +71,26 @@ export function StudentDashboard(): ReactNode {
       {data.continueLearning ? (
         <section>
           <Card variant="gradient" padding="none" className="overflow-hidden border-0">
-            <div className="relative bg-gradient-to-l from-primary-600/20 via-primary-500/10 to-transparent px-5 py-4">
+            <div className="relative bg-gradient-to-l from-success-700/25 via-success-600/15 to-transparent px-5 py-4">
               <div className="flex items-center justify-between gap-4">
                 <div className="min-w-0 flex-1">
                   <div className="mb-1 flex items-center gap-2">
-                    <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary-500/20">
-                      <Play className="h-3 w-3 text-primary-400" />
+                    <div className="flex h-6 w-6 items-center justify-center rounded-full bg-success-500/20">
+                      <Play className="h-3 w-3 text-success-400" />
                     </div>
-                    <span className="text-[10px] font-semibold uppercase tracking-wider text-primary-400">واصل التعلم</span>
+                    <span className="text-[10px] font-semibold uppercase tracking-wider text-success-400">واصل التعلم</span>
                   </div>
-                  <h2 className="truncate text-sm font-bold text-neutral-900 dark:text-neutral-100">
+                  <h2 className="truncate text-sm font-bold text-neutral-900 dark:text-white">
                     {data.continueLearning.unitName}
                   </h2>
-                  <p className="truncate text-xs text-neutral-500 dark:text-neutral-400">
+                  <p className="truncate text-xs text-neutral-600 dark:text-neutral-300">
                     {data.continueLearning.lessonName}
                   </p>
                 </div>
                 <Button
                   size="sm"
-                  className="shrink-0 rounded-xl px-4 text-xs font-bold shadow-lg shadow-primary-500/20"
+                  variant="primary"
+                  className="shrink-0 rounded-xl px-4 text-xs font-bold shadow-lg shadow-success-500/25"
                   onClick={() => { const lessonId = data.continueLearning?.lessonId; if (lessonId) router.push(`/dashboard/lessons/detail/${lessonId}`); }}
                 >
                   <Play className="h-3.5 w-3.5" />
@@ -97,14 +98,14 @@ export function StudentDashboard(): ReactNode {
                 </Button>
               </div>
               <div className="mt-3 flex items-center gap-2">
-                <Trophy className="h-3 w-3 shrink-0 text-warning-400" />
+                <Trophy className="h-3 w-3 shrink-0 text-emerald-400" />
                 <div className="h-1.5 min-w-0 flex-1 overflow-hidden rounded-full bg-neutral-700/50">
                   <div
-                    className="h-full rounded-full bg-gradient-to-l from-warning-400 to-primary-500 transition-all duration-500"
+                    className="h-full rounded-full bg-gradient-to-l from-emerald-400 to-success-500 transition-all duration-500"
                     style={{ width: `${String(data.continueLearning.progress)}%` }}
                   />
                 </div>
-                <span className="shrink-0 text-[10px] font-medium text-warning-400">
+                <span className="shrink-0 text-[10px] font-medium text-emerald-400">
                   {Math.round(data.continueLearning.progress)}%
                 </span>
               </div>
@@ -114,20 +115,21 @@ export function StudentDashboard(): ReactNode {
       ) : (
         <section>
           <Card variant="gradient" padding="none" className="overflow-hidden border-0">
-            <div className="relative bg-gradient-to-l from-primary-600/20 via-primary-500/10 to-transparent px-5 py-5">
+            <div className="relative bg-gradient-to-l from-success-700/25 via-success-600/15 to-transparent px-5 py-5">
               <div className="flex items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary-500/15 shadow-lg shadow-primary-500/10">
-                    <GraduationCap className="h-6 w-6 text-primary-400" />
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-success-500/15 shadow-lg shadow-success-500/10">
+                    <GraduationCap className="h-6 w-6 text-success-400" />
                   </div>
                   <div>
-                    <p className="text-sm font-bold text-neutral-900 dark:text-neutral-100">ابدأ رحلتك التعليمية</p>
-                    <p className="text-xs text-neutral-500 dark:text-neutral-400">اختر وحدة وتابع تقدمك خطوة بخطوة</p>
+                    <p className="text-sm font-bold text-neutral-900 dark:text-white">ابدأ رحلتك التعليمية</p>
+                    <p className="text-xs text-neutral-600 dark:text-neutral-300">اختر وحدة وتابع تقدمك خطوة بخطوة</p>
                   </div>
                 </div>
                 <Button
                   size="sm"
-                  className="shrink-0 rounded-xl px-5 text-xs font-bold shadow-lg shadow-primary-500/20"
+                  variant="primary"
+                  className="shrink-0 rounded-xl px-5 text-xs font-bold shadow-lg shadow-success-500/25"
                   onClick={() => { router.push("/dashboard/units"); }}
                 >
                   <Play className="h-3.5 w-3.5" />

@@ -185,7 +185,7 @@ function useQuizData(lessonId: string, enabled: boolean): UseQueryResult<QuizDat
   return useQuery({
     queryKey: ["quiz-data", lessonId],
     queryFn: async () => {
-      const res = await api.get<QuizData>(`/quizzes/${lessonId}`);
+      const res = await api.get<QuizData>(`/quiz/${lessonId}`);
       return res.data ?? null;
     },
     enabled,
@@ -198,7 +198,7 @@ function useQuizResult(lessonId: string, enabled: boolean): UseQueryResult<QuizR
   return useQuery({
     queryKey: ["quiz-result", lessonId],
     queryFn: async () => {
-      const res = await api.get<QuizResult>(`/quizzes/${lessonId}/result`);
+      const res = await api.get<QuizResult>(`/quiz/${lessonId}/result`);
       return res.data ?? null;
     },
     enabled,
