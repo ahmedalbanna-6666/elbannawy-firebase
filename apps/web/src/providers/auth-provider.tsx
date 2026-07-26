@@ -4,10 +4,12 @@ import { createContext, useContext, useEffect, useRef, useMemo, type ReactNode, 
 import { useQueryClient } from "@tanstack/react-query";
 import {
   signInWithPopup,
+  signInWithEmailAndPassword,
   GoogleAuthProvider,
   OAuthProvider,
   signOut as firebaseSignOut,
   onAuthStateChanged,
+  sendEmailVerification,
   type User as FirebaseUser,
 } from "firebase/auth";
 import { getClientAuth } from "@/lib/firebase/client-auth";
@@ -192,6 +194,11 @@ export function AuthProvider({ children }: { children: ReactNode }): ReactNode {
             effectivePermissions: meData.data.effectivePermissions as Permission[],
           });
         }
+
+        // Sign in via client SDK so Firebase Auth manages token refresh
+        try {
+          await signInWithEmailAndPassword(getClientAuth(), email, password);
+        } catch { /* client SDK re-login is best-effort */ }
       } finally {
         clearTimeout(timeout);
       }
@@ -205,7 +212,18 @@ export function AuthProvider({ children }: { children: ReactNode }): ReactNode {
       if (!response.data?.uid) {
         throw new Error("Registration failed");
       }
+
       const signInEmail = payload.email ?? toEmail(payload.mobile.replace(/[+\s]/g, ''));
+      const isRealEmail = signInEmail.includes('@') && !signInEmail.includes('@el-bannawy.app');
+
+      if (isRealEmail) {
+        const auth = getClientAuth();
+        const cred = await signInWithEmailAndPassword(auth, signInEmail, payload.password);
+        await sendEmailVerification(cred.user);
+        await firebaseSignOut(auth);
+        throw new Error("EMAIL_VERIFICATION_REQUIRED");
+      }
+
       const signInRes = await fetch('/api/v1/auth/sign-in', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -232,6 +250,11 @@ export function AuthProvider({ children }: { children: ReactNode }): ReactNode {
           effectivePermissions: meData.data.effectivePermissions as Permission[],
         });
       }
+
+      // Sign in via client SDK so Firebase Auth manages token refresh
+      try {
+        await signInWithEmailAndPassword(getClientAuth(), signInEmail, payload.password);
+      } catch { /* client SDK re-login is best-effort */ }
     },
     [setIdToken, setUser, queryClient],
   );
@@ -265,8 +288,24 @@ export function AuthProvider({ children }: { children: ReactNode }): ReactNode {
       }
       queryClient.removeQueries({ queryKey: ["profile"] });
       queryClient.removeQueries({ queryKey: ["sidebar-profile"] });
+
+      if (token) {
+        try {
+          const meRes = await fetch('/api/v1/auth/me', {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          const meData = await meRes.json();
+          if (meData.success && meData.data) {
+            setUser({
+              ...meData.data,
+              role: (meData.data.role ?? "").toUpperCase(),
+              effectivePermissions: meData.data.effectivePermissions as Permission[],
+            });
+          }
+        } catch { /* ignore */ }
+      }
     },
-    [queryClient],
+    [queryClient, setUser],
   );
 
   const logout = useCallback(async (): Promise<void> => {

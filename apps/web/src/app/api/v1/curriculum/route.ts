@@ -70,9 +70,12 @@ async function handleCurriculumTree(request: NextRequest): Promise<NextResponse>
           lessons: (lessonsByUnit.get(unit.id) ?? []).map((l) => ({
             id: l.id, title: l.title, displayOrder: l.displayOrder,
             estimatedDuration: l.estimatedDuration ?? 30,
-            isPremium: false, sequentialMode: true,
-            homeworkEnabled: false, quizEnabled: false,
-            unlocked: isUnlocked(false, 'LESSON', l.id),
+            isPremium: !!l.isPremium,
+            locked: !isUnlocked(!!l.isPremium, 'LESSON', l.id),
+            lockedOverride: l.lockedOverride ?? null,
+            sequentialMode: true,
+            homeworkEnabled: !!l.homeworkEnabled,
+            quizEnabled: !!l.quizEnabled,
           })),
         }));
       }

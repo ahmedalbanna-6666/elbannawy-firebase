@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, type ReactNode } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/providers/auth-provider";
+import { getClientAuth } from "@/lib/firebase/client-auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
@@ -141,6 +142,8 @@ export default function RegisterPage(): ReactNode {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [registered, setRegistered] = useState(false);
+  const [verifyEmailSent, setVerifyEmailSent] = useState(false);
+  const [verifyEmail, setVerifyEmail] = useState("");
 
   // Step 1 fields
   const [fullName, setFullName] = useState("");
@@ -237,11 +240,13 @@ export default function RegisterPage(): ReactNode {
           grade,
         });
       } else {
+        const normalizedMobile = normalizeEgyptMobile(mobile);
+        const submitEmail = email || `${normalizedMobile.replace(/[+\s]/g, '')}@el-bannawy.app`;
         const payload: RegisterPayload = {
           fullName,
           englishName: englishName || undefined,
           email: email || undefined,
-          mobile: normalizeEgyptMobile(mobile),
+          mobile: normalizedMobile,
           parentMobile: parentMobile ? normalizeEgyptMobile(parentMobile) : undefined,
           password,
           confirmPassword,
@@ -256,7 +261,15 @@ export default function RegisterPage(): ReactNode {
       }
       setRegistered(true);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Registration failed");
+      const msg = err instanceof Error ? err.message : "";
+      if (msg === "EMAIL_VERIFICATION_REQUIRED") {
+        const normalizedMobile = normalizeEgyptMobile(mobile);
+        const submittedEmail = email || `${normalizedMobile.replace(/[+\s]/g, '')}@el-bannawy.app`;
+        setVerifyEmail(submittedEmail);
+        setVerifyEmailSent(true);
+      } else {
+        setError(msg || "Registration failed");
+      }
       setLoading(false);
     }
   }, [fullName, englishName, mobile, parentMobile, password, confirmPassword, governorate, school, educationalSystem, educationalStage, grade, register, oauthRegister, isOAuth, verifiedEmail]);
@@ -264,6 +277,44 @@ export default function RegisterPage(): ReactNode {
   const handlePreparingDone = useCallback((): void => {
     router.push("/dashboard");
   }, [router]);
+
+  if (verifyEmailSent) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center gap-6 px-4 text-center">
+        <div className="flex h-20 w-20 items-center justify-center rounded-3xl bg-primary-500 shadow-[0_0_40px_rgba(34,211,238,0.3)]">
+          <School className="h-10 w-10 text-white" />
+        </div>
+        <h1 className="text-2xl font-bold text-neutral-900 dark:text-neutral-100">
+          تم إنشاء حسابك بنجاح
+        </h1>
+        <p className="max-w-sm text-sm text-neutral-500 dark:text-neutral-400">
+          لقد أرسلنا رابط التفعيل إلى <span className="font-bold text-neutral-700 dark:text-neutral-200" dir="ltr">{verifyEmail || "بريدك الإلكتروني"}</span>.
+          <br />
+          يرجى فتح البريد والنقر على الرابط لتفعيل حسابك.
+        </p>
+        <p className="text-xs text-neutral-400">
+          بعد التفعيل، يمكنك{" "}
+          <Link href="/login" className="font-medium text-primary-600 hover:text-primary-500 dark:text-primary-400">
+            تسجيل الدخول
+          </Link>
+        </p>
+        <Button
+          variant="outline"
+          onClick={async (): Promise<void> => {
+            try {
+              const fbUser = getClientAuth().currentUser;
+              if (fbUser) {
+                const { sendEmailVerification: sendVerification } = await import("firebase/auth");
+                await sendVerification(fbUser);
+              }
+            } catch { /* ignore */ }
+          }}
+        >
+          إعادة إرسال رابط التفعيل
+        </Button>
+      </div>
+    );
+  }
 
   if (registered) {
     return <PreparingScreen onDone={handlePreparingDone} />;
@@ -468,7 +519,23 @@ export default function RegisterPage(): ReactNode {
                       setError(null);
                       setLoading(true);
                       await signInWithGoogle();
-                      router.push("/dashboard");
+
+                      const fbUser = getClientAuth().currentUser;
+                      if (fbUser) {
+                        const token = await fbUser.getIdToken(true);
+                        const meRes = await fetch("/api/v1/auth/me", {
+                          headers: { Authorization: `Bearer ${token}` },
+                        });
+                        const meData = await meRes.json();
+                        if (meData.success && meData.data) {
+                          router.push("/dashboard");
+                          return;
+                        }
+                      }
+
+                      const params = new URLSearchParams({ oauth: "google" });
+                      if (fbUser?.email) params.set("email", fbUser.email);
+                      router.replace(`/register?${params.toString()}`);
                     } catch (err) {
                       setError(err instanceof Error ? err.message : "Google sign-in failed");
                     } finally {

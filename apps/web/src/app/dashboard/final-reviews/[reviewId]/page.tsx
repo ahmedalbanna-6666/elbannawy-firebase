@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, type ReactNode } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api-client";
 import { usePermissions } from "@/lib/use-permissions";
@@ -28,6 +28,7 @@ import {
   BookMarked,
   HelpCircle,
   Clock,
+  FileText,
 } from "lucide-react";
 
 interface SectionManagement {
@@ -60,6 +61,7 @@ export default function FinalReviewDetailPage(): ReactNode {
   const rawRole = user?.role;
   const { isAdmin, isTeacher, can } = usePermissions();
   const isManagement = isAdmin || isTeacher;
+  const router = useRouter();
   const reviewId = params.reviewId as string;
   const queryClient = useQueryClient();
 
@@ -229,29 +231,37 @@ export default function FinalReviewDetailPage(): ReactNode {
                     )}
                   </div>
 
-                  <div className="flex shrink-0 items-center gap-1">
-                    {canEdit && (
+                    <div className="flex shrink-0 items-center gap-1">
                       <Button
                         variant="ghost"
                         size="icon-sm"
-                        aria-label="تعديل"
-                        onClick={(): void => { handleEditClick(section); }}
+                        aria-label="إدارة المحتوى"
+                        onClick={(): void => { router.push(`/dashboard/final-reviews/${reviewId}/sections/${section.id}`); }}
                       >
-                        <Pencil className="h-4 w-4" />
+                        <FileText className="h-4 w-4" />
                       </Button>
-                    )}
-                    {canEdit && (
-                      <Button
-                        variant="ghost"
-                        size="icon-sm"
-                        aria-label="حذف"
-                        className="text-danger-500 hover:bg-danger-500/10"
-                        onClick={(): void => { setDeleteTarget(section); }}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    )}
-                  </div>
+                      {canEdit && (
+                        <Button
+                          variant="ghost"
+                          size="icon-sm"
+                          aria-label="تعديل"
+                          onClick={(): void => { handleEditClick(section); }}
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                      )}
+                      {canEdit && (
+                        <Button
+                          variant="ghost"
+                          size="icon-sm"
+                          aria-label="حذف"
+                          className="text-danger-500 hover:bg-danger-500/10"
+                          onClick={(): void => { setDeleteTarget(section); }}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
                 </div>
               </CardContent>
             </Card>

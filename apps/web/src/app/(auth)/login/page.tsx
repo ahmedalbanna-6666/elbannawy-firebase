@@ -4,6 +4,7 @@ import { Suspense, useState, type ReactNode } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/providers/auth-provider";
+import { getClientAuth } from "@/lib/firebase/client-auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -42,8 +43,24 @@ function LoginForm(): ReactNode {
       setError(null);
       setLoading(true);
       await signInWithGoogle();
-      const redirectTo = searchParams.get("redirect") || "/dashboard";
-      router.push(redirectTo);
+
+      const fbUser = getClientAuth().currentUser;
+      if (fbUser) {
+        const token = await fbUser.getIdToken(true);
+        const meRes = await fetch("/api/v1/auth/me", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const meData = await meRes.json();
+        if (meData.success && meData.data) {
+          const redirectTo = searchParams.get("redirect") || "/dashboard";
+          router.push(redirectTo);
+          return;
+        }
+      }
+
+      const params = new URLSearchParams({ oauth: "google" });
+      if (fbUser?.email) params.set("email", fbUser.email);
+      router.push(`/register?${params.toString()}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Google sign-in failed");
     } finally {

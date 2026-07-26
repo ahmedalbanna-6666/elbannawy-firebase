@@ -16,6 +16,14 @@ export class CouponRepository implements ICouponRepository {
     } catch (error) { return { ok: false, error: { ...toRepositoryError(error) } } as unknown as RepositoryResult<ICoupon | null>; }
   }
 
+  async getById(id: string): Promise<RepositoryResult<ICoupon | null>> {
+    try {
+      const snap = await this.db().collection(COLLECTION).doc(id).get();
+      if (!snap.exists) return { ok: true, value: null };
+      return { ok: true, value: snap.data() as ICoupon };
+    } catch (error) { return { ok: false, error: { ...toRepositoryError(error) } } as unknown as RepositoryResult<ICoupon | null>; }
+  }
+
   async incrementUseCount(id: string): Promise<RepositoryResult<void>> {
     try {
       const ref = this.db().collection(COLLECTION).doc(id);
@@ -29,6 +37,23 @@ export class CouponRepository implements ICouponRepository {
       await this.db().collection(COLLECTION).doc(input.id).set(input);
       return { ok: true, value: input };
     } catch (error) { return { ok: false, error: { ...toRepositoryError(error) } }; }
+  }
+
+  async update(id: string, input: Partial<ICoupon>): Promise<RepositoryResult<ICoupon>> {
+    try {
+      const ref = this.db().collection(COLLECTION).doc(id);
+      const data = { ...input, updatedAt: new Date().toISOString() };
+      await ref.set(data, { merge: true });
+      const snap = await ref.get();
+      return { ok: true, value: snap.data() as ICoupon };
+    } catch (error) { return { ok: false, error: { ...toRepositoryError(error) } }; }
+  }
+
+  async delete(id: string): Promise<RepositoryResult<void>> {
+    try {
+      await this.db().collection(COLLECTION).doc(id).delete();
+      return { ok: true, value: undefined };
+    } catch (error) { return { ok: false, error: { ...toRepositoryError(error) } } as unknown as RepositoryResult<void>; }
   }
 
   async list(): Promise<RepositoryResult<ICoupon[]>> {

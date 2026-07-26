@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, type ReactNode } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api-client";
 import { usePermissions } from "@/lib/use-permissions";
@@ -27,6 +27,7 @@ import {
   Trash2,
   ScrollText,
   Clock,
+  FileText,
 } from "lucide-react";
 
 interface ChapterManagement {
@@ -59,6 +60,7 @@ export default function StoryDetailPage(): ReactNode {
   const rawRole = user?.role;
   const { isAdmin, isTeacher, can } = usePermissions();
   const isManagement = isAdmin || isTeacher;
+  const router = useRouter();
   const storyId = params.storyId as string;
   const queryClient = useQueryClient();
 
@@ -226,6 +228,14 @@ export default function StoryDetailPage(): ReactNode {
                   </div>
 
                   <div className="flex shrink-0 items-center gap-1">
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
+                      aria-label="إدارة المحتوى"
+                      onClick={(): void => { router.push(`/dashboard/stories/${storyId}/chapters/${chapter.id}`); }}
+                    >
+                      <FileText className="h-4 w-4" />
+                    </Button>
                     {canEdit && (
                       <Button
                         variant="ghost"

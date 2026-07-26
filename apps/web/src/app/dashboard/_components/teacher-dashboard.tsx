@@ -129,7 +129,7 @@ export function TeacherDashboard(): ReactNode {
           <h2 className="text-sm font-bold text-neutral-900 dark:text-neutral-100 mb-3">
             وحدات الإدارة الأساسية
           </h2>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 xl:grid-cols-4">
             {primaryModules.map((m) => (
               <Card
                 key={m.id}

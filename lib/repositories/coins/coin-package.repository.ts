@@ -29,6 +29,13 @@ export class CoinPackageRepository implements ICoinPackageRepository {
     } catch (error) { return { ok: false, error: { ...toRepositoryError(error) } } as unknown as RepositoryResult<ICoinPackage[]>; }
   }
 
+  async listAll(): Promise<RepositoryResult<ICoinPackage[]>> {
+    try {
+      const snap = await this.db().collection(COLLECTION).orderBy('displayOrder', 'asc').get();
+      return { ok: true, value: snap.docs.map((d) => d.data() as ICoinPackage) };
+    } catch (error) { return { ok: false, error: { ...toRepositoryError(error) } } as unknown as RepositoryResult<ICoinPackage[]>; }
+  }
+
   async update(id: string, input: Partial<ICoinPackage>): Promise<RepositoryResult<ICoinPackage>> {
     try {
       const ref = this.db().collection(COLLECTION).doc(id);

@@ -46,7 +46,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json({ success: false, error: { code: 'AUTH_FAILED', message: errData?.error?.message || 'Authentication failed' } }, { status: 401 });
     }
 
-    const data = result.data as { idToken: string; localId: string; email: string; displayName?: string };
+    const data = result.data as { idToken: string; localId: string; email: string; displayName?: string; emailVerified?: boolean };
     const adminAuth = getAdminAuth();
     const userRecord = await adminAuth.getUser(data.localId);
     const claims = userRecord.customClaims ?? {};

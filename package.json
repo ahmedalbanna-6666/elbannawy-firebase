@@ -5,7 +5,7 @@
   "description": "Enterprise AI-Powered English Learning Platform",
   "packageManager": "pnpm@11.9.0",
   "engines": {
-    "node": ">=20.0.0",
+    "node": "22.x",
     "pnpm": ">=9.0.0"
   },
   "scripts": {

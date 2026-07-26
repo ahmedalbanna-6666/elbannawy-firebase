@@ -49,14 +49,15 @@ interface ConnectorPoint {
   y: number;
 }
 
-function getUnitStatus(index: number, _total: number): UnitStatus {
-  if (index === 0) return "current";
-  return "upcoming";
+interface UnitProgress {
+  unitId: string;
+  percentage: number;
 }
 
 export function StudentUnitsView(): ReactNode {
   const router = useRouter();
   const [stages, setStages] = useState<Stage[]>([]);
+  const [progressMap, setProgressMap] = useState<Map<string, number>>(new Map());
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [openUnitId, setOpenUnitId] = useState<string | null>(null);
@@ -69,8 +70,18 @@ export function StudentUnitsView(): ReactNode {
 
   const fetchCurriculum = useCallback(async (): Promise<void> => {
     try {
-      const response = await api.get<Stage[]>("/curriculum");
-      if (response.data) setStages(response.data);
+      const [curriculumRes, progressRes] = await Promise.all([
+        api.get<Stage[]>("/curriculum"),
+        api.get<{ units: UnitProgress[] }>("/curriculum/progress"),
+      ]);
+      if (curriculumRes.data) setStages(curriculumRes.data);
+      if (progressRes.data?.units) {
+        const map = new Map<string, number>();
+        for (const u of progressRes.data.units) {
+          map.set(u.unitId, u.percentage);
+        }
+        setProgressMap(map);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "فشل تحميل المنهج");
     } finally {
@@ -156,6 +167,8 @@ export function StudentUnitsView(): ReactNode {
 
   const reversed = [...allUnits].reverse();
 
+  const currentUnitId = reversed.find((u) => (progressMap.get(u.id) ?? 0) > 0)?.id;
+
   if (loading) return <UnitsSkeleton />;
   if (error) return <ErrorState title="فشل تحميل المنهج" description={error} />;
 
@@ -203,9 +216,10 @@ export function StudentUnitsView(): ReactNode {
           ))}
         </svg>
 
-        <div className="relative z-10 flex flex-col items-center gap-4 md:gap-5">
+        <div className="relative z-10 flex flex-col items-center gap-3 sm:gap-4 md:gap-5">
           {reversed.map((unit, idx) => {
-            const status = getUnitStatus(idx, reversed.length);
+            const pct = progressMap.get(unit.id) ?? 0;
+            const status = unit.id === currentUnitId ? "current" : pct >= 100 ? "completed" : "upcoming";
             const isOdd = idx % 2 === 0;
             const locked = unit.isPremium && !unit.unlocked;
 
@@ -234,7 +248,7 @@ export function StudentUnitsView(): ReactNode {
             return (
               <div
                 key={unit.id}
-                className={isOdd ? "flex flex-col items-center md:translate-x-14" : "flex flex-col items-center md:-translate-x-14"}
+                className={isOdd ? "flex flex-col items-center translate-x-10 sm:translate-x-12 md:translate-x-14" : "flex flex-col items-center -translate-x-10 sm:-translate-x-12 md:-translate-x-14"}
               >
                 {status === "current" && (
                   <span className="mb-1.5 rounded-full bg-success-500 px-2.5 py-0.5 text-[10px] font-bold text-white shadow-[0_0_8px_rgba(16,185,129,0.35)]">
@@ -256,16 +270,16 @@ export function StudentUnitsView(): ReactNode {
                       }
                     }}
                     onClick={handleOpen}
-                    className={`flex h-[100px] w-[100px] cursor-pointer flex-col items-center justify-center gap-0.5 rounded-[26px] border-2 transition-all duration-200 hover:scale-[1.02] ${ringColor} ${hoverColor} ${locked ? "opacity-70" : ""}`}
+                    className={`flex h-[70px] w-[70px] sm:h-[85px] sm:w-[85px] md:h-[100px] md:w-[100px] cursor-pointer flex-col items-center justify-center gap-0.5 rounded-[18px] sm:rounded-[22px] md:rounded-[26px] border-2 transition-all duration-200 hover:scale-[1.02] ${ringColor} ${hoverColor} ${locked ? "opacity-70" : ""}`}
                   >
-                    <span className="font-cairo text-[9px] font-extrabold uppercase tracking-[0.15em] text-primary-500/60">
+                    <span className="font-cairo text-[7px] sm:text-[8px] md:text-[9px] font-extrabold uppercase tracking-[0.15em] text-primary-500/60">
                       UNIT
                     </span>
-                    <span className="font-cairo text-[2.2rem] font-black leading-none text-neutral-900 dark:text-neutral-100">
+                    <span className="font-cairo text-[1.5rem] sm:text-[1.8rem] md:text-[2.2rem] font-black leading-none text-neutral-900 dark:text-neutral-100">
                       {unit.displayOrder}
                     </span>
-                    <span className="text-[11px] font-semibold text-neutral-400">
-                      {status === "current" ? `${String(45)}%` : status === "completed" ? "100%" : ""}
+                    <span className="text-[9px] sm:text-[10px] md:text-[11px] font-semibold text-neutral-400">
+                      {pct > 0 ? `${String(pct)}%` : ""}
                     </span>
                   </div>
 
@@ -302,8 +316,8 @@ function UnitsSkeleton(): ReactNode {
       <Skeleton className="h-6 w-64" />
       <div className="mx-auto flex max-w-md flex-col items-center gap-4">
         {Array.from({ length: 6 }, (_, i) => (
-          <div key={i} className={i % 2 === 0 ? "md:translate-x-14" : "md:-translate-x-14"}>
-            <Skeleton className="h-[100px] w-[100px] rounded-[26px]" />
+          <div key={i} className={i % 2 === 0 ? "translate-x-10 sm:translate-x-12 md:translate-x-14" : "-translate-x-10 sm:-translate-x-12 md:-translate-x-14"}>
+            <Skeleton className="h-[70px] w-[70px] sm:h-[85px] sm:w-[85px] md:h-[100px] md:w-[100px] rounded-[18px] sm:rounded-[22px] md:rounded-[26px]" />
           </div>
         ))}
       </div>

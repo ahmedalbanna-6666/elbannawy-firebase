@@ -37,13 +37,13 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json({ success: false, error: { code: 'UNAUTHORIZED', message: 'Not authenticated' } }, { status: 401 });
     }
 
-    let body: { contentType?: string; contentId?: string };
+    let body: { contentType?: string; contentId?: string; targetType?: string; targetId?: string };
     try { body = await request.json() as typeof body; } catch {
       return NextResponse.json({ success: false, error: { code: 'INVALID_INPUT', message: 'Invalid JSON body' } }, { status: 400 });
     }
 
-    const contentType = (body.contentType ?? '').toUpperCase();
-    const contentId = (body.contentId ?? '').trim();
+    const contentType = (body.contentType ?? body.targetType ?? '').toUpperCase();
+    const contentId = (body.contentId ?? body.targetId ?? '').trim();
 
     if (!contentType || !contentId) {
       return NextResponse.json({ success: false, error: { code: 'INVALID_INPUT', message: 'contentType and contentId are required' } }, { status: 400 });

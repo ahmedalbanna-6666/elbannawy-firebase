@@ -14,14 +14,12 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json({ success: false, error: { code: 'UNAUTHORIZED', message: 'Not authenticated' } }, { status: 401 });
     }
 
-    let body: { code?: string; contentType?: string; contentId?: string };
+    let body: { code?: string };
     try { body = await request.json() as typeof body; } catch {
       return NextResponse.json({ success: false, error: { code: 'INVALID_INPUT', message: 'Invalid JSON body' } }, { status: 400 });
     }
 
     const code = (body.code ?? '').trim();
-    const contentType = body.contentType as string;
-    const contentId = body.contentId as string;
 
     if (!code) {
       return NextResponse.json({ success: false, error: { code: 'INVALID_INPUT', message: 'code is required' } }, { status: 400 });
@@ -46,31 +44,69 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json({ success: false, error: { code: 'PRECONDITION_FAILED', message: 'Redeem code has reached maximum uses' } }, { status: 412 });
     }
 
-    const existingEntitlement = await entitlementRepo.getByStudentAndContent(decoded.uid, coupon.contentType, coupon.contentId);
-    if (existingEntitlement.ok && existingEntitlement.value) {
-      return NextResponse.json({ success: false, error: { code: 'ALREADY_EXISTS', message: 'Content already unlocked' } }, { status: 409 });
+    const now = new Date().toISOString();
+    let coinsAdded = 0;
+    let unlocked = false;
+
+    // Type 1: Coin-amount code — add coins to wallet
+    if (coupon.coinAmount > 0) {
+      const wallet = await walletRepo.getByStudentId(decoded.uid);
+      const currentBalance = wallet.ok && wallet.value ? wallet.value.balance : 0;
+      const currentEarned = wallet.ok && wallet.value ? wallet.value.totalEarned : 0;
+
+      await walletRepo.upsert(
+        decoded.uid,
+        currentBalance + coupon.coinAmount,
+        wallet.ok && wallet.value ? wallet.value.totalPurchased : 0,
+        currentEarned + coupon.coinAmount,
+        wallet.ok && wallet.value ? wallet.value.totalSpent : 0,
+        0,
+      );
+
+      const tx = {
+        id: `ctx_${Date.now()}`,
+        studentId: decoded.uid,
+        amount: coupon.coinAmount,
+        transactionType: 'REWARD' as const,
+        sourceType: 'redeem_code',
+        sourceId: code,
+        balanceAfter: currentBalance + coupon.coinAmount,
+        occurredAt: now,
+        idempotencyKey: `ctx_redeem_${code}_${decoded.uid}`,
+      };
+
+      await coinTxRepo.create(tx as any);
+      coinsAdded = coupon.coinAmount;
     }
 
-    const now = new Date().toISOString();
-    const entitlement = {
-      id: `ent_${Date.now()}`,
-      studentId: decoded.uid,
-      contentType: coupon.contentType,
-      contentId: coupon.contentId,
-      sourceType: 'redeem_code',
-      sourceId: code,
-      active: true,
-      activatedAt: now,
-    };
+    // Type 2: Content-unlock code — create entitlement
+    if (coupon.contentType && coupon.contentId) {
+      const existingEntitlement = await entitlementRepo.getByStudentAndContent(decoded.uid, coupon.contentType, coupon.contentId);
+      if (existingEntitlement.ok && existingEntitlement.value) {
+        return NextResponse.json({ success: false, error: { code: 'ALREADY_EXISTS', message: 'Content already unlocked' } }, { status: 409 });
+      }
 
-    const entResult = await entitlementRepo.create(entitlement as any);
-    if (!entResult.ok) {
-      return NextResponse.json({ success: false, error: entResult.error }, { status: 500 });
+      const entitlement = {
+        id: `ent_${Date.now()}`,
+        studentId: decoded.uid,
+        contentType: coupon.contentType,
+        contentId: coupon.contentId,
+        sourceType: 'redeem_code',
+        sourceId: code,
+        active: true,
+        activatedAt: now,
+      };
+
+      const entResult = await entitlementRepo.create(entitlement as any);
+      if (!entResult.ok) {
+        return NextResponse.json({ success: false, error: entResult.error }, { status: 500 });
+      }
+      unlocked = true;
     }
 
     await couponRepo.incrementUseCount(coupon.id);
 
-    return NextResponse.json({ success: true, data: entResult.value }, { status: 201 });
+    return NextResponse.json({ success: true, data: { coinsAdded, unlocked } }, { status: 201 });
   } catch (error) {
     return NextResponse.json({ success: false, error: { code: 'INTERNAL', message: error instanceof Error ? error.message : 'Unknown error' } }, { status: 500 });
   }

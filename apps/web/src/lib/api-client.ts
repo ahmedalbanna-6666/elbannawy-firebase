@@ -54,10 +54,13 @@ async function request<T>(
   }
 
   if (!response.ok) {
+    const body = data as Record<string, unknown> | null;
     const message =
-      typeof data === "object" && data !== null && "message" in data
-        ? String(data.message)
-        : "An error occurred";
+      body?.error && typeof body.error === "object"
+        ? String((body.error as Record<string, unknown>).message ?? "")
+        : body?.message
+          ? String(body.message)
+          : "An error occurred";
     throw new ApiError(message, response.status);
   }
 

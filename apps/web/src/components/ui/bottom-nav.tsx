@@ -16,10 +16,11 @@ interface BottomNavItem {
 
 interface BottomNavProps {
   items: BottomNavItem[];
+  centerId?: string;
   className?: string;
 }
 
-export function BottomNav({ items, className }: BottomNavProps): ReactNode {
+export function BottomNav({ items, centerId, className }: BottomNavProps): ReactNode {
   const navItems = Array.isArray(items) ? items : [];
   return (
     <nav
@@ -29,6 +30,7 @@ export function BottomNav({ items, className }: BottomNavProps): ReactNode {
       )}
     >
       {navItems.map((item) => {
+        const isCenter = item.id === centerId;
         const Icon = item.active && item.activeIcon ? item.activeIcon : item.icon;
         return (
           <button
@@ -36,14 +38,28 @@ export function BottomNav({ items, className }: BottomNavProps): ReactNode {
             onClick={item.onClick}
             aria-label={item.label}
             className={cn(
-              "relative flex flex-col items-center gap-0.5 px-3 py-2 text-xs font-medium transition-colors focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2",
+              "relative flex flex-col items-center gap-0.5 px-3 py-2 text-xs font-medium transition-all duration-200 focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2",
+              isCenter ? "-mt-5" : "",
               item.active
-                ? "text-primary-600 dark:text-primary-400"
+                ? "text-violet-600 dark:text-violet-400"
                 : "text-neutral-400 dark:text-neutral-500",
             )}
           >
-            <Icon className="h-6 w-6" />
-            <span>{item.label}</span>
+            {isCenter ? (
+              <div
+                className={cn(
+                  "flex h-12 w-12 items-center justify-center rounded-full transition-all duration-200",
+                  item.active
+                    ? "bg-gradient-to-br from-violet-500 to-fuchsia-500 text-white shadow-[0_4px_20px_rgba(139,92,246,0.4)]"
+                    : "bg-neutral-200 dark:bg-neutral-700 text-neutral-500 dark:text-neutral-400",
+                )}
+              >
+                <Icon className="h-6 w-6" />
+              </div>
+            ) : (
+              <Icon className={cn("h-6 w-6", item.active ? "drop-shadow-[0_0_6px_rgba(139,92,246,0.4)]" : "")} />
+            )}
+            <span className={isCenter ? "mt-0.5" : ""}>{item.label}</span>
             {item.badge !== undefined && item.badge > 0 && (
               <span className="absolute -end-1 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-danger-500 px-1 text-[10px] font-bold text-white">
                 {item.badge > 99 ? "99+" : item.badge}

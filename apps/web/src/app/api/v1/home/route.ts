@@ -9,7 +9,12 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json({ success: false, error: { code: 'UNAUTHORIZED', message: 'Not authenticated' } }, { status: 401 });
     }
 
-    const db = getAdminDb();
+    let db: ReturnType<typeof getAdminDb>;
+    try {
+      db = getAdminDb();
+    } catch {
+      return NextResponse.json({ success: false, error: { code: 'SERVICE_UNAVAILABLE', message: 'Database service not configured' } }, { status: 503 });
+    }
     const studentId = decoded.uid;
 
     const [userDoc, progressSnap, xpSnap, walletSnap, statsSnap, achievementsSnap, bookingsSnap, pendingHomeworkSnap] = await Promise.all([

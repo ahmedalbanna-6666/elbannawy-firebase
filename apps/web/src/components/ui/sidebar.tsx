@@ -11,10 +11,12 @@ import {
   MessageCircle,
   Send,
   Youtube,
+  Smartphone,
   type LucideIcon,
 } from "lucide-react";
 import { useAuthStore } from "@/lib/auth-store";
 import { ROLE_LABELS } from "@el-bannawy/shared";
+import { usePwaInstall, isStandalone } from "@/lib/use-pwa-install";
 
 /* ── Types ────────────────────────────────────────────────── */
 
@@ -120,7 +122,7 @@ function ProfileCard({ collapsed, onProfileClick, gradeLabel }: { collapsed?: bo
               <span className="truncate text-sm font-bold text-neutral-100 light:text-neutral-900">
                 {firstName || "User"}
               </span>
-              <span className="truncate text-[11px] font-semibold text-neutral-400">
+              <span className="truncate text-[11px] font-semibold text-neutral-400 light:text-neutral-600">
                 {gradeLabel}
               </span>
             </div>
@@ -169,7 +171,7 @@ function SocialDock({ collapsed }: { collapsed?: boolean }): ReactNode {
             whileTap={{ scale: 0.9 }}
             transition={SPRING_FAST}
             className={cn(
-              "flex h-8 w-8 items-center justify-center rounded-lg text-neutral-500 transition-colors hover:bg-white/10 light:hover:bg-neutral-100",
+              "flex h-8 w-8 items-center justify-center rounded-lg text-neutral-500 light:text-neutral-600 transition-colors hover:bg-white/10 light:hover:bg-neutral-100",
               social.color,
             )}
           >
@@ -178,6 +180,38 @@ function SocialDock({ collapsed }: { collapsed?: boolean }): ReactNode {
         ))}
       </div>
     </motion.div>
+  );
+}
+
+function InstallButton({ collapsed }: { collapsed?: boolean }): ReactNode {
+  const { canInstall, install, dismissed } = usePwaInstall();
+
+  if (dismissed || !canInstall) return null;
+
+  if (collapsed) {
+    return (
+      <motion.button
+        onClick={install}
+        whileHover={{ scale: 1.06 }}
+        whileTap={{ scale: 0.92 }}
+        className="flex h-10 w-10 items-center justify-center rounded-xl text-neutral-500 light:text-neutral-600 transition-colors hover:bg-primary-400/12 hover:text-primary-400"
+        aria-label="تثبيت التطبيق"
+      >
+        <Smartphone className="h-5 w-5" />
+      </motion.button>
+    );
+  }
+
+  return (
+    <motion.button
+      onClick={install}
+      whileHover={{ scale: 1.02, x: 2 }}
+      whileTap={{ scale: 0.97 }}
+      className="flex w-full items-center gap-3 rounded-xl border border-primary-500/20 bg-primary-400/8 px-3 py-2.5 text-sm font-bold text-primary-400 transition-colors hover:bg-primary-400/15"
+    >
+      <Smartphone className="h-[18px] w-[18px] shrink-0" />
+      <span className="flex-1 text-start text-[13px]">تثبيت التطبيق</span>
+    </motion.button>
   );
 }
 
@@ -219,7 +253,7 @@ export function Sidebar({ items, className, onClose, onToggle, onProfileClick, p
           <motion.span
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="text-[10px] font-bold uppercase tracking-[0.15em] text-neutral-500"
+            className="text-[10px] font-bold uppercase tracking-[0.15em] text-neutral-500 light:text-neutral-600"
           >
             القائمة
           </motion.span>
@@ -229,7 +263,7 @@ export function Sidebar({ items, className, onClose, onToggle, onProfileClick, p
           whileHover={{ scale: 1.06 }}
           whileTap={{ scale: 0.92 }}
           transition={SPRING_FAST}
-          className="flex h-7 w-7 items-center justify-center rounded-lg text-neutral-500 transition-colors hover:bg-white/10 hover:text-white light:hover:bg-neutral-100 light:hover:text-neutral-700"
+          className="flex h-7 w-7 items-center justify-center rounded-lg text-neutral-500 light:text-neutral-600 transition-colors hover:bg-white/10 hover:text-white light:hover:bg-neutral-100 light:hover:text-neutral-700"
           aria-label={collapsed ? "Expand" : "Collapse"}
         >
           {collapsed ? <ChevronRight className="h-3.5 w-3.5" /> : <ChevronLeft className="h-3.5 w-3.5" />}
@@ -278,7 +312,7 @@ export function Sidebar({ items, className, onClose, onToggle, onProfileClick, p
                         <div className={cn("flex items-center justify-center", collapsed && "w-full")}>
                           <Icon className={cn(
                             "h-[18px] w-[18px] shrink-0",
-                            item.danger ? "text-danger-500" : item.active ? "text-primary-400" : "text-neutral-400",
+                            item.danger ? "text-danger-500" : item.active ? "text-primary-400" : "text-neutral-400 light:text-neutral-600",
                           )} />
                         </div>
                         {!collapsed && (
@@ -319,7 +353,7 @@ export function Sidebar({ items, className, onClose, onToggle, onProfileClick, p
                 <div className={cn("flex items-center justify-center", collapsed && "w-full")}>
                   <Icon className={cn(
                     "h-[18px] w-[18px] shrink-0",
-                    entry.danger ? "text-danger-500" : entry.active ? "text-primary-400" : "text-neutral-400",
+                    entry.danger ? "text-danger-500" : entry.active ? "text-primary-400" : "text-neutral-400 light:text-neutral-600",
                   )} />
                 </div>
                 {!collapsed && (
@@ -343,6 +377,13 @@ export function Sidebar({ items, className, onClose, onToggle, onProfileClick, p
           </motion.div>
         )}
       </nav>
+
+      {/* ── Install App ── */}
+      {!isStandalone() && (
+        <div className={collapsed ? "flex justify-center py-2" : "px-3 py-2"}>
+          <InstallButton collapsed={collapsed} />
+        </div>
+      )}
 
       {/* ── Social Dock ── */}
       <SocialDock collapsed={collapsed} />

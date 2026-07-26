@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { authenticateRequest } from '@/lib/firebase/auth-helper';
-import { getAdminDb } from '@/lib/firebase/admin';
+import { authenticateRequest, normalizeRole } from '@/lib/firebase/auth-helper';
+import { getAdminAuth, getAdminDb } from '@/lib/firebase/admin';
 import {
   CoinPurchaseRequestRepository,
   WalletRepository,
@@ -12,6 +12,28 @@ const requestRepo = new CoinPurchaseRequestRepository();
 const walletRepo = new WalletRepository();
 const coinTxRepo = new CoinTransactionRepository();
 const dispatcher = new NotificationDispatcher();
+
+async function getEffectiveUserRole(uid: string): Promise<string> {
+  try {
+    const db = getAdminDb();
+    const doc = await db.collection('users').doc(uid).get();
+    if (doc.exists) {
+      const data = doc.data()!;
+      const role = (data as Record<string, unknown>).role;
+      if (typeof role === 'string') return normalizeRole(role);
+      if (role && typeof role === 'object') {
+        const nestedRole = (role as Record<string, unknown>).role;
+        if (typeof nestedRole === 'string') return normalizeRole(nestedRole);
+      }
+    }
+  } catch {}
+  try {
+    const firebaseUser = await getAdminAuth().getUser(uid);
+    const claims = (firebaseUser.customClaims ?? {}) as Record<string, string>;
+    if (claims.role) return normalizeRole(claims.role);
+  } catch {}
+  return 'student';
+}
 
 function mapErrorCode(code: string): number {
   switch (code) {
@@ -54,9 +76,7 @@ export async function PATCH(
       return NextResponse.json({ success: false, error: { code: 'UNAUTHORIZED', message: 'Not authenticated' } }, { status: 401 });
     }
 
-    const db = getAdminDb();
-    const userDoc = await db.collection('users').doc(decoded.uid).get();
-    const role = (userDoc.data() as { role?: string })?.role ?? 'student';
+    const role = await getEffectiveUserRole(decoded.uid);
     if (role !== 'teacher' && role !== 'administrator') {
       return NextResponse.json({ success: false, error: { code: 'FORBIDDEN', message: 'Only teachers and admins can review requests' } }, { status: 403 });
     }

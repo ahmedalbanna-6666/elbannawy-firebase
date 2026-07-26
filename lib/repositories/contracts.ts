@@ -1912,6 +1912,7 @@ export interface ICoinPackageRepository {
   create(input: ICoinPackage): Promise<RepositoryResult<ICoinPackage>>;
   getById(id: string): Promise<RepositoryResult<ICoinPackage | null>>;
   listActive(): Promise<RepositoryResult<ICoinPackage[]>>;
+  listAll(): Promise<RepositoryResult<ICoinPackage[]>>;
   update(id: string, input: Partial<ICoinPackage>): Promise<RepositoryResult<ICoinPackage>>;
   delete(id: string): Promise<RepositoryResult<void>>;
 }
@@ -1935,8 +1936,11 @@ export interface IContentEntitlementRepository {
 export interface ICoupon {
   readonly id: string;
   readonly code: string;
+  readonly coinAmount: number;
   readonly contentType: string;
   readonly contentId: string;
+  readonly targetType: string;
+  readonly targetId: string;
   readonly maxUses: number;
   readonly useCount: number;
   readonly active: boolean;
@@ -1947,9 +1951,34 @@ export interface ICoupon {
 
 export interface ICouponRepository {
   getByCode(code: string): Promise<RepositoryResult<ICoupon | null>>;
+  getById(id: string): Promise<RepositoryResult<ICoupon | null>>;
   incrementUseCount(id: string): Promise<RepositoryResult<void>>;
   create(input: ICoupon): Promise<RepositoryResult<ICoupon>>;
+  update(id: string, input: Partial<ICoupon>): Promise<RepositoryResult<ICoupon>>;
+  delete(id: string): Promise<RepositoryResult<void>>;
   list(): Promise<RepositoryResult<ICoupon[]>>;
+}
+
+// ===== Unlock Request Contracts =====
+
+export interface IUnlockRequest {
+  readonly id: string;
+  readonly studentId: string;
+  readonly targetType: string;
+  readonly targetId: string;
+  readonly status: string;
+  readonly adminNote?: string;
+  readonly reviewedBy?: string;
+  readonly reviewedAt?: string;
+  readonly createdAt: string;
+  readonly updatedAt: string;
+}
+
+export interface IUnlockRequestRepository {
+  create(input: IUnlockRequest): Promise<RepositoryResult<IUnlockRequest>>;
+  getById(id: string): Promise<RepositoryResult<IUnlockRequest | null>>;
+  list(filter: { status?: string; studentId?: string }): Promise<RepositoryResult<IUnlockRequest[]>>;
+  update(id: string, input: Partial<IUnlockRequest>): Promise<RepositoryResult<IUnlockRequest>>;
 }
 
 // ===== Live Class Contracts =====

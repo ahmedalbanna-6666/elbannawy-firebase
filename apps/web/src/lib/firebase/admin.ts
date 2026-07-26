@@ -20,7 +20,6 @@ function ensureAdminApp(): App {
     return existing;
   }
 
-  // When Firestore emulator is running, connect without production credentials
   if (process.env.FIRESTORE_EMULATOR_HOST) {
     const projectId = FIREBASE_ADMIN_CONFIG.projectId || 'demo-elbannawy';
     adminApp = initializeApp({ projectId });

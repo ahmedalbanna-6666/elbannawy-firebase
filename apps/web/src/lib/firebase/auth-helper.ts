@@ -18,13 +18,23 @@ export async function authenticateRequest(request: NextRequest): Promise<AuthUse
   }
   if (!token) return null;
 
-  const adminAuth = getAdminAuth();
+  let adminAuth: ReturnType<typeof getAdminAuth>;
+  try {
+    adminAuth = getAdminAuth();
+  } catch {
+    // Fallback: Identity Toolkit lookup API
+    return await identityToolkitFallback(token);
+  }
   try {
     const decoded = await adminAuth.verifyIdToken(token);
     return { uid: decoded.uid, email: decoded.email, role: decoded.role as string | undefined };
   } catch {}
 
   // Fallback: Identity Toolkit lookup API
+  return await identityToolkitFallback(token);
+}
+
+async function identityToolkitFallback(token: string): Promise<AuthUser | null> {
   try {
     const https = await import("https");
     const result = await new Promise<{ ok: boolean; data: unknown }>((resolve) => {
@@ -57,7 +67,8 @@ export async function authenticateRequest(request: NextRequest): Promise<AuthUse
       const userInfo = lookupData.users?.[0];
       if (userInfo) {
         try {
-          const userRecord = await getAdminAuth().getUser(userInfo.localId);
+          const auth = getAdminAuth();
+          const userRecord = await auth.getUser(userInfo.localId);
           return { uid: userInfo.localId, email: userInfo.email, role: (userRecord.customClaims as Record<string, string> | null)?.role };
         } catch {
           return { uid: userInfo.localId, email: userInfo.email };

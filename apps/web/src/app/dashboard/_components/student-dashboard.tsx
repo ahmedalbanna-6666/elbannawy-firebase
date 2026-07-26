@@ -271,7 +271,7 @@ export function StudentDashboard(): ReactNode {
 
       {/* SECTION 6 — Quick Learning Tools */}
       <AnimatedContainer animation="fade-slide-up" delay={120}>
-        <section className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        <section className="grid grid-cols-2 gap-3 sm:gap-4">
 
         <div onClick={(): void => { router.push("/dashboard/ai"); }} role="button" tabIndex={0} onKeyDown={(e): void => { if (e.key === "Enter") { router.push("/dashboard/ai"); } }}>
           <Card variant="outline" padding="md" className="cursor-pointer transition-colors hover:bg-neutral-50 dark:hover:bg-neutral-800/50 h-full">

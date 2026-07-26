@@ -18,6 +18,9 @@ import {
   UserCircle,
   ClipboardList,
   GraduationCap,
+  Sparkles,
+  Video,
+  Gamepad2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { type SidebarContent } from "@/components/ui/sidebar";
@@ -29,6 +32,7 @@ const BottomNav = dynamic(() => import("@/components/ui/bottom-nav").then(m => (
 const AcademicSettings = dynamic(() => import("@/components/ui/academic-settings").then(m => ({ default: m.AcademicSettings })), { ssr: false });
 const ToastContainer = dynamic(() => import("@/components/toast").then(m => ({ default: m.ToastContainer })), { ssr: false });
 const PwaInstallPrompt = dynamic(() => import("@/components/pwa-install-prompt").then(m => ({ default: m.PwaInstallPrompt })), { ssr: false });
+const NotificationPrompt = dynamic(() => import("@/components/notification-prompt").then(m => ({ default: m.NotificationPrompt })), { ssr: false });
 
 const ROLE_LABELS: Record<string, string> = {
   ADMINISTRATOR: "مدير النظام",
@@ -184,28 +188,32 @@ export default function DashboardLayout({ children }: DashboardLayoutProps): Rea
 
     const items: BottomNavItem[] = [];
 
-    items.push({ id: "home", label: "الرئيسية", icon: Home, onClick: (): void => { router.push("/dashboard"); }, active: pathname === "/dashboard" });
-
     if (isStudent) {
       items.push(
-        { id: "courses", label: "الكورسات", icon: BookOpen, onClick: (): void => { router.push("/dashboard/units"); }, active: isActive("/dashboard/units") },
+        { id: "courses", label: "الوحدات", icon: BookOpen, onClick: (): void => { router.push("/dashboard/units"); }, active: isActive("/dashboard/units") },
+        { id: "ai", label: "البنا AI", icon: Sparkles, onClick: (): void => { router.push("/dashboard/ai"); }, active: isActive("/dashboard/ai") },
+        { id: "home", label: "الرئيسية", icon: Home, onClick: (): void => { router.push("/dashboard"); }, active: pathname === "/dashboard" },
+        { id: "live", label: "حصه مباشر", icon: Video, onClick: (): void => { router.push("/dashboard/live"); }, active: isActive("/dashboard/live") },
+        { id: "games", label: "الألعاب", icon: Gamepad2, onClick: (): void => { router.push("/dashboard/games"); }, active: isActive("/dashboard/games") },
       );
     } else if (isTeacher) {
       items.push(
+        { id: "home", label: "الرئيسية", icon: Home, onClick: (): void => { router.push("/dashboard"); }, active: pathname === "/dashboard" },
         { id: "units", label: "الوحدات", icon: BookOpen, onClick: (): void => { router.push("/dashboard/units"); }, active: isActive("/dashboard/units") },
         { id: "homework", label: "الواجبات", icon: ClipboardList, onClick: (): void => { router.push("/dashboard/teacher/homework"); }, active: isActive("/dashboard/teacher/homework") },
         { id: "quizzes", label: "الاختبارات", icon: GraduationCap, onClick: (): void => { router.push("/dashboard/teacher/quiz"); }, active: isActive("/dashboard/teacher/quiz") },
         { id: "students", label: "الطلاب", icon: UserCircle, onClick: (): void => { router.push("/dashboard/students"); }, active: isActive("/dashboard/students") },
+        { id: "profile", label: "الحساب", icon: UserCircle, onClick: (): void => { router.push("/dashboard/profile"); }, active: isActive("/dashboard/profile") },
       );
     } else {
       items.push(
+        { id: "home", label: "الرئيسية", icon: Home, onClick: (): void => { router.push("/dashboard"); }, active: pathname === "/dashboard" },
         { id: "units", label: "الوحدات", icon: BookOpen, onClick: (): void => { router.push("/dashboard/units"); }, active: isActive("/dashboard/units") },
         { id: "students", label: "الطلاب", icon: UserCircle, onClick: (): void => { router.push("/dashboard/students"); }, active: isActive("/dashboard/students") },
         { id: "settings", label: "الإعدادات", icon: ScrollText, onClick: (): void => { router.push("/dashboard/admin/settings"); }, active: isActive("/dashboard/admin/settings") },
+        { id: "profile", label: "الحساب", icon: UserCircle, onClick: (): void => { router.push("/dashboard/profile"); }, active: isActive("/dashboard/profile") },
       );
     }
-
-    items.push({ id: "profile", label: "الحساب", icon: UserCircle, onClick: (): void => { router.push("/dashboard/profile"); }, active: isActive("/dashboard/profile") });
 
     return items;
   }, [router, pathname, userRole]);
@@ -329,8 +337,9 @@ export default function DashboardLayout({ children }: DashboardLayoutProps): Rea
           {children}
         </main>
 
-        <BottomNav items={bottomNavItems} />
+        <BottomNav items={bottomNavItems} centerId="home" />
         <PwaInstallPrompt />
+        <NotificationPrompt />
         <ToastContainer />
       </motion.div>
     </div>

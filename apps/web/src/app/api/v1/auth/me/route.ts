@@ -75,22 +75,6 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const result = await userService.getUserById(decoded.uid);
 
     if (!result.ok) {
-      const adminAuth = getAdminAuth();
-      const firebaseUser = await adminAuth.getUser(decoded.uid).catch(() => null);
-      if (firebaseUser) {
-        const claims = firebaseUser.customClaims ?? {};
-        return NextResponse.json({
-          success: true,
-          data: {
-            id: firebaseUser.uid,
-            fullName: firebaseUser.displayName ?? 'User',
-            mobileNumber: firebaseUser.email?.replace('@el-bannawy.app', '') ?? null,
-            role: normalizeRole((claims as Record<string, string>).role ?? 'student'),
-            status: 'active',
-            effectivePermissions: [],
-          },
-        });
-      }
       return NextResponse.json(
         { success: false, error: { code: 'NOT_FOUND', message: 'User not found' } },
         { status: 404 },
