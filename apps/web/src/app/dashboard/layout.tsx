@@ -220,25 +220,23 @@ export default function DashboardLayout({ children }: DashboardLayoutProps): Rea
 
   return (
     <div className="flex min-h-screen">
-      {/* Desktop sidebar - visible by default */}
-      <div className="hidden lg:flex">
-        {sidebarContent}
-      </div>
-
-      {/* Mobile/Desktop overlay sidebar */}
+      {/* Overlay sidebar - same for mobile and desktop */}
       <div
         className={cn(
           "fixed inset-0 z-50 transition-all duration-300",
-          sidebarOpen ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0",
+          sidebarOpen ? "pointer-events-auto" : "pointer-events-none",
         )}
       >
         <div
-          className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+          className={cn(
+            "absolute inset-0 transition-all duration-300",
+            sidebarOpen ? "bg-black/60 backdrop-blur-sm opacity-100" : "bg-transparent opacity-0",
+          )}
           onClick={closeSidebar}
         />
         <div className={cn(
           "absolute inset-y-0 right-0 z-10 transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]",
-          sidebarOpen ? "translate-x-0" : "translate-x-full",
+          sidebarOpen ? "translate-x-0 shadow-2xl" : "translate-x-full",
         )}>
           {sidebarContent}
         </div>
@@ -248,7 +246,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps): Rea
       <div
         className={cn(
           "flex flex-1 flex-col transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]",
-          sidebarOpen && "lg:origin-right lg:scale-[0.92] lg:rounded-2xl lg:overflow-hidden lg:shadow-2xl lg:ring-1 lg:ring-white/10 lg:my-3 lg:mr-[calc(260px+8px)] lg:h-[calc(100vh-24px)]",
+          sidebarOpen && "lg:origin-right lg:scale-[0.92] lg:rounded-[20px] lg:overflow-hidden lg:shadow-2xl lg:ring-1 lg:ring-white/10 lg:mx-auto lg:my-3 lg:h-[calc(100vh-24px)] lg:max-w-[calc(100%-270px)]",
         )}
       >
         <Header
