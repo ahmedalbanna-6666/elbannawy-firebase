@@ -186,8 +186,6 @@ export function UnitFormDialog({
         payload.published = formData.published;
         payload.isPremium = formData.isPremium;
         payload.lockedOverride = toLockedOverride(formData.lockedOverride);
-      } else {
-        payload.gradeId = unit.gradeId;
       }
 
       if (unit) {
@@ -208,7 +206,6 @@ export function UnitFormDialog({
     e.preventDefault();
     if (!formData.title.trim()) return;
     if (!isEdit && !academicContextResolved) return;
-    if (isEdit && !unit.gradeId) return;
     mutation.mutate();
   };
 
@@ -300,7 +297,6 @@ export function UnitFormDialog({
               !formData.title.trim()
               || (!isEdit && contextLoading)
               || (!isEdit && !academicContextResolved)
-              || (isEdit && !unit.gradeId)
             }
           >
             {isEdit ? "حفظ التغييرات" : "إنشاء"}

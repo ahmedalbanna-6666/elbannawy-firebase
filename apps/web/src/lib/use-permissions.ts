@@ -1,8 +1,5 @@
 import { useAuthStore } from "@/lib/auth-store";
 import {
-  hasPermission,
-  hasAnyPermission,
-  hasAllPermissions,
   getPermissionsForRole,
   type UserRole,
   type Permission,
@@ -28,29 +25,18 @@ export function usePermissions(): {
 
   const role = normalizedRole ?? "STUDENT";
 
-  const authorizedPermissions: readonly Permission[] | undefined = Array.isArray(user?.effectivePermissions) ? user?.effectivePermissions : undefined;
+  const rolePermissions = getPermissionsForRole(role);
+  const effectivePermissions: readonly Permission[] | undefined = Array.isArray(user?.effectivePermissions) ? user?.effectivePermissions : undefined;
+  const mergedPermissions: readonly Permission[] = effectivePermissions !== undefined
+    ? [...new Set([...rolePermissions, ...effectivePermissions])]
+    : rolePermissions;
 
   return {
     role,
-    permissions: getPermissionsForRole(role),
-    can: (permission: Permission): boolean => {
-      if (authorizedPermissions !== undefined) {
-        return authorizedPermissions.includes(permission);
-      }
-      return hasPermission(role, permission);
-    },
-    canAny: (...permissionList: Permission[]): boolean => {
-      if (authorizedPermissions !== undefined) {
-        return permissionList.some((p) => authorizedPermissions.includes(p));
-      }
-      return hasAnyPermission(role, permissionList);
-    },
-    canAll: (...permissionList: Permission[]): boolean => {
-      if (authorizedPermissions !== undefined) {
-        return permissionList.every((p) => authorizedPermissions.includes(p));
-      }
-      return hasAllPermissions(role, permissionList);
-    },
+    permissions: mergedPermissions,
+    can: (permission: Permission): boolean => mergedPermissions.includes(permission),
+    canAny: (...permissionList: Permission[]): boolean => permissionList.some((p) => mergedPermissions.includes(p)),
+    canAll: (...permissionList: Permission[]): boolean => permissionList.every((p) => mergedPermissions.includes(p)),
     isAdmin: role === "ADMINISTRATOR",
     isTeacher: role === "TEACHER",
     isStaff: role === "STAFF",

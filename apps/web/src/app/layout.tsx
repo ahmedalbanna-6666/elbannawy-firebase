@@ -16,6 +16,13 @@ const cairo = Cairo({
   display: "swap",
 });
 
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  viewportFit: 'cover',
+};
+
 export const metadata: Metadata = {
   title: "El-bannawy Platform",
   description: "AI-Powered English Learning Platform",

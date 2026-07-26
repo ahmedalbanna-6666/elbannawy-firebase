@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState, useRef, useMemo, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useState, useRef, useMemo, useCallback, type ReactNode } from "react";
 
 type Orientation = "portrait" | "landscape";
 
@@ -13,22 +13,33 @@ interface OrientationContextValue {
 
 const OrientationContext = createContext<OrientationContextValue | null>(null);
 
-function getOrientation(): Orientation {
+const ORIENTATION_CLASSES = ["orientation-portrait", "orientation-landscape"] as const;
+
+function detectOrientation(): Orientation {
   if (typeof window === "undefined") return "portrait";
+  // 1. Screen Orientation API (Android Chrome, Samsung Internet)
   try {
-    const type = (screen as Screen & { orientation?: { type: string } }).orientation?.type;
-    if (type) return type.startsWith("landscape") ? "landscape" : "portrait";
+    const so = (screen as Screen & { orientation?: { type: string } }).orientation?.type;
+    if (so) return so.startsWith("landscape") ? "landscape" : "portrait";
   } catch {
-    /* some browsers throw accessing screen.orientation in cross-origin iframes */
+    /* cross-origin iframe restriction */
   }
-  return window.innerHeight >= window.innerWidth ? "portrait" : "landscape";
+  // 2. matchMedia query (reliable on iOS Safari)
+  try {
+    const mq = window.matchMedia("(orientation: landscape)");
+    if (mq.matches !== undefined) return mq.matches ? "landscape" : "portrait";
+  } catch {
+    /* unsupported */
+  }
+  // 3. Dimension ratio fallback
+  return window.innerWidth > window.innerHeight ? "landscape" : "portrait";
 }
 
-function getAngle(): number {
+function detectAngle(): number {
   if (typeof window === "undefined") return 0;
   try {
-    const angle = (screen as Screen & { orientation?: { angle: number } }).orientation?.angle;
-    if (angle !== undefined) return angle;
+    const a = (screen as Screen & { orientation?: { angle: number } }).orientation?.angle;
+    if (a !== undefined) return a;
   } catch {
     /* ignore */
   }
@@ -37,64 +48,76 @@ function getAngle(): number {
 
 function applyOrientationClass(orientation: Orientation): void {
   const root = document.documentElement;
-  root.classList.remove("orientation-portrait", "orientation-landscape");
+  root.classList.remove(...ORIENTATION_CLASSES);
   root.classList.add(`orientation-${orientation}`);
   root.style.setProperty("--orientation", orientation);
 }
 
 export function OrientationProvider({ children }: { children: ReactNode }): ReactNode {
-  const [orientation, setOrientation] = useState<Orientation>(getOrientation);
-  const [angle, setAngle] = useState(getAngle);
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [orientation, setOrientation] = useState<Orientation>(detectOrientation);
+  const [angle, setAngle] = useState(detectAngle);
+  const resizeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const mountedRef = useRef(false);
 
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => { mountedRef.current = false; };
+  }, []);
+
+  // Sync CSS classes whenever the state changes
   useEffect(() => {
     applyOrientationClass(orientation);
   }, [orientation]);
 
   useEffect(() => {
-    const update = (): void => {
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-      debounceRef.current = setTimeout(() => {
-        const next = getOrientation();
-        setOrientation(next);
-        setAngle(getAngle());
-        applyOrientationClass(next);
-      }, 80);
+    // ─── Immediate update for orientation changes ───
+    // iOS Safari fires orientationchange BEFORE viewport resizes,
+    // so dimensions are stale. We use rAF to wait for the next paint
+    // where dimensions are correct.
+    const onOrientationChange = (): void => {
+      requestAnimationFrame(() => {
+        if (!mountedRef.current) return;
+        setOrientation(detectOrientation());
+        setAngle(detectAngle());
+      });
     };
 
-    const handleOrientationChange = (): void => {
-      requestAnimationFrame(update);
+    // ─── Debounced update for resize events ───
+    const onResize = (): void => {
+      if (resizeTimer.current) clearTimeout(resizeTimer.current);
+      resizeTimer.current = setTimeout(() => {
+        if (!mountedRef.current) return;
+        setOrientation(detectOrientation());
+        setAngle(detectAngle());
+      }, 100);
     };
 
-    const handleResize = (): void => {
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-      debounceRef.current = setTimeout(update, 120);
-    };
-
+    // ─── Screen Orientation API (modern browsers) ───
     try {
-      const so = (screen as Screen & { orientation?: { addEventListener?: (type: string, fn: () => void) => void; removeEventListener?: (type: string, fn: () => void) => void } }).orientation;
+      const so = (screen as Screen & { orientation?: { addEventListener?: (t: string, fn: () => void) => void; removeEventListener?: (t: string, fn: () => void) => void } }).orientation;
       if (so?.addEventListener) {
-        so.addEventListener("change", handleOrientationChange);
+        so.addEventListener("change", onOrientationChange);
       }
     } catch {
-      /* screen.orientation not available */
+      /* not available */
     }
 
-    window.addEventListener("orientationchange", handleOrientationChange);
-    window.addEventListener("resize", handleResize);
+    // ─── Fallback events ───
+    window.addEventListener("orientationchange", onOrientationChange);
+    window.addEventListener("resize", onResize);
 
     return () => {
-      if (debounceRef.current) clearTimeout(debounceRef.current);
+      if (resizeTimer.current) clearTimeout(resizeTimer.current);
       try {
-        const so = (screen as Screen & { orientation?: { addEventListener?: (type: string, fn: () => void) => void; removeEventListener?: (type: string, fn: () => void) => void } }).orientation;
+        const so = (screen as Screen & { orientation?: { addEventListener?: (t: string, fn: () => void) => void; removeEventListener?: (t: string, fn: () => void) => void } }).orientation;
         if (so?.removeEventListener) {
-          so.removeEventListener("change", handleOrientationChange);
+          so.removeEventListener("change", onOrientationChange);
         }
       } catch {
         /* ignore */
       }
-      window.removeEventListener("orientationchange", handleOrientationChange);
-      window.removeEventListener("resize", handleResize);
+      window.removeEventListener("orientationchange", onOrientationChange);
+      window.removeEventListener("resize", onResize);
     };
   }, []);
 
