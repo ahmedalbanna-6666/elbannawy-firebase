@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useState, useEffect, type ReactNode } from "react";
 import { useQuery, useMutation, useQueryClient, type UseQueryResult } from "@tanstack/react-query";
 import { api } from "@/lib/api-client";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -309,6 +309,9 @@ export default function AdminSettingsPage(): ReactNode {
 
       {/* AI Token Pricing */}
       <AiPricingSection />
+
+      {/* Content Unlock Pricing */}
+      <UnlockPricingSection />
 
       {/* Current Active Context */}
       <Card>
@@ -950,6 +953,114 @@ function AiPricingSection(): ReactNode {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+      </CardContent>
+    </Card>
+  );
+}
+
+function UnlockPricingSection(): ReactNode {
+  const queryClient = useQueryClient();
+  const [unitCost, setUnitCost] = useState("");
+  const [lessonCost, setLessonCost] = useState("");
+
+  const { data: unitData } = useQuery({
+    queryKey: ["unlock-cost", "UNIT"],
+    queryFn: async () => {
+      const res = await api.get<{ cost: number }>("/coins/unlock-cost/UNIT");
+      return res.data;
+    },
+  });
+
+  const { data: lessonData } = useQuery({
+    queryKey: ["unlock-cost", "LESSON"],
+    queryFn: async () => {
+      const res = await api.get<{ cost: number }>("/coins/unlock-cost/LESSON");
+      return res.data;
+    },
+  });
+
+  useEffect(() => {
+    if (unitData) setUnitCost(String(unitData.cost));
+    if (lessonData) setLessonCost(String(lessonData.cost));
+  }, [unitData, lessonData]);
+
+  const saveMutation = useMutation({
+    mutationFn: async ({ targetType, cost }: { targetType: string; cost: number }) =>
+      api.post("/coins/unlock-cost", { targetType, cost }),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["unlock-cost"] });
+    },
+  });
+
+  const handleSave = (targetType: string, cost: string): void => {
+    const num = Number(cost);
+    if (num <= 0) return;
+    saveMutation.mutate({ targetType, cost: num });
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <div className="flex items-center gap-2">
+          <Sparkles className="h-5 w-5 text-amber-500" />
+          <h2 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100">أسعار فتح المحتوى</h2>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <p className="text-sm text-neutral-500 mb-4">
+          حدد عدد العملات (Coins) المطلوبة لفتح الوحدات والدروس. سيتم خصم العملات من الطالب عند فتح المحتوى.
+        </p>
+
+        <div className="flex flex-col gap-4">
+          <div className="flex items-end gap-3">
+            <div className="flex-1">
+              <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">فتح الوحدة</label>
+              <Input
+                type="number"
+                min="1"
+                value={unitCost}
+                onChange={(e) => { setUnitCost(e.target.value); }}
+                placeholder="عدد العملات"
+              />
+            </div>
+            <Button
+              size="sm"
+              onClick={() => { handleSave("UNIT", unitCost); }}
+              disabled={saveMutation.isPending || !unitCost}
+            >
+              <Save className="h-4 w-4" />
+              حفظ
+            </Button>
+          </div>
+
+          <div className="flex items-end gap-3">
+            <div className="flex-1">
+              <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">فتح الدرس</label>
+              <Input
+                type="number"
+                min="1"
+                value={lessonCost}
+                onChange={(e) => { setLessonCost(e.target.value); }}
+                placeholder="عدد العملات"
+              />
+            </div>
+            <Button
+              size="sm"
+              onClick={() => { handleSave("LESSON", lessonCost); }}
+              disabled={saveMutation.isPending || !lessonCost}
+            >
+              <Save className="h-4 w-4" />
+              حفظ
+            </Button>
+          </div>
+        </div>
+
+        {saveMutation.isPending && (
+          <p className="text-xs text-neutral-400 mt-2">جاري الحفظ...</p>
+        )}
+        {saveMutation.isSuccess && (
+          <p className="text-xs text-success-500 mt-2">تم الحفظ بنجاح</p>
+        )}
       </CardContent>
     </Card>
   );
