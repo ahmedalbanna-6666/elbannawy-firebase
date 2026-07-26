@@ -53,7 +53,7 @@ export const useAuthStore = create<AuthState>()(
         set({ firebaseUser });
       },
       setUser: (user: AuthUser): void => {
-        set({ user });
+        set({ user, isAuthenticated: true });
       },
       setIdToken: (token: string | null): void => {
         set({ idToken: token, isAuthenticated: token !== null });

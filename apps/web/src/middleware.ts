@@ -6,19 +6,18 @@ const AUTH_COOKIE = "auth_token";
 
 export function middleware(request: NextRequest): NextResponse {
   const { pathname } = request.nextUrl;
-  const hasAuthCookie = request.cookies.has(AUTH_COOKIE);
   const accessToken = request.cookies.get(AUTH_COOKIE)?.value;
 
   const isProtected = PROTECTED_PATHS.some((p) => pathname.startsWith(p));
   const isAuthPage = AUTH_PATHS.some((p) => pathname.startsWith(p));
 
-  if (isProtected && !accessToken && !hasAuthCookie) {
+  if (isProtected && !accessToken) {
     const loginUrl = new URL("/login", request.url);
     loginUrl.searchParams.set("redirect", pathname);
     return NextResponse.redirect(loginUrl);
   }
 
-  if (isAuthPage && hasAuthCookie) {
+  if (isAuthPage && accessToken) {
     return NextResponse.redirect(new URL("/dashboard", request.url));
   }
 

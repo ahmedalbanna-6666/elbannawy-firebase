@@ -3,6 +3,9 @@ import { NextRequest, NextResponse } from 'next/server';
 const API_KEY = process.env.NEXT_PUBLIC_FIREBASE_API_KEY;
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
+  if (process.env.NODE_ENV === 'production') {
+    return NextResponse.json({ success: false, error: { code: 'FORBIDDEN', message: 'Not available in production' } }, { status: 403 });
+  }
   try {
     if (!API_KEY) {
       return NextResponse.json({ error: 'Firebase API key not configured' }, { status: 500 });

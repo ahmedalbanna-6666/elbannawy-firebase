@@ -1,5 +1,9 @@
 @import "tailwindcss";
 
+/* ─── Orientation utilities ──────────────────── */
+@custom-variant portrait (&:where(.orientation-portrait, .orientation-portrait *));
+@custom-variant landscape (&:where(.orientation-landscape, .orientation-landscape *));
+
 @theme {
   /* Font families */
   --font-sans: var(--font-inter), "system-ui", "Arial", "sans-serif";
@@ -133,13 +137,32 @@
 @custom-variant rtl (&:where([dir="rtl"], [dir="rtl"] *));
 
 *, *::before, *::after {
-  transition-property: width, height, min-width, min-height, max-width, max-height, padding, margin, gap, inset, transform, opacity;
+  transition-property: width, height, min-width, min-height, max-width, max-height, padding, margin, gap, inset, transform, opacity, background-color, border-color;
   transition-duration: 250ms;
   transition-timing-function: ease-out;
 }
 
-video, iframe, img {
-  transition: width 250ms ease-out, height 250ms ease-out;
+.orientation-landscape video,
+.orientation-landscape iframe,
+.orientation-landscape img {
+  transition: width 250ms ease-out, height 250ms ease-out, transform 250ms ease-out;
+}
+
+.orientation-portrait video,
+.orientation-portrait iframe,
+.orientation-portrait img {
+  transition: width 250ms ease-out, height 250ms ease-out, transform 250ms ease-out;
+}
+
+/* Video player landscape maximisation - no fullscreen, just responsive fill */
+.orientation-landscape .plyr {
+  max-height: 100vh;
+  width: 100%;
+}
+
+/* Prevent white flash during orientation on mobile */
+html {
+  background-color: #060d17;
 }
 
 @media (prefers-reduced-motion: reduce) {

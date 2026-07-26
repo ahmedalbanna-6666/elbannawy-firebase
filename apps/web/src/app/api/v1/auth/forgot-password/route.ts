@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAdminAuth } from '@/lib/firebase/admin';
-import { UserService } from '@el-bannawy/lib';
+import { getAdminDb } from '@/lib/firebase/admin';
 import { checkRateLimit } from '@/lib/rate-limiter';
 
-const userService = new UserService();
+function generateCode(): string {
+  return String(Math.floor(100000 + Math.random() * 900000));
+}
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
@@ -16,31 +17,24 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const { mobile } = (await request.json()) as { mobile: string };
     if (!mobile) {
       return NextResponse.json(
-        { success: false, error: { code: 'INVALID_INPUT', message: 'Mobile number is required' } },
+        { success: false, error: { code: 'INVALID_INPUT', message: 'Mobile and password are required' } },
         { status: 400 },
       );
     }
 
-    const result = await userService.findUserByMobile(mobile);
-
-    if (!result.ok || !result.value) {
-      return NextResponse.json(
-        { success: false, error: { code: 'NOT_FOUND', message: 'No account found with this mobile number' } },
-        { status: 404 },
-      );
-    }
-
-    const user = result.value;
-    const adminAuth = getAdminAuth();
-    const firebaseUser = await adminAuth.getUser(user.id);
-    const email = firebaseUser.email ?? `${user.mobileNumber}@el-bannawy.app`;
-
-    await adminAuth.generatePasswordResetLink(email);
-
-    return NextResponse.json({
-      success: true,
-      message: 'If an account exists with this mobile number, a password reset link has been sent.',
+    const db = getAdminDb();
+    const code = generateCode();
+    await db.collection('passwordResets').doc(mobile).set({
+      code,
+      mobile,
+      createdAt: new Date().toISOString(),
+      expiresAt: new Date(Date.now() + 10 * 60 * 1000).toISOString(),
+      used: false,
     });
+
+    console.log(`[RESET CODE] ${mobile}: ${code}`);
+
+    return NextResponse.json({ success: true, message: 'If an account exists, a reset code has been sent.' });
   } catch {
     return NextResponse.json(
       { success: false, error: { code: 'INTERNAL', message: 'Internal server error' } },

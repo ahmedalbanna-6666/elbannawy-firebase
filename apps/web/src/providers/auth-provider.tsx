@@ -1,7 +1,6 @@
 "use client";
 
 import { createContext, useContext, useEffect, useRef, useMemo, type ReactNode, useCallback } from "react";
-import { FcmProvider } from "./fcm-provider";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   signInWithPopup,
@@ -89,9 +88,18 @@ export function AuthProvider({ children }: { children: ReactNode }): ReactNode {
   const userRef = useRef(user);
   userRef.current = user;
 
+  const setAuthCookie = useCallback((token: string, maxAge = 60 * 60 * 24 * 14): void => {
+    const secure = window.location.protocol === 'https:' ? '; Secure' : '';
+    document.cookie = 'auth_token=' + token + '; path=/; max-age=' + String(maxAge) + '; SameSite=Lax' + secure;
+  }, []);
+
+  const clearAuthCookie = useCallback((): void => {
+    document.cookie = "auth_token=; path=/; max-age=0";
+  }, []);
+
   const fetchUser = useCallback(async (fbUser: FirebaseUser): Promise<void> => {
     try {
-      const token = await fbUser.getIdToken();
+      const token = await fbUser.getIdToken(true);
       const response = await api.get<{
         id: string;
         fullName: string;
@@ -108,10 +116,11 @@ export function AuthProvider({ children }: { children: ReactNode }): ReactNode {
         });
       }
     } catch {
+      const email = fbUser.email ?? '';
       setUser({
         id: fbUser.uid,
         fullName: fbUser.displayName ?? "User",
-        mobileNumber: fbUser.email?.replace("@el-bannawy.app", "") ?? null,
+        mobileNumber: email.includes('@el-bannawy.app') ? email.replace('@el-bannawy.app', '') : email || null,
         role: "STUDENT",
         status: "active",
       });
@@ -126,9 +135,8 @@ export function AuthProvider({ children }: { children: ReactNode }): ReactNode {
       setAuthReady(true);
       if (fbUser) {
         setFirebaseUser(fbUser);
-        void fbUser.getIdToken().then((token: string) => {
-          const maxAge = 60 * 60 * 24 * 14;
-          document.cookie = 'auth_token=' + token + '; path=/; max-age=' + String(maxAge) + '; SameSite=Lax';
+        void fbUser.getIdToken(true).then((token: string) => {
+          setAuthCookie(token);
           setIdToken(token);
         });
         if (!userRef.current) {
@@ -137,13 +145,13 @@ export function AuthProvider({ children }: { children: ReactNode }): ReactNode {
       } else if (!userRef.current) {
         setFirebaseUser(null);
         setIdToken(null);
-        document.cookie = "auth_token=; path=/; max-age=0";
+        clearAuthCookie();
         fetch('/api/v1/auth/sign-out', { method: 'POST' }).catch(() => {});
       }
     });
 
     return (): void => { unsubscribe(); };
-  }, [setFirebaseUser, setIdToken, setAuthReady, fetchUser]);
+  }, [setFirebaseUser, setIdToken, setAuthReady, fetchUser, setAuthCookie, clearAuthCookie]);
 
   const login = useCallback(
     async (emailOrMobile: string, password: string, _rememberMe = false): Promise<void> => {
@@ -160,13 +168,12 @@ export function AuthProvider({ children }: { children: ReactNode }): ReactNode {
         });
         const data = await res.json();
         if (!res.ok || !data.token) throw new Error(data.error?.message || 'Login failed');
-        const maxAge = 60 * 60 * 24 * 14;
-        document.cookie = 'auth_token=' + data.token + '; path=/; max-age=' + String(maxAge) + '; SameSite=Lax';
+        setAuthCookie(data.token);
         setIdToken(data.token);
         setUser({
           id: data.user.id,
           fullName: data.user.fullName,
-          mobileNumber: data.user.email?.replace('@el-bannawy.app', '') ?? null,
+          mobileNumber: data.user.email?.includes('@el-bannawy.app') ? data.user.email.replace('@el-bannawy.app', '') : data.user.email ?? null,
           role: (data.user.role ?? "").toUpperCase(),
           status: 'active',
         });
@@ -196,7 +203,7 @@ export function AuthProvider({ children }: { children: ReactNode }): ReactNode {
         throw new Error(signInData.error?.message ?? "فشل تسجيل الدخول بعد إنشاء الحساب");
       }
       setIdToken(signInData.token);
-      document.cookie = 'auth_token=' + signInData.token + '; path=/; max-age=' + String(60 * 60 * 24 * 14) + '; SameSite=Lax';
+      setAuthCookie(signInData.token);
       if (signInData.user) setUser({ ...signInData.user, role: (signInData.user.role ?? "").toUpperCase() });
       queryClient.removeQueries({ queryKey: ["profile"] });
       queryClient.removeQueries({ queryKey: ["sidebar-profile"] });
@@ -207,18 +214,20 @@ export function AuthProvider({ children }: { children: ReactNode }): ReactNode {
   const signInWithGoogle = useCallback(async (): Promise<void> => {
     const provider = new GoogleAuthProvider();
     const result = await signInWithPopup(getClientAuth(), provider);
-    const token = await result.user.getIdToken();
-    document.cookie = 'auth_token=' + token + '; path=/; max-age=' + String(60 * 60 * 24 * 14) + '; SameSite=Lax';
+    const token = await result.user.getIdToken(true);
+    setAuthCookie(token);
+    setIdToken(token);
     await fetchUser(result.user);
-  }, [fetchUser]);
+  }, [fetchUser, setAuthCookie, setIdToken]);
 
   const signInWithApple = useCallback(async (): Promise<void> => {
     const provider = new OAuthProvider('apple.com');
     const result = await signInWithPopup(getClientAuth(), provider);
-    const token = await result.user.getIdToken();
-    document.cookie = 'auth_token=' + token + '; path=/; max-age=' + String(60 * 60 * 24 * 14) + '; SameSite=Lax';
+    const token = await result.user.getIdToken(true);
+    setAuthCookie(token);
+    setIdToken(token);
     await fetchUser(result.user);
-  }, [fetchUser]);
+  }, [fetchUser, setAuthCookie, setIdToken]);
 
   const oauthRegister = useCallback(
     async (payload: OAuthRegisterPayload): Promise<void> => {
@@ -247,7 +256,7 @@ export function AuthProvider({ children }: { children: ReactNode }): ReactNode {
         // ignore network errors on logout
       }
       clearStore();
-      document.cookie = "auth_token=; path=/; max-age=0";
+      clearAuthCookie();
       queryClient.clear();
       window.location.href = "/login";
     }
@@ -266,7 +275,7 @@ export function AuthProvider({ children }: { children: ReactNode }): ReactNode {
 
   return (
     <AuthContext.Provider value={contextValue}>
-      <FcmProvider isAuthenticated={isAuthenticated} user={user}>{children}</FcmProvider>
+      {children}
     </AuthContext.Provider>
   );
 }

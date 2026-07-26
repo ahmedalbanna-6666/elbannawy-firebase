@@ -41,6 +41,8 @@ export * from "./services/gamification";
 export * from "./services/question-import";
 export * from "./question-import";
 
+export { FcmNotificationService } from "./services/fcm-notification.service";
+export { NotificationDispatcher } from "./services/notification-dispatcher.service";
 export type {
   RepositoryResult,
   RepositoryError,
@@ -54,8 +56,7 @@ export type {
 } from "./shared/types/pagination.types";
 export * from "./services/teacher";
 export * from "./services/subscriptions";
-export { FcmNotificationService } from "./services/fcm-notification.service";
-export { NotificationDispatcher } from "./services/notification-dispatcher.service";
+
 
 export type {
   ICursor,

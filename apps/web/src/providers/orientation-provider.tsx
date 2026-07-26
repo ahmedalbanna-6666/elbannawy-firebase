@@ -15,15 +15,31 @@ const OrientationContext = createContext<OrientationContextValue | null>(null);
 
 function getOrientation(): Orientation {
   if (typeof window === "undefined") return "portrait";
-  if (screen.orientation?.type) {
-    return screen.orientation.type.startsWith("landscape") ? "landscape" : "portrait";
+  try {
+    const type = (screen as Screen & { orientation?: { type: string } }).orientation?.type;
+    if (type) return type.startsWith("landscape") ? "landscape" : "portrait";
+  } catch {
+    /* some browsers throw accessing screen.orientation in cross-origin iframes */
   }
   return window.innerHeight >= window.innerWidth ? "portrait" : "landscape";
 }
 
 function getAngle(): number {
   if (typeof window === "undefined") return 0;
-  return screen.orientation?.angle ?? (window.orientation as number) ?? 0;
+  try {
+    const angle = (screen as Screen & { orientation?: { angle: number } }).orientation?.angle;
+    if (angle !== undefined) return angle;
+  } catch {
+    /* ignore */
+  }
+  return (window as Window & { orientation?: number }).orientation ?? 0;
+}
+
+function applyOrientationClass(orientation: Orientation): void {
+  const root = document.documentElement;
+  root.classList.remove("orientation-portrait", "orientation-landscape");
+  root.classList.add(`orientation-${orientation}`);
+  root.style.setProperty("--orientation", orientation);
 }
 
 export function OrientationProvider({ children }: { children: ReactNode }): ReactNode {
@@ -32,19 +48,22 @@ export function OrientationProvider({ children }: { children: ReactNode }): Reac
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
+    applyOrientationClass(orientation);
+  }, [orientation]);
+
+  useEffect(() => {
     const update = (): void => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
       debounceRef.current = setTimeout(() => {
-        setOrientation(getOrientation());
+        const next = getOrientation();
+        setOrientation(next);
         setAngle(getAngle());
+        applyOrientationClass(next);
       }, 80);
     };
 
     const handleOrientationChange = (): void => {
-      requestAnimationFrame(() => {
-        setOrientation(getOrientation());
-        setAngle(getAngle());
-      });
+      requestAnimationFrame(update);
     };
 
     const handleResize = (): void => {
@@ -52,16 +71,27 @@ export function OrientationProvider({ children }: { children: ReactNode }): Reac
       debounceRef.current = setTimeout(update, 120);
     };
 
-    if (screen.orientation?.addEventListener) {
-      screen.orientation.addEventListener("change", handleOrientationChange);
+    try {
+      const so = (screen as Screen & { orientation?: { addEventListener?: (type: string, fn: () => void) => void; removeEventListener?: (type: string, fn: () => void) => void } }).orientation;
+      if (so?.addEventListener) {
+        so.addEventListener("change", handleOrientationChange);
+      }
+    } catch {
+      /* screen.orientation not available */
     }
+
     window.addEventListener("orientationchange", handleOrientationChange);
     window.addEventListener("resize", handleResize);
 
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
-      if (screen.orientation?.removeEventListener) {
-        screen.orientation.removeEventListener("change", handleOrientationChange);
+      try {
+        const so = (screen as Screen & { orientation?: { addEventListener?: (type: string, fn: () => void) => void; removeEventListener?: (type: string, fn: () => void) => void } }).orientation;
+        if (so?.removeEventListener) {
+          so.removeEventListener("change", handleOrientationChange);
+        }
+      } catch {
+        /* ignore */
       }
       window.removeEventListener("orientationchange", handleOrientationChange);
       window.removeEventListener("resize", handleResize);

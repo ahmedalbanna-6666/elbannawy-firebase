@@ -53,8 +53,6 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const rawRole = (claims as Record<string, string>).role ?? 'student';
     const role = normalizeRole(rawRole);
 
-    const expiresIn = 60 * 60 * 24 * 5; // 5 days in seconds
-
     const response = NextResponse.json({
       success: true,
       token: data.idToken,
@@ -65,17 +63,6 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         role,
         status: 'active',
       },
-    });
-
-    // Store the ID token directly in the cookie (createSessionCookie requires a valid
-    // Firebase ID token from securetoken.google.com, but Identity Toolkit issues tokens
-    // from identitytoolkit.google.com, so we store the raw token and verify via lookup API)
-    response.cookies.set('auth_token', data.idToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: 'lax',
-      maxAge: expiresIn,
-      path: '/',
     });
 
     return response;
