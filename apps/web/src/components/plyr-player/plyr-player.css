@@ -135,7 +135,7 @@
   border: 2px solid rgba(255, 255, 255, 0.15) !important;
   border-radius: 50% !important;
   padding: 14px !important;
-  z-index: 6 !important;
+  z-index: 10 !important;
   transition: all 0.2s ease !important;
   touch-action: manipulation;
 }
@@ -207,6 +207,7 @@
 
   .plyr__control--overlaid {
     padding: 18px !important;
+    z-index: 10 !important;
   }
 
   .plyr__control--overlaid svg {
@@ -237,10 +238,6 @@
     height: 16px;
     margin-top: -5px;
     opacity: 1;
-  }
-
-  .plyr__volume {
-    display: none !important;
   }
 
   .plyr__time {

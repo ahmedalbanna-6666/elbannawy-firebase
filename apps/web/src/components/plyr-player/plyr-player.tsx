@@ -6,6 +6,11 @@ import "plyr/dist/plyr.css";
 import "./plyr-player.css";
 import { Skeleton } from "@/components/ui/skeleton";
 
+function isMobile(): boolean {
+  if (typeof window === "undefined") return false;
+  return "ontouchstart" in window || navigator.maxTouchPoints > 0;
+}
+
 export function PlyrVideoPlayer({
   providerVideoId,
   startAt = 0,
@@ -90,6 +95,45 @@ export function PlyrVideoPlayer({
       playerRef.current = null;
     };
   }, [providerVideoId, startAt]);
+
+  useEffect(() => {
+    if (!isMobile()) return;
+
+    let fullscreenLocked = false;
+
+    const handleOrientation = (): void => {
+      const plyrEl = containerRef.current?.closest(".plyr") as HTMLElement | null;
+      if (!plyrEl) return;
+
+      const isLandscape = window.innerWidth > window.innerHeight;
+
+      if (isLandscape && !document.fullscreenElement && !fullscreenLocked) {
+        fullscreenLocked = true;
+        try {
+          void plyrEl.requestFullscreen();
+        } catch {
+          fullscreenLocked = false;
+        }
+      }
+
+      if (!isLandscape && document.fullscreenElement && fullscreenLocked) {
+        fullscreenLocked = false;
+        try {
+          void document.exitFullscreen();
+        } catch {
+          /* ignore */
+        }
+      }
+    };
+
+    window.addEventListener("orientationchange", handleOrientation);
+    window.addEventListener("resize", handleOrientation);
+
+    return (): void => {
+      window.removeEventListener("orientationchange", handleOrientation);
+      window.removeEventListener("resize", handleOrientation);
+    };
+  }, []);
 
   const posterUrl = `https://img.youtube.com/vi/${providerVideoId}/maxresdefault.jpg`;
 
