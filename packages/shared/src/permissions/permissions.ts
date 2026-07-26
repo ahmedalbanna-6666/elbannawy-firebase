@@ -63,6 +63,7 @@ export const PERMISSIONS = {
   COINS_UNLOCK: "coins.unlock",
   UNLOCK_CODES_MANAGE: "unlock_codes.manage",
   UNLOCK_REQUESTS_MANAGE: "unlock_requests.manage",
+  CONTENT_PRICING_MANAGE: "content_pricing.manage",
 
   COMPETITION_MANAGE: "competition.manage",
   COMPETITION_VIEW: "competition.view",

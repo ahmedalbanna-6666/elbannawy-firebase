@@ -42,15 +42,12 @@ const ROLE_LABELS: Record<string, string> = {
   STUDENT: "طالب",
 };
 
-const SPRING_SIDEBAR = { type: "spring" as const, stiffness: 280, damping: 30, mass: 1 };
-
 interface DashboardLayoutProps {
   children: ReactNode;
 }
 
 export default function DashboardLayout({ children }: DashboardLayoutProps): ReactNode {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [sidebarDesktop, setSidebarDesktop] = useState<boolean | null>(null);
   const router = useRouter();
   const { isAuthenticated, hasHydrated, authReady } = useAuthStore();
   const userId = useAuthStore((s) => s.user?.id);
@@ -98,15 +95,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps): Rea
   }, [isAuthenticated, userId, profile, router]);
 
   useEffect(() => {
-    const mq = window.matchMedia("(min-width: 1024px)");
-    setSidebarDesktop(mq.matches);
-    const handler = (e: MediaQueryListEvent): void => { setSidebarDesktop(e.matches); };
-    mq.addEventListener("change", handler);
-    return (): void => mq.removeEventListener("change", handler);
-  }, []);
-
-  useEffect(() => {
-    if (!sidebarOpen || sidebarDesktop) return;
+    if (!sidebarOpen) return;
     const onKey = (e: KeyboardEvent): void => {
       if (e.key === "Escape") setSidebarOpen(false);
     };
@@ -117,7 +106,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps): Rea
       document.removeEventListener("keydown", onKey);
       document.body.style.overflow = prevOverflow;
     };
-  }, [sidebarOpen, sidebarDesktop]);
+  }, [sidebarOpen]);
 
   const isTeacherOrStaff = userRole === "TEACHER" || userRole === "STAFF";
 
@@ -246,87 +235,65 @@ export default function DashboardLayout({ children }: DashboardLayoutProps): Rea
     </Sidebar>
   );
 
-  const isDesktop = sidebarDesktop === true;
-
-  const isOpenOnMobile = sidebarOpen && !isDesktop;
-  const isOpenOnDesktop = sidebarOpen && isDesktop;
-
-  /* ── 3D Drawer Animation Targets ───────────────────── */
-  const MOBILE_SIDEBAR_WIDTH = "75%";
-  const CONTENT_SCALE = 0.82;
-  const CONTENT_RADIUS = 24;
-  const CONTENT_SHADOW = "0 32px 80px rgba(0,0,0,0.35)";
+  const SIDEBAR_WIDTH = 300;
+  const CONTENT_SCALE = 0.85;
+  const CONTENT_RADIUS = 20;
 
   return (
-    <div className="flex min-h-screen overflow-hidden" style={{ perspective: "1200px" }}>
-      {/* Mobile sidebar drawer as a layer behind the floating content */}
-      {!isDesktop && (
-        <div
-          className={cn(
-            "fixed inset-0 z-40 lg:hidden",
-            sidebarOpen ? "pointer-events-auto" : "pointer-events-none",
-          )}
-        >
+    <div className="flex min-h-screen overflow-hidden" style={{ perspective: "1400px" }}>
+      <AnimatePresence>
+        {sidebarOpen && (
           <motion.div
+            key="sidebar-backdrop"
             initial={{ opacity: 0 }}
-            animate={{ opacity: sidebarOpen ? 0.55 : 0 }}
-            transition={{ duration: 0.3 }}
-            className="absolute inset-0 bg-black backdrop-blur-md"
+            animate={{ opacity: 0.5 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.25 }}
+            className="fixed inset-0 z-40 bg-black"
             onClick={closeSidebar}
           />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {sidebarOpen && (
           <motion.aside
+            key="sidebar-drawer"
             initial={{ x: "100%" }}
-            animate={{ x: sidebarOpen ? 0 : "100%" }}
-            transition={{ type: "spring", stiffness: 250, damping: 28, mass: 0.9 }}
-            className="absolute inset-y-0 right-0 z-10 shadow-2xl"
-            style={{ width: MOBILE_SIDEBAR_WIDTH }}
+            animate={{ x: 0 }}
+            exit={{ x: "100%" }}
+            transition={{ type: "spring", stiffness: 260, damping: 30, mass: 0.9 }}
+            className="fixed inset-y-0 right-0 z-50 shadow-2xl"
+            style={{ width: `${SIDEBAR_WIDTH}px` }}
           >
             {sidebarContent}
           </motion.aside>
-        </div>
-      )}
+        )}
+      </AnimatePresence>
 
-      {/* Desktop persistent sidebar */}
-      {isDesktop && (
-        <div className="hidden lg:flex lg:shrink-0">
-          {sidebarContent}
-        </div>
-      )}
-
-      {/* ── 3D Floating Content ── */}
       <motion.div
-        animate={isOpenOnMobile ? {
+        animate={sidebarOpen ? {
           scale: CONTENT_SCALE,
-          x: "-12%",
+          x: `-${SIDEBAR_WIDTH * 0.15}px`,
           borderRadius: `${CONTENT_RADIUS}px`,
-          boxShadow: CONTENT_SHADOW,
+          boxShadow: "0 25px 70px rgba(0,0,0,0.3)",
+          rotateY: "-3deg",
           overflow: "hidden",
-          rotateY: "-4deg",
-        } : isOpenOnDesktop ? {
-          scale: 0.93,
-          borderRadius: "20px",
-          overflow: "hidden",
-          boxShadow: "0 25px 60px rgba(0,0,0,0.3)",
-          marginLeft: "auto",
-          marginRight: "auto",
-          marginTop: "8px",
-          marginBottom: "8px",
-          height: "calc(100vh - 16px)",
-          maxWidth: "calc(100% - 300px)",
+          marginTop: "12px",
+          marginBottom: "12px",
+          height: "calc(100vh - 24px)",
         } : {
           scale: 1,
-          x: "0%",
+          x: "0px",
           borderRadius: "0px",
           rotateY: "0deg",
           boxShadow: "0 0 0 rgba(0,0,0,0)",
-          marginLeft: "0px",
-          marginRight: "0px",
           marginTop: "0px",
           marginBottom: "0px",
           height: "auto",
-          maxWidth: "100%",
+          overflow: "visible",
         }}
-        transition={{ type: "spring", stiffness: 280, damping: 28, mass: 0.9 }}
+        transition={{ type: "spring", stiffness: 260, damping: 28, mass: 0.8 }}
         style={{ originX: 1, originY: 0.5, transformStyle: "preserve-3d" }}
         className="relative z-30 flex flex-1 flex-col bg-neutral-50 dark:bg-neutral-950 will-change-transform"
       >
@@ -336,7 +303,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps): Rea
           onNotificationClick={(): void => { router.push("/dashboard/notifications"); }}
         />
 
-        <main className="flex-1 overflow-y-auto p-4 pb-[88px] lg:p-6 lg:pb-6">
+        <main className="flex-1 overflow-y-auto p-4 pb-[88px]">
           {children}
         </main>
       </motion.div>

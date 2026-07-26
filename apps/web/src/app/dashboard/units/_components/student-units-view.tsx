@@ -7,7 +7,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ErrorState } from "@/components/ui/error-state";
 import { UnitLockOverlay } from "@/components/coins/unit-lock-overlay";
-import { BookOpen, Lock } from "lucide-react";
+import { BookOpen, Lock, ChevronLeft, ChevronRight } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface LessonSummary {
   id: string;
@@ -42,13 +43,6 @@ interface Stage {
   }[];
 }
 
-type UnitStatus = "completed" | "current" | "upcoming";
-
-interface ConnectorPoint {
-  x: number;
-  y: number;
-}
-
 interface UnitProgress {
   unitId: string;
   percentage: number;
@@ -61,12 +55,6 @@ export function StudentUnitsView(): ReactNode {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [openUnitId, setOpenUnitId] = useState<string | null>(null);
-
-  const wrapperRef = useRef<HTMLDivElement>(null);
-  const nodeRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const bgPathRef = useRef<SVGPathElement>(null);
-  const dotsPathRef = useRef<SVGPathElement>(null);
-  const [nodes, setNodes] = useState<ConnectorPoint[]>([]);
 
   const fetchCurriculum = useCallback(async (): Promise<void> => {
     try {
@@ -93,80 +81,11 @@ export function StudentUnitsView(): ReactNode {
     void fetchCurriculum();
   }, [fetchCurriculum]);
 
-  const drawPath = useCallback((): void => {
-    const wrapper = wrapperRef.current;
-    const bgPath = bgPathRef.current;
-    const dotsPath = dotsPathRef.current;
-    if (!wrapper || !bgPath || !dotsPath) return;
-
-    const cardNodes = nodeRefs.current.filter(Boolean) as HTMLDivElement[];
-    if (cardNodes.length < 2) {
-      setNodes([]);
-      bgPath.setAttribute("d", "");
-      dotsPath.setAttribute("d", "");
-      return;
-    }
-
-    const wrapperRect = wrapper.getBoundingClientRect();
-    const points: ConnectorPoint[] = [];
-
-    cardNodes.forEach((node, i) => {
-      const rect = node.getBoundingClientRect();
-      const isOdd = i % 2 === 0;
-      const edgeX = Math.round(
-        isOdd
-          ? rect.left - wrapperRect.left
-          : rect.right - wrapperRect.left,
-      );
-      const cy = Math.round(rect.top + rect.height / 2 - wrapperRect.top);
-      points.push({ x: edgeX, y: cy });
-    });
-
-    setNodes(points);
-
-    let bgD = `M ${String(points[0].x)} ${String(points[0].y)}`;
-    let dotsD = `M ${String(points[0].x)} ${String(points[0].y)}`;
-
-    for (let i = 1; i < points.length; i++) {
-      const prev = points[i - 1];
-      const curr = points[i];
-      const dx = curr.x - prev.x;
-      const dy = curr.y - prev.y;
-      const segLen = Math.max(Math.abs(dx), Math.abs(dy));
-      const cpOffset = segLen * 0.45;
-
-      const cp1x = prev.x + (dx > 0 ? cpOffset : -cpOffset);
-      const cp1y = prev.y + dy * 0.15;
-      const cp2x = curr.x - (dx > 0 ? cpOffset : -cpOffset);
-      const cp2y = curr.y - dy * 0.15;
-
-      const curve = `C ${String(Math.round(cp1x))} ${String(Math.round(cp1y))}, ${String(Math.round(cp2x))} ${String(Math.round(cp2y))}, ${String(curr.x)} ${String(curr.y)}`;
-      bgD += ` ${curve}`;
-      dotsD += ` ${curve}`;
-    }
-
-    bgPath.setAttribute("d", bgD);
-    dotsPath.setAttribute("d", dotsD);
-  }, []);
-
-  useEffect(() => {
-    if (!loading && stages.length > 0) {
-      requestAnimationFrame(() => {
-        drawPath();
-      });
-    }
-    window.addEventListener("resize", drawPath);
-    return (): void => {
-      window.removeEventListener("resize", drawPath);
-    };
-  }, [loading, stages, drawPath]);
-
   const allUnits = stages.flatMap((stage) =>
     stage.grades.flatMap((grade) => grade.units),
   );
 
   const reversed = [...allUnits].reverse();
-
   const currentUnitId = reversed.find((u) => (progressMap.get(u.id) ?? 0) > 0)?.id;
 
   if (loading) return <UnitsSkeleton />;
@@ -191,49 +110,15 @@ export function StudentUnitsView(): ReactNode {
         <p className="mt-1 text-sm text-neutral-500">اختر الوحدة التي تريد دراستها</p>
       </div>
 
-      <div ref={wrapperRef} className="relative mx-auto max-w-md pb-4">
-        <svg className="pointer-events-none absolute inset-0 z-0 h-full w-full overflow-visible">
-          <path
-            ref={bgPathRef}
-            d=""
-            className="fill-none stroke-primary-500/12 stroke-[2] [stroke-linecap:round]"
-          />
-          <path
-            ref={dotsPathRef}
-            d=""
-            className="fill-none stroke-primary-500/55 stroke-[3] [stroke-dasharray:0_24] [stroke-linecap:round]"
-            style={{ filter: "drop-shadow(0 0 3px rgba(34,211,238,0.25))" }}
-          />
-          {nodes.map((pt, i) => (
-            <circle
-              key={i}
-              cx={pt.x}
-              cy={pt.y}
-              r="3"
-              className="fill-primary-500"
-              style={{ filter: "drop-shadow(0 0 2px rgba(34,211,238,0.35))" }}
-            />
-          ))}
-        </svg>
+      <div className="relative mx-auto w-full max-w-2xl pb-4">
+        <div className="absolute right-1/2 top-0 bottom-0 w-0.5 -translate-x-1/2 bg-gradient-to-b from-primary-500/10 via-primary-500/30 to-primary-500/10" />
 
-        <div className="relative z-10 flex flex-col items-center gap-3 sm:gap-4 md:gap-5">
+        <div className="relative z-10 flex flex-col gap-6 sm:gap-8">
           {reversed.map((unit, idx) => {
             const pct = progressMap.get(unit.id) ?? 0;
             const status = unit.id === currentUnitId ? "current" : pct >= 100 ? "completed" : "upcoming";
-            const isOdd = idx % 2 === 0;
+            const isLeft = idx % 2 === 0;
             const locked = unit.isPremium && !unit.unlocked;
-
-            const ringColor =
-              status === "completed"
-                ? "border-primary-500/70 bg-primary-500/5"
-                : status === "current"
-                  ? "border-success-500 bg-success-500/5 shadow-[0_0_20px_rgba(16,185,129,0.15)]"
-                  : "border-neutral-200 bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-800/50";
-
-            const hoverColor =
-              status === "current"
-                ? "hover:border-success-500 hover:shadow-[0_0_30px_rgba(16,185,129,0.22)]"
-                : "hover:border-primary-500/60 hover:shadow-[0_0_25px_rgba(34,211,238,0.18)]";
 
             const handleOpen = (): void => {
               if (locked) {
@@ -246,21 +131,12 @@ export function StudentUnitsView(): ReactNode {
             };
 
             return (
-              <div
-                key={unit.id}
-                className={isOdd ? "flex flex-col items-center translate-x-10 sm:translate-x-12 md:translate-x-14" : "flex flex-col items-center -translate-x-10 sm:-translate-x-12 md:-translate-x-14"}
-              >
-                {status === "current" && (
-                  <span className="mb-1.5 rounded-full bg-success-500 px-2.5 py-0.5 text-[10px] font-bold text-white shadow-[0_0_8px_rgba(16,185,129,0.35)]">
-                    أنت هنا 👇
-                  </span>
-                )}
-
-                <div className="relative">
+              <div key={unit.id} className="relative flex items-center">
+                <div className={cn(
+                  "w-[calc(50%-2rem)] sm:w-[calc(50%-2.5rem)]",
+                  isLeft ? "order-1" : "order-3",
+                )}>
                   <div
-                    ref={(el): void => {
-                      nodeRefs.current[idx] = el;
-                    }}
                     role="button"
                     tabIndex={0}
                     onKeyDown={(e): void => {
@@ -270,36 +146,87 @@ export function StudentUnitsView(): ReactNode {
                       }
                     }}
                     onClick={handleOpen}
-                    className={`flex h-[70px] w-[70px] sm:h-[85px] sm:w-[85px] md:h-[100px] md:w-[100px] cursor-pointer flex-col items-center justify-center gap-0.5 rounded-[18px] sm:rounded-[22px] md:rounded-[26px] border-2 transition-all duration-200 hover:scale-[1.02] ${ringColor} ${hoverColor} ${locked ? "opacity-70" : ""}`}
+                    className={cn(
+                      "group cursor-pointer rounded-2xl border-2 p-4 transition-all duration-200",
+                      locked && "opacity-70",
+                      status === "completed" && "border-primary-500/70 bg-primary-500/5 hover:border-primary-500 hover:shadow-[0_0_25px_rgba(34,211,238,0.18)]",
+                      status === "current" && "border-success-500 bg-success-500/5 shadow-[0_0_20px_rgba(16,185,129,0.15)] hover:border-success-500 hover:shadow-[0_0_30px_rgba(16,185,129,0.22)]",
+                      status === "upcoming" && "border-neutral-200 bg-neutral-50 hover:border-primary-500/60 hover:shadow-[0_0_25px_rgba(34,211,238,0.18)] dark:border-neutral-700 dark:bg-neutral-800/50",
+                    )}
                   >
-                    <span className="font-cairo text-[7px] sm:text-[8px] md:text-[9px] font-extrabold uppercase tracking-[0.15em] text-primary-500/60">
-                      UNIT
-                    </span>
-                    <span className="font-cairo text-[1.5rem] sm:text-[1.8rem] md:text-[2.2rem] font-black leading-none text-neutral-900 dark:text-neutral-100">
-                      {unit.displayOrder}
-                    </span>
-                    <span className="text-[9px] sm:text-[10px] md:text-[11px] font-semibold text-neutral-400">
-                      {pct > 0 ? `${String(pct)}%` : ""}
-                    </span>
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary-500/10">
+                        <span className="text-lg font-black text-primary-500">{unit.displayOrder}</span>
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-bold text-neutral-900 dark:text-neutral-100 line-clamp-1">
+                          {unit.title || `الوحدة ${unit.displayOrder}`}
+                        </p>
+                        <p className="text-xs text-neutral-500 dark:text-neutral-400 line-clamp-1">
+                          {unit.description || `${unit.lessons.length} دروس`}
+                        </p>
+                      </div>
+                      {isLeft ? <ChevronLeft className="h-5 w-5 shrink-0 text-neutral-400 transition-transform group-hover:-translate-x-1" /> : <ChevronRight className="h-5 w-5 shrink-0 text-neutral-400 transition-transform group-hover:translate-x-1" />}
+                    </div>
+
+                    {pct > 0 && pct < 100 && (
+                      <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-neutral-200 dark:bg-neutral-700">
+                        <div className="h-full rounded-full bg-gradient-to-l from-primary-500 to-success-500 transition-all duration-500" style={{ width: `${pct}%` }} />
+                      </div>
+                    )}
+
+                    {locked && (
+                      <div className="mt-2 flex items-center gap-1.5 text-[11px] font-semibold text-amber-500">
+                        <Lock className="h-3 w-3" />
+                        <span>مقفول - افتح باستخدام العملات</span>
+                      </div>
+                    )}
                   </div>
 
                   {locked && (
-                    <span className="absolute -end-2 -top-2 flex h-7 w-7 items-center justify-center rounded-full bg-amber-500 text-white shadow-[0_0_10px_rgba(245,158,11,0.5)]">
-                      <Lock className="h-3.5 w-3.5" />
-                    </span>
-                  )}
-                </div>
-
-                {locked && (
-                  <div className="mt-2">
                     <UnitLockOverlay
                       unitId={unit.id}
                       unitTitle={unit.title}
                       open={openUnitId === unit.id}
                       onOpenChange={(o) => { setOpenUnitId(o ? unit.id : null); }}
                     />
+                  )}
+                </div>
+
+                <div className="order-2 z-10 flex w-10 shrink-0 items-center justify-center sm:w-12">
+                  <div className={cn(
+                    "flex h-8 w-8 items-center justify-center rounded-full border-2 sm:h-10 sm:w-10",
+                    status === "completed" && "border-primary-500 bg-primary-500 shadow-[0_0_12px_rgba(34,211,238,0.35)]",
+                    status === "current" && "border-success-500 bg-success-500 shadow-[0_0_12px_rgba(16,185,129,0.35)]",
+                    status === "upcoming" && "border-neutral-300 bg-white dark:border-neutral-600 dark:bg-neutral-800",
+                  )}>
+                    {status === "completed" ? (
+                      <svg className="h-4 w-4 text-white sm:h-5 sm:w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                      </svg>
+                    ) : status === "current" ? (
+                      <span className="text-xs font-black text-white sm:text-sm">{unit.displayOrder}</span>
+                    ) : (
+                      <span className="text-xs font-bold text-neutral-400 sm:text-sm">{unit.displayOrder}</span>
+                    )}
                   </div>
-                )}
+                </div>
+
+                <div className={cn(
+                  "w-[calc(50%-2rem)] sm:w-[calc(50%-2.5rem)]",
+                  isLeft ? "order-3" : "order-1",
+                )}>
+                  {status === "current" && (
+                    <div className={cn(
+                      "flex",
+                      isLeft ? "justify-start" : "justify-end",
+                    )}>
+                      <span className="inline-block rounded-full bg-success-500 px-3 py-1 text-[11px] font-bold text-white shadow-[0_0_8px_rgba(16,185,129,0.35)]">
+                        أنت هنا 👇
+                      </span>
+                    </div>
+                  )}
+                </div>
               </div>
             );
           })}
@@ -314,10 +241,16 @@ function UnitsSkeleton(): ReactNode {
     <div className="flex flex-col gap-6">
       <Skeleton className="h-8 w-48" />
       <Skeleton className="h-6 w-64" />
-      <div className="mx-auto flex max-w-md flex-col items-center gap-4">
+      <div className="mx-auto flex w-full max-w-2xl flex-col gap-6 sm:gap-8">
         {Array.from({ length: 6 }, (_, i) => (
-          <div key={i} className={i % 2 === 0 ? "translate-x-10 sm:translate-x-12 md:translate-x-14" : "-translate-x-10 sm:-translate-x-12 md:-translate-x-14"}>
-            <Skeleton className="h-[70px] w-[70px] sm:h-[85px] sm:w-[85px] md:h-[100px] md:w-[100px] rounded-[18px] sm:rounded-[22px] md:rounded-[26px]" />
+          <div key={i} className="flex items-center gap-4">
+            <div className="w-[calc(50%-2rem)]">
+              <Skeleton className="h-24 w-full rounded-2xl" />
+            </div>
+            <div className="flex w-10 shrink-0 items-center justify-center sm:w-12">
+              <Skeleton className="h-8 w-8 rounded-full sm:h-10 sm:w-10" />
+            </div>
+            <div className="w-[calc(50%-2rem)]" />
           </div>
         ))}
       </div>

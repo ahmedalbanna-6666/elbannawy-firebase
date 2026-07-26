@@ -230,8 +230,8 @@ export function Sidebar({ items, className, onClose, onToggle, onProfileClick, p
     onClose?.();
   }, [onClose]);
 
-  const activeClasses = "bg-primary-400/12 text-primary-400 before:absolute before:right-0 before:top-1/2 before:h-6 before:w-1 before:-translate-y-1/2 before:rounded-full before:bg-primary-400";
-  const hoverClasses = "text-neutral-100 hover:bg-white/8 hover:text-primary-400 light:text-neutral-900 light:hover:bg-neutral-100 light:hover:text-primary-600";
+  const activeClasses = "bg-primary-400/15 text-primary-400 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] before:absolute before:right-0 before:top-1/2 before:h-7 before:w-1 before:-translate-y-1/2 before:rounded-r-full before:bg-primary-400 before:shadow-[0_0_8px_rgba(34,211,238,0.4)] light:bg-primary-400/10 light:shadow-none light:before:shadow-[0_0_6px_rgba(34,211,238,0.3)]";
+  const hoverClasses = "text-neutral-300 hover:bg-white/10 hover:text-primary-300 hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] light:text-neutral-700 light:hover:bg-neutral-100 light:hover:text-primary-600 light:hover:shadow-none";
 
   return (
     <motion.aside
@@ -239,7 +239,7 @@ export function Sidebar({ items, className, onClose, onToggle, onProfileClick, p
       animate={{ width: collapsed ? 68 : 280 }}
       transition={{ type: "spring", stiffness: 260, damping: 28, mass: 0.8 }}
       className={cn(
-        "flex h-screen flex-col overflow-hidden border-l border-white/8 bg-neutral-950 backdrop-blur-2xl dark:bg-neutral-950/98 light:border-neutral-200 light:bg-white will-change-[width]",
+        "flex h-screen flex-col overflow-hidden border-l border-white/8 bg-gradient-to-b from-neutral-950 to-neutral-950/95 backdrop-blur-2xl dark:from-neutral-950 dark:to-neutral-950/98 light:border-neutral-200 light:from-white light:to-neutral-50/95 will-change-[width]",
         collapsed ? "px-2" : "px-3",
         className,
       )}
@@ -276,9 +276,9 @@ export function Sidebar({ items, className, onClose, onToggle, onProfileClick, p
       {/* ── Navigation ── */}
       <nav className={cn(
         "min-h-0 flex-1 overflow-y-auto overscroll-contain pb-1",
-        "[scrollbar-width:thin] [scrollbar-color:rgba(255,255,255,0.06)_transparent]",
+        "[scrollbar-width:thin] [scrollbar-color:rgba(255,255,255,0.08)_transparent]",
         "[&::-webkit-scrollbar]:w-[3px] [&::-webkit-scrollbar-track]:bg-transparent",
-        "[&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-white/6",
+        "[&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-white/8 light:[&::-webkit-scrollbar-thumb]:bg-neutral-300",
       )}>
         <div className="flex flex-col gap-0.5">
           {Array.isArray(items) ? items.map((entry) => {
@@ -294,7 +294,7 @@ export function Sidebar({ items, className, onClose, onToggle, onProfileClick, p
                     </p>
                   )}
                   {sectionItems.map((item) => {
-                    if (isDivider(item)) return <div key={item.id} className="mx-3 my-2 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />;
+                    if (isDivider(item)) return <div key={item.id} className="mx-3 my-2 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent light:via-neutral-200" />;
                     const Icon = item.icon;
                     return (
                       <motion.button
@@ -311,15 +311,15 @@ export function Sidebar({ items, className, onClose, onToggle, onProfileClick, p
                       >
                         <div className={cn("flex items-center justify-center", collapsed && "w-full")}>
                           <Icon className={cn(
-                            "h-[18px] w-[18px] shrink-0",
-                            item.danger ? "text-danger-500" : item.active ? "text-primary-400" : "text-neutral-400 light:text-neutral-600",
+                            "h-[20px] w-[20px] shrink-0",
+                            item.danger ? "text-danger-500" : item.active ? "text-primary-400 drop-shadow-[0_0_6px_rgba(34,211,238,0.3)]" : "text-neutral-400 group-hover:text-primary-400/80 light:text-neutral-500 light:group-hover:text-primary-500",
                           )} />
                         </div>
                         {!collapsed && (
                           <>
-                            <span className="flex-1 text-start text-[13px]">{item.label}</span>
+                            <span className="flex-1 text-start text-[13px] font-semibold tracking-wide">{item.label}</span>
                             {item.badge !== undefined && (
-                              <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-primary-400 px-1.5 text-[10px] font-bold text-white">
+                              <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-primary-400 px-1.5 text-[10px] font-bold text-white shadow-[0_0_6px_rgba(34,211,238,0.3)]">
                                 {item.badge > 99 ? "99+" : String(item.badge)}
                               </span>
                             )}
@@ -345,15 +345,15 @@ export function Sidebar({ items, className, onClose, onToggle, onProfileClick, p
                 whileTap={{ scale: collapsed ? 0.94 : 0.97 }}
                 transition={SPRING_FAST}
                 className={cn(
-                  "group relative flex w-full items-center gap-3 rounded-xl font-bold transition-colors",
+                  "group relative flex w-full items-center gap-3 rounded-xl font-bold transition-all duration-150",
                   collapsed ? "justify-center py-3" : "px-3 py-2.5 text-sm",
                   entry.active ? activeClasses : entry.danger ? "border border-danger-500/20 bg-danger-500/6 text-neutral-100 hover:bg-danger-500 hover:text-white light:border-danger-500/25 light:text-neutral-900" : hoverClasses,
                 )}
               >
                 <div className={cn("flex items-center justify-center", collapsed && "w-full")}>
                   <Icon className={cn(
-                    "h-[18px] w-[18px] shrink-0",
-                    entry.danger ? "text-danger-500" : entry.active ? "text-primary-400" : "text-neutral-400 light:text-neutral-600",
+                    "h-[20px] w-[20px] shrink-0",
+                    entry.danger ? "text-danger-500" : entry.active ? "text-primary-400 drop-shadow-[0_0_6px_rgba(34,211,238,0.3)]" : "text-neutral-400 group-hover:text-primary-400/80 light:text-neutral-500 light:group-hover:text-primary-500",
                   )} />
                 </div>
                 {!collapsed && (

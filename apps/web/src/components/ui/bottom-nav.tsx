@@ -25,7 +25,7 @@ export function BottomNav({ items, centerId, className }: BottomNavProps): React
   return (
     <nav
       className={cn(
-        "fixed bottom-0 left-0 right-0 z-30 flex h-[72px] items-center justify-around border-t border-neutral-200 bg-neutral-50/90 backdrop-blur-md dark:border-neutral-700 dark:bg-neutral-900/90 lg:hidden",
+        "fixed bottom-0 left-0 right-0 z-30 flex h-[72px] items-center justify-around border-t border-neutral-200 bg-neutral-50/90 backdrop-blur-md dark:border-neutral-700 dark:bg-neutral-900/90",
         className,
       )}
     >

@@ -23,6 +23,7 @@ import {
   Shield,
   ClipboardList,
   Wrench,
+  Banknote,
   type LucideIcon,
 } from "lucide-react";
 
@@ -326,6 +327,18 @@ export const NAV_REGISTRY: readonly NavModule[] = [
     sidebar: true,
     dashboard: false,
     order: 67,
+    category: "management",
+  },
+  {
+    id: "content-pricing",
+    title: "أسعار المحتوى",
+    description: "تحديد أسعار فتح الوحدات والاشتراك في الترم",
+    icon: Banknote,
+    route: "/dashboard/admin/content-pricing",
+    permission: PERMISSIONS.CONTENT_PRICING_MANAGE,
+    sidebar: true,
+    dashboard: false,
+    order: 68,
     category: "management",
   },
   {
