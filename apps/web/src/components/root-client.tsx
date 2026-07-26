@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { SplashScreen } from "./splash-screen";
+import { useEffect, type ReactNode } from "react";
 
 function registerSw(): void {
   if (typeof window === "undefined") return;
@@ -10,17 +9,10 @@ function registerSw(): void {
   }
 }
 
-export function RootClient({ children }: { children: React.ReactNode }): React.ReactNode {
-  const [showSplash, setShowSplash] = useState(true);
-
+export function RootClient({ children }: { children: React.ReactNode }): ReactNode {
   useEffect(() => {
     registerSw();
   }, []);
 
-  return (
-    <>
-      {showSplash && <SplashScreen onFinish={() => { setShowSplash(false); }} />}
-      {children}
-    </>
-  );
+  return <>{children}</>;
 }

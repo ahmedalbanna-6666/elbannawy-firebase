@@ -2,7 +2,7 @@
 
 import { cn } from "@/lib/utils";
 import { useState, type ReactNode } from "react";
-import { ChevronLeft, User, type LucideIcon } from "lucide-react";
+import { ChevronLeft, User, Facebook, MessageCircle, Send, Youtube, type LucideIcon } from "lucide-react";
 import { useAuthStore } from "@/lib/auth-store";
 import { ROLE_LABELS } from "@el-bannawy/shared";
 
@@ -40,6 +40,13 @@ function isSection(item: SidebarItem | SidebarSection): item is SidebarSection {
 function isDivider(item: SidebarItem): boolean {
   return item.divider === true;
 }
+
+const SOCIAL_LINKS = [
+  { icon: Facebook, href: "#", label: "Facebook", color: "hover:text-blue-500" },
+  { icon: MessageCircle, href: "#", label: "WhatsApp", color: "hover:text-green-500" },
+  { icon: Send, href: "#", label: "Telegram", color: "hover:text-sky-400" },
+  { icon: Youtube, href: "#", label: "YouTube", color: "hover:text-red-500" },
+];
 
 export function Sidebar({ items, className, onClose, onProfileClick, profileGrade, children }: SidebarProps): ReactNode {
   const [collapsed, setCollapsed] = useState(false);
@@ -82,12 +89,12 @@ export function Sidebar({ items, className, onClose, onProfileClick, profileGrad
   return (
     <aside
       className={cn(
-        "flex h-screen flex-col overflow-hidden border-l border-white/10 bg-transparent transition-[width] duration-300 ease-in-out dark:bg-transparent light:border-neutral-200",
+        "flex h-screen flex-col overflow-hidden border-l border-white/10 bg-neutral-950/80 backdrop-blur-2xl transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] dark:bg-neutral-950/80 light:border-neutral-200 light:bg-white/90",
         collapsed ? "w-[72px] px-3" : "w-[280px] px-5",
         className,
       )}
     >
-      {/* Brand + Collapse Toggle (fixed, never scrolls) */}
+      {/* Brand + Collapse Toggle */}
       <div className="flex shrink-0 items-center justify-between pt-8">
         {!collapsed ? (
           <span className="font-cairo text-lg font-black text-neutral-50 light:text-neutral-900">
@@ -115,7 +122,7 @@ export function Sidebar({ items, className, onClose, onProfileClick, profileGrad
         </button>
       </div>
 
-      {/* Profile Card (fixed, never scrolls) */}
+      {/* Profile Card */}
       {!collapsed && (
         <div
           onClick={onProfileClick}
@@ -150,7 +157,7 @@ export function Sidebar({ items, className, onClose, onProfileClick, profileGrad
         </div>
       )}
 
-      {/* Navigation (scrollable region) */}
+      {/* Navigation */}
       <nav
         className={cn(
           "min-h-0 flex-1 overflow-y-auto overscroll-contain py-2",
@@ -236,6 +243,31 @@ export function Sidebar({ items, className, onClose, onProfileClick, profileGrad
           </div>
         )}
       </nav>
+
+      {/* Social Media Links */}
+      {!collapsed && (
+        <div className="shrink-0 border-t border-white/5 py-4 light:border-neutral-200">
+          <div className="flex items-center justify-center gap-5">
+            {SOCIAL_LINKS.map((social) => (
+              <a
+                key={social.label}
+                href={social.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={social.label}
+                className={cn(
+                  "flex h-9 w-9 items-center justify-center rounded-xl text-neutral-500 transition-all duration-300",
+                  "hover:scale-110 hover:bg-white/10 hover:shadow-[0_0_15px_rgba(34,211,238,0.15)]",
+                  "light:hover:bg-neutral-100",
+                  social.color,
+                )}
+              >
+                <social.icon className="h-4.5 w-4.5" />
+              </a>
+            ))}
+          </div>
+        </div>
+      )}
     </aside>
   );
 }
