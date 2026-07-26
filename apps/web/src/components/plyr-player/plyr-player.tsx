@@ -26,6 +26,7 @@ export function PlyrVideoPlayer({
   const playerRef = useRef<Plyr | null>(null);
   const progressRef = useRef(onProgress);
   const completeRef = useRef(onComplete);
+  const hasPlayedRef = useRef(false);
   progressRef.current = onProgress;
   completeRef.current = onComplete;
 
@@ -34,7 +35,7 @@ export function PlyrVideoPlayer({
     if (!container) return;
 
     const player = new Plyr(container, {
-      controls: ["play-large", "play", "progress", "current-time", "mute", "volume", "fullscreen"],
+      controls: ["play-large", "play", "progress", "current-time", "mute", "volume", "settings", "fullscreen"],
       youtube: {
         noCookie: true,
         rel: 0,
@@ -63,6 +64,10 @@ export function PlyrVideoPlayer({
         }
       });
     }
+
+    player.on("playing", () => {
+      hasPlayedRef.current = true;
+    });
 
     player.on("ended", () => {
       setTimeout(() => {
@@ -135,13 +140,8 @@ export function PlyrVideoPlayer({
     };
   }, []);
 
-  const posterUrl = `https://img.youtube.com/vi/${providerVideoId}/maxresdefault.jpg`;
-
   return (
-    <div
-      className="aspect-video w-full overflow-hidden rounded-2xl bg-cover bg-center"
-      style={{ backgroundImage: `url(${posterUrl})` }}
-    >
+    <div className="aspect-video w-full overflow-hidden rounded-2xl bg-black">
       <div
         ref={containerRef}
         data-plyr-provider="youtube"
