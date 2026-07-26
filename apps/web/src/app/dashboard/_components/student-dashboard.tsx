@@ -273,77 +273,33 @@ export function StudentDashboard(): ReactNode {
       <AnimatedContainer animation="fade-slide-up" delay={120}>
         <section className="grid grid-cols-2 gap-3 sm:gap-4">
 
-        <div onClick={(): void => { router.push("/dashboard/ai"); }} role="button" tabIndex={0} onKeyDown={(e): void => { if (e.key === "Enter") { router.push("/dashboard/ai"); } }}>
-          <Card variant="outline" padding="md" className="cursor-pointer transition-colors hover:bg-neutral-50 dark:hover:bg-neutral-800/50 h-full">
-            <CardContent>
-              <div className="flex items-center gap-4">
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-purple-500 to-pink-500">
-                  <Sparkles className="h-6 w-6 text-white" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-semibold text-neutral-900 dark:text-neutral-100">اسأل البنا AI</h3>
-                  <p className="text-sm text-neutral-500">احصل على إجابات فورية وشروحات ومساعدة في تعلمك</p>
-                </div>
-                <ChevronRight className="h-5 w-5 text-neutral-400" />
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        <div onClick={(): void => { router.push("/dashboard/live"); }} role="button" tabIndex={0} onKeyDown={(e): void => { if (e.key === "Enter") { router.push("/dashboard/live"); } }}>
-          <Card variant="outline" padding="md" className="cursor-pointer transition-colors hover:bg-neutral-50 dark:hover:bg-neutral-800/50 h-full">
-            <CardContent>
-              <div className="flex items-center gap-4">
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-success-500/10">
-                  <Users className="h-6 w-6 text-success-500" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-semibold text-neutral-900 dark:text-neutral-100">احجز حصة مباشرة</h3>
-                  <p className="text-sm text-neutral-500">احجز مقعدك في حصة مباشرة قادمة</p>
-                </div>
-                <ChevronRight className="h-5 w-5 text-neutral-400" />
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        <div onClick={(): void => { router.push("/dashboard/mistakes"); }} role="button" tabIndex={0} onKeyDown={(e): void => { if (e.key === "Enter") { router.push("/dashboard/mistakes"); } }}>
-          <Card variant="outline" padding="md" className="cursor-pointer transition-colors hover:bg-neutral-50 dark:hover:bg-neutral-800/50 h-full">
-            <CardContent>
-              <div className="flex items-center gap-4">
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-danger-500/10">
-                  <RefreshCw className="h-6 w-6 text-danger-500" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-semibold text-neutral-900 dark:text-neutral-100">تعلم من أخطائك</h3>
-                  <p className="text-sm text-neutral-500">راجع الإجابات الخاطئة وحسن مستواك</p>
-                </div>
-                <ChevronRight className="h-5 w-5 text-neutral-400" />
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        <div onClick={(): void => { router.push("/dashboard/games"); }} role="button" tabIndex={0} onKeyDown={(e): void => { if (e.key === "Enter") { router.push("/dashboard/games"); } }}>
-          <Card variant="outline" padding="md" className="cursor-pointer transition-colors hover:bg-neutral-50 dark:hover:bg-neutral-800/50 h-full">
-            <CardContent>
-              <div className="flex items-center gap-4">
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-purple-500/10">
-                  <Gamepad2 className="h-6 w-6 text-purple-500" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-semibold text-neutral-900 dark:text-neutral-100">الألعاب التعليمية</h3>
-                  <p className="text-sm text-neutral-500">العب ألعاباً لتحسين المفردات والقواعد والقراءة</p>
-                </div>
-                <ChevronRight className="h-5 w-5 text-neutral-400" />
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+        <ToolCard icon={Sparkles} label="اسأل البنا AI" color="from-purple-500 to-pink-500" textColor="text-white" onClick={(): void => { router.push("/dashboard/ai"); }} />
+        <ToolCard icon={Users} label="احجز حصة مباشرة" color="bg-success-500/10" textColor="text-success-500" onClick={(): void => { router.push("/dashboard/live"); }} />
+        <ToolCard icon={RefreshCw} label="تعلم من أخطائك" color="bg-danger-500/10" textColor="text-danger-500" onClick={(): void => { router.push("/dashboard/mistakes"); }} />
+        <ToolCard icon={Gamepad2} label="الألعاب التعليمية" color="bg-purple-500/10" textColor="text-purple-500" onClick={(): void => { router.push("/dashboard/games"); }} />
 
       </section>
       </AnimatedContainer>
 
+    </div>
+  );
+}
+
+function ToolCard({ icon: Icon, label, color, textColor, onClick }: { icon: typeof Sparkles; label: string; color: string; textColor: string; onClick: () => void }): ReactNode {
+  return (
+    <div onClick={onClick} role="button" tabIndex={0} onKeyDown={(e): void => { if (e.key === "Enter") onClick(); }}>
+      <Card variant="outline" padding="sm" className="cursor-pointer transition-colors hover:bg-neutral-50 dark:hover:bg-neutral-800/50 h-full">
+        <CardContent>
+          <div className="flex flex-col items-center gap-1.5 py-1">
+            <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${color}`}>
+              <Icon className={`h-5 w-5 ${textColor}`} />
+            </div>
+            <span className="text-xs font-semibold text-center text-neutral-900 dark:text-neutral-100 leading-tight">
+              {label}
+            </span>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
