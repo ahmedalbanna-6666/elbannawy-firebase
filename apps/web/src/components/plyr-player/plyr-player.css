@@ -56,9 +56,10 @@
 .plyr__progress {
   height: 4px !important;
   border-radius: 2px !important;
-  background: rgba(255, 255, 255, 0.2) !important;
+  background: rgba(255, 255, 255, 0.15) !important;
   cursor: pointer;
   transition: height 0.2s ease;
+  position: relative;
 }
 
 .plyr__progress:hover,
@@ -66,9 +67,24 @@
   height: 6px !important;
 }
 
+.plyr__progress input[type="range"] {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100% !important;
+  z-index: 2;
+}
+
 .plyr__progress__buffer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100% !important;
   border-radius: 2px !important;
-  background: rgba(255, 255, 255, 0.1) !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+  z-index: 1;
 }
 
 .plyr__time {
