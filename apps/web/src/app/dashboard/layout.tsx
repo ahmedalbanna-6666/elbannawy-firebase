@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo, useCallback, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 import dynamic from "next/dynamic";
 import { useRouter, usePathname } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
@@ -125,6 +126,8 @@ export default function DashboardLayout({ children }: DashboardLayoutProps): Rea
   }, [logout]);
 
   const { can } = usePermissions();
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
 
   const sidebarItems: SidebarContent = useMemo(
     () => {
@@ -338,7 +341,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps): Rea
         </main>
       </motion.div>
 
-      <BottomNav items={bottomNavItems} centerId="home" />
+      {mounted && createPortal(<BottomNav items={bottomNavItems} centerId="home" />, document.body)}
       <PwaInstallPrompt />
       <NotificationPrompt />
       <ToastContainer />

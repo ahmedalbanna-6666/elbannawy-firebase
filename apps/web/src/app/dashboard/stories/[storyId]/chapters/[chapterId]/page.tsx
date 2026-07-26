@@ -20,10 +20,9 @@ interface ChapterDetail {
   published: boolean;
 }
 
-interface StoryData {
+interface StoryInfo {
   id: string;
   title: string;
-  chapters: ChapterDetail[];
 }
 
 export default function ChapterContentPage(): ReactNode {
@@ -36,16 +35,25 @@ export default function ChapterContentPage(): ReactNode {
   const chapterId = params.chapterId as string;
   const hydrated = typeof rawRole === "string";
 
-  const { data: story, isLoading } = useQuery({
-    queryKey: ["management-story", storyId],
+  const { data: story } = useQuery({
+    queryKey: ["management-story-info", storyId],
     queryFn: async () => {
-      const res = await api.get<StoryData>(`/stories/${storyId}`);
+      const res = await api.get<StoryInfo>(`/stories/${storyId}`);
       return res.data ?? null;
     },
     enabled: hydrated && isManagement,
   });
 
-  const chapter = story?.chapters?.find((c) => c.id === chapterId) ?? null;
+  const { data: chapters, isLoading } = useQuery({
+    queryKey: ["story-chapters", storyId],
+    queryFn: async () => {
+      const res = await api.get<ChapterDetail[]>(`/stories/${storyId}/chapters`);
+      return res.data ?? [];
+    },
+    enabled: hydrated && isManagement,
+  });
+
+  const chapter = chapters?.find((c) => c.id === chapterId) ?? null;
 
   if (!hydrated || !isManagement) return null;
   if (isLoading) return <ChapterSkeleton />;
