@@ -35,6 +35,7 @@ export * from "./engine";
 export * from "./vocabulary-import";
 export * from "./services/vocabulary-import";
 export * from "./services/homework";
+export { getFirestoreInstance } from "./repositories/firestore/firestore.service";
 export { QuizService } from "./services/quiz/quiz.service";
 export * from "./services/gamification";
 export * from "./services/question-import";
