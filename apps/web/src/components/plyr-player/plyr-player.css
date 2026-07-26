@@ -16,12 +16,6 @@
   transition: opacity 0.25s ease;
 }
 
-.plyr--paused .plyr__poster {
-  display: block !important;
-  opacity: 1 !important;
-  visibility: visible !important;
-}
-
 .plyr {
   border-radius: 1rem;
   overflow: hidden;
@@ -38,6 +32,7 @@
   gap: 8px !important;
   padding: 8px 14px !important;
   background: linear-gradient(180deg, transparent, rgba(0, 0, 0, 0.35)) !important;
+  z-index: 5 !important;
   transition: opacity 0.25s ease, visibility 0.25s ease !important;
 }
 
@@ -140,6 +135,7 @@
   border: 2px solid rgba(255, 255, 255, 0.15) !important;
   border-radius: 50% !important;
   padding: 14px !important;
+  z-index: 6 !important;
   transition: all 0.2s ease !important;
 }
 
