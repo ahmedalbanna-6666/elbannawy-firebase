@@ -1,6 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAdminDb } from '@/lib/firebase/admin';
 import { authenticateRequest } from '@/lib/firebase/auth-helper';
+import type { Firestore } from 'firebase-admin/firestore';
+
+let dbInstance: Firestore | null = null;
+
+async function getDb(): Promise<Firestore> {
+  if (dbInstance) return dbInstance;
+  try {
+    const { getAdminDb } = await import('@/lib/firebase/admin');
+    dbInstance = getAdminDb();
+  } catch {
+    const { getFirestoreInstance } = await import('@el-bannawy/lib');
+    dbInstance = getFirestoreInstance();
+  }
+  return dbInstance;
+}
 
 export async function GET(request: NextRequest): Promise<NextResponse> {
   try {
@@ -9,7 +23,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json({ success: false, error: { code: 'UNAUTHORIZED', message: 'Not authenticated' } }, { status: 401 });
     }
 
-    const db = getAdminDb();
+    const db = await getDb();
     const studentId = decoded.uid;
 
     const [userDoc, progressSnap, xpSnap, walletSnap, statsSnap, achievementsSnap, bookingsSnap, pendingHomeworkSnap] = await Promise.all([

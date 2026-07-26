@@ -13,7 +13,7 @@ import { School, Phone, Lock, LogIn, Eye, EyeOff } from "lucide-react";
 function LoginForm(): ReactNode {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { login } = useAuth();
+  const { login, signInWithGoogle } = useAuth();
   const [mobile, setMobile] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
@@ -32,6 +32,20 @@ function LoginForm(): ReactNode {
       router.push(redirectTo);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Login failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleSignIn = async (): Promise<void> => {
+    try {
+      setError(null);
+      setLoading(true);
+      await signInWithGoogle();
+      const redirectTo = searchParams.get("redirect") || "/dashboard";
+      router.push(redirectTo);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Google sign-in failed");
     } finally {
       setLoading(false);
     }
@@ -123,8 +137,8 @@ function LoginForm(): ReactNode {
             type="button"
             variant="outline"
             fullWidth
-            disabled
-            title="Google OAuth coming soon"
+            loading={loading}
+            onClick={handleGoogleSignIn}
           >
             <svg className="h-5 w-5" viewBox="0 0 24 24">
               <path
