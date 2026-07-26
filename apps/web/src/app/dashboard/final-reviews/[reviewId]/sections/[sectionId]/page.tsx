@@ -18,24 +18,24 @@ export default function SectionContentPage(): ReactNode {
   const params = useParams();
   const user = useAuthStore((s) => s.user);
   const rawRole = user?.role;
-  const { isAdmin, isTeacher } = usePermissions();
-  const isManagement = isAdmin || isTeacher;
   const reviewId = params.reviewId as string;
   const sectionId = params.sectionId as string;
   const hydrated = typeof rawRole === "string";
 
-  const { data: review, isLoading } = useQuery({
+  const { data: review, error: reviewErr, isLoading } = useQuery({
     queryKey: ["management-final-review", reviewId],
     queryFn: async () => {
       const res = await api.get<{ id: string; title: string }>(`/final-reviews/${reviewId}`);
       return res.data ?? null;
     },
-    enabled: hydrated && isManagement,
+    enabled: hydrated,
   });
 
-  if (!hydrated || !isManagement) return null;
+  if (!hydrated) return null;
 
   if (isLoading) return <SectionSkeleton />;
+
+  if (reviewErr) return <ErrorState title="خطأ في تحميل المراجعة" description={reviewErr instanceof Error ? reviewErr.message : "خطأ غير معروف"} />;
 
   if (!review) {
     return (
