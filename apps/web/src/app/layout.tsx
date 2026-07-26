@@ -20,6 +20,7 @@ export const viewport = {
   width: 'device-width',
   initialScale: 1,
   maximumScale: 1,
+  userScalable: false,
   viewportFit: 'cover',
 };
 
@@ -28,8 +29,14 @@ export const metadata: Metadata = {
   description: "AI-Powered English Learning Platform",
   manifest: "/manifest.json",
   icons: {
-    icon: [{ url: "/favicon.svg", type: "image/svg+xml" }],
-    apple: [{ url: "/logo.svg", sizes: "any", type: "image/svg+xml" }],
+    icon: [
+      { url: "/icon-192x192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icon-512x512.png", sizes: "512x512", type: "image/png" },
+      { url: "/favicon.svg", type: "image/svg+xml" },
+    ],
+    apple: [
+      { url: "/icon-192x192.png", sizes: "192x192", type: "image/png" },
+    ],
   },
   appleWebApp: {
     capable: true,

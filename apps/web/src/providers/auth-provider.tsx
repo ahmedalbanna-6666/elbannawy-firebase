@@ -179,6 +179,19 @@ export function AuthProvider({ children }: { children: ReactNode }): ReactNode {
         });
         queryClient.removeQueries({ queryKey: ["profile"] });
         queryClient.removeQueries({ queryKey: ["sidebar-profile"] });
+
+        const meRes = await fetch('/api/v1/auth/me', {
+          headers: { Authorization: `Bearer ${data.token}` },
+          signal: controller.signal,
+        });
+        const meData = await meRes.json();
+        if (meData.success && meData.data) {
+          setUser({
+            ...meData.data,
+            role: (meData.data.role ?? "").toUpperCase(),
+            effectivePermissions: meData.data.effectivePermissions as Permission[],
+          });
+        }
       } finally {
         clearTimeout(timeout);
       }
@@ -207,6 +220,18 @@ export function AuthProvider({ children }: { children: ReactNode }): ReactNode {
       if (signInData.user) setUser({ ...signInData.user, role: (signInData.user.role ?? "").toUpperCase() });
       queryClient.removeQueries({ queryKey: ["profile"] });
       queryClient.removeQueries({ queryKey: ["sidebar-profile"] });
+
+      const meRes = await fetch('/api/v1/auth/me', {
+        headers: { Authorization: `Bearer ${signInData.token}` },
+      });
+      const meData = await meRes.json();
+      if (meData.success && meData.data) {
+        setUser({
+          ...meData.data,
+          role: (meData.data.role ?? "").toUpperCase(),
+          effectivePermissions: meData.data.effectivePermissions as Permission[],
+        });
+      }
     },
     [setIdToken, setUser, queryClient],
   );

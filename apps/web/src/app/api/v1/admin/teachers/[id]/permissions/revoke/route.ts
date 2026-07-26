@@ -27,7 +27,7 @@ export async function POST(
     if (body.permission) {
       existing = existing.filter(p => p !== body.permission);
     }
-    await docRef.set({ permissions: existing }, { merge: true });
+    await docRef.set({ permissions: existing, updatedAt: new Date().toISOString() }, { merge: true });
     return NextResponse.json({ success: true, data: { grantedPermissions: existing } });
   } catch {
     return NextResponse.json({ success: false, error: { code: 'INTERNAL', message: 'Failed to revoke permission' } }, { status: 500 });

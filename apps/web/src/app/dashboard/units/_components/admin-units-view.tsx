@@ -81,6 +81,8 @@ export function AdminUnitsView(): ReactNode {
     return params.toString();
   }, [academicContext]);
 
+  const filtersReady = !!(academicContext.educationalSystem && academicContext.gradeId);
+
   const { data: units, isLoading, isError, error } = useQuery({
     queryKey: ["management-units", filterParams],
     queryFn: async () => {
@@ -88,6 +90,7 @@ export function AdminUnitsView(): ReactNode {
       const res = await api.get<{ items: UnitManagement[]; nextCursor: string | null }>(endpoint);
       return res.data?.items ?? [];
     },
+    enabled: filtersReady,
     staleTime: 30_000,
   });
 
@@ -120,6 +123,28 @@ export function AdminUnitsView(): ReactNode {
       lockedOverride: unit.lockedOverride ?? null,
     });
   };
+
+  if (!filtersReady) {
+    return (
+      <div className="flex flex-col gap-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-neutral-900 dark:text-neutral-100">
+              إدارة الوحدات
+            </h1>
+            <p className="mt-1 text-sm text-neutral-500">
+              إدارة جميع الوحدات التعليمية على المنصة
+            </p>
+          </div>
+        </div>
+        <EmptyState
+          title="اختر النظام التعليمي والمرحلة والصف"
+          description="يرجى اختيار النظام التعليمي والمرحلة التعليمية والصف من الشريط العلوي لعرض الوحدات."
+          icon={<BookOpen className="h-16 w-16" />}
+        />
+      </div>
+    );
+  }
 
   if (isLoading) return <UnitsSkeleton />;
 

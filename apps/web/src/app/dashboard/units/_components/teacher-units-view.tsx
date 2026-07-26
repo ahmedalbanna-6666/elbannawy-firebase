@@ -100,6 +100,8 @@ export function TeacherUnitsView(): ReactNode {
     return params.toString();
   }, [academicContext]);
 
+  const filtersReady = !!academicContext.gradeId;
+
   const { data: units, isLoading, isError, error } = useQuery({
     queryKey: ["management-units", filterParams],
     queryFn: async () => {
@@ -107,6 +109,7 @@ export function TeacherUnitsView(): ReactNode {
       const res = await api.get<{ items: UnitManagement[]; nextCursor: string | null }>(endpoint);
       return res.data?.items ?? [];
     },
+    enabled: filtersReady,
     staleTime: 30_000,
   });
 
@@ -139,6 +142,29 @@ export function TeacherUnitsView(): ReactNode {
       lockedOverride: unit.lockedOverride ?? null,
     });
   };
+
+  if (!filtersReady) {
+    return (
+      <div className="flex flex-col gap-6">
+        <TeacherContextBanner />
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-neutral-900 dark:text-neutral-100">
+              إدارة الوحدات
+            </h1>
+            <p className="mt-1 text-sm text-neutral-500">
+              إنشاء وإدارة الوحدات التعليمية والدروس
+            </p>
+          </div>
+        </div>
+        <EmptyState
+          title="اختر الصف"
+          description="يرجى اختيار الصف من الشريط العلوي لعرض الوحدات."
+          icon={<BookOpen className="h-16 w-16" />}
+        />
+      </div>
+    );
+  }
 
   if (isLoading) return <UnitsSkeleton />;
 
