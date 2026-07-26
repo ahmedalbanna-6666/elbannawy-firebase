@@ -41,7 +41,8 @@ export async function GET(_request: NextRequest): Promise<NextResponse> {
     if (!result.ok) {
       return NextResponse.json({ success: false, error: result.error }, { status: 500 });
     }
-    return NextResponse.json({ success: true, data: result.value });
+    const data = result.value.map((pkg) => ({ ...pkg, price: pkg.priceMinorUnits }));
+    return NextResponse.json({ success: true, data });
   } catch (error) {
     return NextResponse.json({ success: false, error: { code: 'INTERNAL', message: error instanceof Error ? error.message : 'Unknown error' } }, { status: 500 });
   }

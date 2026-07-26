@@ -64,7 +64,8 @@ export async function PATCH(
     if (!result.ok) {
       return NextResponse.json({ success: false, error: result.error }, { status: 500 });
     }
-    return NextResponse.json({ success: true, data: result.value });
+    const data = result.value ? { ...result.value, price: result.value.priceMinorUnits } : result.value;
+    return NextResponse.json({ success: true, data });
   } catch (error) {
     return NextResponse.json({ success: false, error: { code: 'INTERNAL', message: error instanceof Error ? error.message : 'Unknown error' } }, { status: 500 });
   }
