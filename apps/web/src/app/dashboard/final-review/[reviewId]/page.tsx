@@ -10,6 +10,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
+import { PlyrVideoPlayer, VideoPlayerSkeleton } from "@/components/plyr-player";
 import {
   CheckCircle,
   BookMarked,
@@ -435,15 +436,11 @@ export default function FinalReviewPlayerPage(): ReactNode {
       <section aria-label="فيديو المراجعة">
         {activeVideo ? (
           <div className="space-y-1">
-            <div className="aspect-video w-full overflow-hidden rounded-2xl bg-black">
-              <iframe
-                className="h-full w-full"
-                src={`https://www.youtube-nocookie.com/embed/${activeVideo.youtubeId}?controls=1&rel=0&modestbranding=1&playsinline=1`}
-                allowFullScreen
-                allow="autoplay; fullscreen"
-                loading="lazy"
-              />
-            </div>
+            <PlyrVideoPlayer
+              providerVideoId={activeVideo.youtubeId}
+              onProgress={handleVideoProgress}
+              startAt={videoProgress?.lastPosition ?? 0}
+            />
           </div>
         ) : (
           <Card variant="default" padding="lg">
@@ -481,7 +478,7 @@ function ReviewPlayerSkeleton(): ReactNode {
         <Skeleton className="h-5 w-32" />
         <Skeleton className="h-8 w-64" />
       </div>
-      <Skeleton className="aspect-video w-full rounded-2xl" />
+      <VideoPlayerSkeleton />
       <Skeleton className="h-8 w-full rounded-xl" />
       <div className="grid grid-cols-2 gap-4">
         <Skeleton className="h-28 rounded-2xl" />
