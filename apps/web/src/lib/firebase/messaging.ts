@@ -1,21 +1,13 @@
 'use client';
 
-import { getApp, getApps, initializeApp } from 'firebase/app';
 import { getMessaging, getToken, onMessage, type Messaging } from 'firebase/messaging';
-import firebaseConfig, { isFirebaseConfigured } from './config';
+import { ensureClientApp } from './client-auth';
 
 let messagingInstance: Messaging | null = null;
 
-function ensureApp() {
-  if (getApps().length > 0) return getApp();
-  if (!isFirebaseConfigured()) throw new Error('Firebase not configured');
-  return initializeApp(firebaseConfig);
-}
-
 export function getClientMessaging(): Messaging {
   if (messagingInstance) return messagingInstance;
-  const app = ensureApp();
-  messagingInstance = getMessaging(app);
+  messagingInstance = getMessaging(ensureClientApp());
   return messagingInstance;
 }
 

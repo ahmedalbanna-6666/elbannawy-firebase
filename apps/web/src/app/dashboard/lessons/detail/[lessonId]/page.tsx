@@ -656,11 +656,6 @@ export default function LessonDetailPage(): ReactNode {
   const activeVideo: LessonVideo | null =
     lesson.videos.length > 0 ? lesson.videos[0] : null;
 
-  const videoWatchedPct =
-    activeVideo && videoProgress && activeVideo.duration > 0
-      ? Math.min(100, Math.round((videoProgress.watchedSeconds / activeVideo.duration) * 100))
-      : 0;
-
   const totalActivities = lesson.videos.reduce(
     (sum, v) => sum + v.activities.length,
     0,

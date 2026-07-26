@@ -33,4 +33,4 @@ export function getClientAuth(): Auth {
   return clientAuthInstance;
 }
 
-export { isFirebaseConfigured };
+export { ensureClientApp, isFirebaseConfigured };

@@ -131,11 +131,6 @@
   transform: translate(-50%, -50%) !important;
 }
 
-.plyr--video.plyr--playing .plyr__control--overlaid {
-  opacity: 1 !important;
-  visibility: visible !important;
-}
-
 .plyr__volume {
   display: flex !important;
   align-items: center !important;

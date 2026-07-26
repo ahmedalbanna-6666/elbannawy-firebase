@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useEffect, useRef, type ReactNode, useCallback } from "react";
+import { createContext, useContext, useEffect, useRef, useMemo, type ReactNode, useCallback } from "react";
 import { FcmProvider } from "./fcm-provider";
 import { useQueryClient } from "@tanstack/react-query";
 import {
@@ -253,19 +253,19 @@ export function AuthProvider({ children }: { children: ReactNode }): ReactNode {
     }
   }, [clearStore, queryClient]);
 
+  const contextValue = useMemo(() => ({
+    isAuthenticated,
+    user,
+    login,
+    register,
+    signInWithGoogle,
+    signInWithApple,
+    oauthRegister,
+    logout,
+  }), [isAuthenticated, user, login, register, signInWithGoogle, signInWithApple, oauthRegister, logout]);
+
   return (
-    <AuthContext.Provider
-      value={{
-        isAuthenticated,
-        user,
-        login,
-        register,
-        signInWithGoogle,
-        signInWithApple,
-        oauthRegister,
-        logout,
-      }}
-    >
+    <AuthContext.Provider value={contextValue}>
       <FcmProvider isAuthenticated={isAuthenticated} user={user}>{children}</FcmProvider>
     </AuthContext.Provider>
   );

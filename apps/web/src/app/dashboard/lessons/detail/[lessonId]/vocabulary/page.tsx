@@ -73,7 +73,7 @@ function StandardVocabTable({ items }: { items: readonly VocabWord[] }): ReactNo
 
   return (
     <>
-      <div className="hidden md:block overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-sm dark:border-neutral-700 dark:bg-neutral-900/40">
+      <div className="hidden md:block overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-sm dark:border-neutral-700 dark:bg-neutral-900/40 [border-inline-start:4px_solid_rgba(6,182,212,0.7)]">
         <Table dir="ltr">
           <TableHeader>
             <TableRow className="h-11 border-b border-neutral-200 bg-primary-50/60 dark:border-neutral-700 dark:bg-primary-500/5">
@@ -130,7 +130,7 @@ function StandardVocabTable({ items }: { items: readonly VocabWord[] }): ReactNo
         </Table>
       </div>
 
-      <div className="md:hidden overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-sm dark:border-neutral-700 dark:bg-neutral-900/40">
+      <div className="md:hidden overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-sm dark:border-neutral-700 dark:bg-neutral-900/40 [border-inline-start:4px_solid_rgba(6,182,212,0.7)]">
         <Table dir="ltr">
           <TableHeader>
             <TableRow className="h-11 border-b border-neutral-200 bg-primary-50/60 dark:border-neutral-700 dark:bg-primary-500/5">

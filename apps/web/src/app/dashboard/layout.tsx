@@ -18,6 +18,7 @@ import {
   ClipboardList,
   GraduationCap,
 } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { type SidebarContent } from "@/components/ui/sidebar";
 import { type BottomNavItem } from "@/components/ui/bottom-nav";
 
@@ -64,11 +65,12 @@ export default function DashboardLayout({ children }: DashboardLayoutProps): Rea
 
   const userRole = (useAuthStore((s) => s.user?.role) ?? "").toUpperCase();
 
-  const profileGrade = userRole === "STUDENT"
+  const profileGrade = useMemo(() => userRole === "STUDENT"
     ? (profile?.roleProfile?.grade?.name
       ?? profile?.roleProfile?.stage?.name
       ?? "طالب")
-    : (ROLE_LABELS[userRole] ?? "طالب");
+    : (ROLE_LABELS[userRole] ?? "طالب"),
+  [userRole, profile?.roleProfile?.grade?.name, profile?.roleProfile?.stage?.name]);
 
   useEffect(() => {
     if (!hasHydrated || !authReady) return;
@@ -196,44 +198,66 @@ export default function DashboardLayout({ children }: DashboardLayoutProps): Rea
     return items;
   }, [router, pathname, userRole]);
 
+  const toggleSidebar = useCallback((): void => {
+    setSidebarOpen((prev) => !prev);
+  }, []);
+
+  const closeSidebar = useCallback((): void => {
+    setSidebarOpen(false);
+  }, []);
+
+  const sidebarContent = (
+    <Sidebar
+      items={sidebarItems}
+      onClose={closeSidebar}
+      onToggle={toggleSidebar}
+      onProfileClick={(): void => { router.push("/dashboard/profile"); closeSidebar(); }}
+      profileGrade={profileGrade}
+    >
+      {isTeacherOrStaff && <AcademicSettings />}
+    </Sidebar>
+  );
+
   return (
     <div className="flex min-h-screen">
-      <Sidebar
-        items={sidebarItems}
-        className="hidden lg:flex"
-        onClose={(): void => { setSidebarOpen(false); }}
-        onProfileClick={(): void => { router.push("/dashboard/profile"); }}
-        profileGrade={profileGrade}
+      {/* Desktop sidebar - visible by default */}
+      <div className="hidden lg:flex">
+        {sidebarContent}
+      </div>
+
+      {/* Mobile/Desktop overlay sidebar */}
+      <div
+        className={cn(
+          "fixed inset-0 z-50 transition-all duration-300",
+          sidebarOpen ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0",
+        )}
       >
-        {isTeacherOrStaff && <AcademicSettings />}
-      </Sidebar>
-
-      {sidebarOpen && (
-        <div className="fixed inset-0 z-50 lg:hidden">
-          <div
-            className="absolute inset-0 bg-black/50 backdrop-blur-sm [animation:sidebar-backdrop-in_0.2s_ease]"
-            onClick={(): void => { setSidebarOpen(false); }}
-          />
-          <Sidebar
-            items={sidebarItems}
-            className="fixed inset-y-0 right-0 z-50 h-screen w-[280px] shadow-2xl [animation:sidebar-slide-in_0.25s_ease]"
-            onClose={(): void => { setSidebarOpen(false); }}
-            onProfileClick={(): void => { router.push("/dashboard/profile"); }}
-            profileGrade={profileGrade}
-          >
-            {isTeacherOrStaff && <AcademicSettings />}
-          </Sidebar>
+        <div
+          className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+          onClick={closeSidebar}
+        />
+        <div className={cn(
+          "absolute inset-y-0 right-0 z-10 transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]",
+          sidebarOpen ? "translate-x-0" : "translate-x-full",
+        )}>
+          {sidebarContent}
         </div>
-      )}
+      </div>
 
-      <div className="flex flex-1 flex-col">
+      {/* Main content area */}
+      <div
+        className={cn(
+          "flex flex-1 flex-col transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]",
+          sidebarOpen && "lg:origin-right lg:scale-[0.92] lg:rounded-2xl lg:overflow-hidden lg:shadow-2xl lg:ring-1 lg:ring-white/10 lg:my-3 lg:mr-[calc(260px+8px)] lg:h-[calc(100vh-24px)]",
+        )}
+      >
         <Header
           title="لوحة التحكم"
-          onMenuClick={(): void => { setSidebarOpen(!sidebarOpen); }}
+          onMenuClick={toggleSidebar}
           onNotificationClick={(): void => { router.push("/dashboard/notifications"); }}
         />
 
-        <main className="flex-1 p-4 pb-24 lg:p-6 lg:pb-6">
+        <main className="flex-1 overflow-y-auto p-4 pb-24 lg:p-6 lg:pb-6">
           {children}
         </main>
 

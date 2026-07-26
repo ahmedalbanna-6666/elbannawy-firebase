@@ -1,6 +1,4 @@
-'use client';
-
-import { useEffect, useState, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { requestFcmToken, registerFcmToken } from '@/lib/firebase/messaging';
 
 export function useFcmToken() {
@@ -26,13 +24,6 @@ export function useFcmToken() {
       setLoading(false);
     }
   }, []);
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setupFcm();
-    }, 2000);
-    return () => clearTimeout(timer);
-  }, [setupFcm]);
 
   return { token, permission, loading, setupFcm };
 }
