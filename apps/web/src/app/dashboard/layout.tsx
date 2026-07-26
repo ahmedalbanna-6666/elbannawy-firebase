@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo, useCallback, type ReactNode } from "react
 import dynamic from "next/dynamic";
 import { useRouter, usePathname } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
+import { motion, AnimatePresence } from "framer-motion";
 import { api } from "@/lib/api-client";
 import { useAuthStore } from "@/lib/auth-store";
 import { useAuth } from "@/providers/auth-provider";
@@ -30,11 +31,13 @@ const ToastContainer = dynamic(() => import("@/components/toast").then(m => ({ d
 const PwaInstallPrompt = dynamic(() => import("@/components/pwa-install-prompt").then(m => ({ default: m.PwaInstallPrompt })), { ssr: false });
 
 const ROLE_LABELS: Record<string, string> = {
-  ADMINISTRATOR: "مدير",
+  ADMINISTRATOR: "مدير النظام",
   TEACHER: "معلم",
   STAFF: "موظف",
   STUDENT: "طالب",
 };
+
+const SPRING_SIDEBAR = { type: "spring" as const, stiffness: 280, damping: 30, mass: 1 };
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -42,6 +45,7 @@ interface DashboardLayoutProps {
 
 export default function DashboardLayout({ children }: DashboardLayoutProps): ReactNode {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarDesktop, setSidebarDesktop] = useState<boolean | null>(null);
   const router = useRouter();
   const { isAuthenticated, hasHydrated, authReady } = useAuthStore();
   const userId = useAuthStore((s) => s.user?.id);
@@ -89,7 +93,15 @@ export default function DashboardLayout({ children }: DashboardLayoutProps): Rea
   }, [isAuthenticated, userId, profile, router]);
 
   useEffect(() => {
-    if (!sidebarOpen) return;
+    const mq = window.matchMedia("(min-width: 1024px)");
+    setSidebarDesktop(mq.matches);
+    const handler = (e: MediaQueryListEvent): void => { setSidebarDesktop(e.matches); };
+    mq.addEventListener("change", handler);
+    return (): void => mq.removeEventListener("change", handler);
+  }, []);
+
+  useEffect(() => {
+    if (!sidebarOpen || sidebarDesktop) return;
     const onKey = (e: KeyboardEvent): void => {
       if (e.key === "Escape") setSidebarOpen(false);
     };
@@ -100,7 +112,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps): Rea
       document.removeEventListener("keydown", onKey);
       document.body.style.overflow = prevOverflow;
     };
-  }, [sidebarOpen]);
+  }, [sidebarOpen, sidebarDesktop]);
 
   const isTeacherOrStaff = userRole === "TEACHER" || userRole === "STAFF";
 
@@ -206,48 +218,90 @@ export default function DashboardLayout({ children }: DashboardLayoutProps): Rea
     setSidebarOpen(false);
   }, []);
 
+  const closeAndNavigate = useCallback((fn?: () => void): (() => void) | undefined => {
+    if (!fn) return undefined;
+    return (): void => { fn(); closeSidebar(); };
+  }, [closeSidebar]);
+
   const sidebarContent = (
     <Sidebar
       items={sidebarItems}
       onClose={closeSidebar}
       onToggle={toggleSidebar}
-      onProfileClick={(): void => { router.push("/dashboard/profile"); closeSidebar(); }}
+      onProfileClick={closeAndNavigate((): void => { router.push("/dashboard/profile"); })}
       profileGrade={profileGrade}
     >
       {isTeacherOrStaff && <AcademicSettings />}
     </Sidebar>
   );
 
+  const isDesktop = sidebarDesktop === true;
+
   return (
     <div className="flex min-h-screen">
-      {/* Overlay sidebar - same for mobile and desktop */}
-      <div
-        className={cn(
-          "fixed inset-0 z-50 transition-all duration-300",
-          sidebarOpen ? "pointer-events-auto" : "pointer-events-none",
-        )}
-      >
+      {/* Mobile sidebar overlay */}
+      {!isDesktop && (
         <div
           className={cn(
-            "absolute inset-0 transition-all duration-300",
-            sidebarOpen ? "bg-black/60 backdrop-blur-sm opacity-100" : "bg-transparent opacity-0",
+            "fixed inset-0 z-50 transition-all duration-300 lg:hidden",
+            sidebarOpen ? "pointer-events-auto" : "pointer-events-none",
           )}
-          onClick={closeSidebar}
-        />
-        <div className={cn(
-          "absolute inset-y-0 right-0 z-10 transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]",
-          sidebarOpen ? "translate-x-0 shadow-2xl" : "translate-x-full",
-        )}>
+        >
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: sidebarOpen ? 1 : 0 }}
+            transition={{ duration: 0.25 }}
+            className={cn(
+              "absolute inset-0 transition-opacity",
+              sidebarOpen ? "bg-black/60 backdrop-blur-sm" : "bg-transparent",
+            )}
+            onClick={closeSidebar}
+          />
+          <motion.div
+            initial={{ x: "100%" }}
+            animate={{ x: sidebarOpen ? 0 : "100%" }}
+            transition={{ type: "spring", stiffness: 280, damping: 30, mass: 1 }}
+            className="absolute inset-y-0 right-0 z-10 shadow-2xl"
+          >
+            {sidebarContent}
+          </motion.div>
+        </div>
+      )}
+
+      {/* Desktop persistent sidebar */}
+      {isDesktop && (
+        <div className="hidden lg:flex lg:shrink-0">
           {sidebarContent}
         </div>
-      </div>
+      )}
 
-      {/* Main content area */}
-      <div
-        className={cn(
-          "flex flex-1 flex-col transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]",
-          sidebarOpen && "lg:origin-right lg:scale-[0.92] lg:rounded-[20px] lg:overflow-hidden lg:shadow-2xl lg:ring-1 lg:ring-white/10 lg:mx-auto lg:my-3 lg:h-[calc(100vh-24px)] lg:max-w-[calc(100%-270px)]",
-        )}
+      {/* Main content */}
+      <motion.div
+        animate={isDesktop && sidebarOpen ? {
+          scale: 0.93,
+          borderRadius: "20px",
+          overflow: "hidden",
+          boxShadow: "0 25px 60px rgba(0,0,0,0.3)",
+          marginLeft: "auto",
+          marginRight: "auto",
+          marginTop: "8px",
+          marginBottom: "8px",
+          height: "calc(100vh - 16px)",
+          maxWidth: "calc(100% - 300px)",
+        } : {
+          scale: 1,
+          borderRadius: "0px",
+          boxShadow: "0 0 0 rgba(0,0,0,0)",
+          marginLeft: "0px",
+          marginRight: "0px",
+          marginTop: "0px",
+          marginBottom: "0px",
+          height: "auto",
+          maxWidth: "100%",
+        }}
+        transition={{ type: "spring", stiffness: 300, damping: 28, mass: 0.9 }}
+        style={{ originX: 1, originY: 0.5 }}
+        className="flex flex-1 flex-col"
       >
         <Header
           title="لوحة التحكم"
@@ -262,7 +316,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps): Rea
         <BottomNav items={bottomNavItems} />
         <PwaInstallPrompt />
         <ToastContainer />
-      </div>
+      </motion.div>
     </div>
   );
 }
