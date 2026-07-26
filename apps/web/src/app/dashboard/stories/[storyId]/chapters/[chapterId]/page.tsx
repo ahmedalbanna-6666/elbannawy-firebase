@@ -8,55 +8,46 @@ import { usePermissions } from "@/lib/use-permissions";
 import { useAuthStore } from "@/lib/auth-store";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
+import { ErrorState } from "@/components/ui/error-state";
 import { Breadcrumb } from "@/components/units/breadcrumb";
 import { EntityContentBlocks, type ContentConfig } from "@/components/content/content-blocks";
 import { TeacherContextBanner } from "@/components/ui/teacher-context-banner";
 import { BookOpen } from "lucide-react";
-
-interface ChapterDetail {
-  id: string;
-  title: string;
-  displayOrder: number;
-  published: boolean;
-}
-
-interface StoryInfo {
-  id: string;
-  title: string;
-}
 
 export default function ChapterContentPage(): ReactNode {
   const params = useParams();
   const user = useAuthStore((s) => s.user);
   const rawRole = user?.role;
   const { isAdmin, isTeacher } = usePermissions();
-  const isManagement = isAdmin || isTeacher;
   const storyId = params.storyId as string;
   const chapterId = params.chapterId as string;
   const hydrated = typeof rawRole === "string";
 
-  const { data: story } = useQuery({
-    queryKey: ["management-story-info", storyId],
+  const { data: story, error: storyErr, isLoading: storyLoading } = useQuery({
+    queryKey: ["story-info", storyId],
     queryFn: async () => {
-      const res = await api.get<StoryInfo>(`/stories/${storyId}`);
+      const res = await api.get<{ id: string; title: string }>(`/stories/${storyId}`);
       return res.data ?? null;
     },
-    enabled: hydrated && isManagement,
+    enabled: hydrated,
   });
 
-  const { data: chapters, isLoading } = useQuery({
+  const { data: chapters, error: chaptersErr, isLoading: chaptersLoading } = useQuery({
     queryKey: ["story-chapters", storyId],
     queryFn: async () => {
-      const res = await api.get<ChapterDetail[]>(`/stories/${storyId}/chapters`);
+      const res = await api.get<{ id: string; title: string; displayOrder: number }[]>(`/stories/${storyId}/chapters`);
       return res.data ?? [];
     },
-    enabled: hydrated && isManagement,
+    enabled: hydrated,
   });
 
   const chapter = chapters?.find((c) => c.id === chapterId) ?? null;
 
-  if (!hydrated || !isManagement) return null;
-  if (isLoading) return <ChapterSkeleton />;
+  if (!hydrated) return null;
+  if (storyLoading || chaptersLoading) return <ChapterSkeleton />;
+
+  if (storyErr) return <ErrorState title="خطأ في تحميل القصة" description={storyErr instanceof Error ? storyErr.message : "خطأ غير معروف"} />;
+  if (chaptersErr) return <ErrorState title="خطأ في تحميل الفصول" description={chaptersErr instanceof Error ? chaptersErr.message : "خطأ غير معروف"} />;
 
   if (!story || !chapter) {
     return (
