@@ -237,34 +237,41 @@ export default function DashboardLayout({ children }: DashboardLayoutProps): Rea
 
   const isDesktop = sidebarDesktop === true;
 
+  const isOpenOnMobile = sidebarOpen && !isDesktop;
+  const isOpenOnDesktop = sidebarOpen && isDesktop;
+
+  /* ── 3D Drawer Animation Targets ───────────────────── */
+  const MOBILE_SIDEBAR_WIDTH = "75%";
+  const CONTENT_SCALE = 0.82;
+  const CONTENT_RADIUS = 24;
+  const CONTENT_SHADOW = "0 32px 80px rgba(0,0,0,0.35)";
+
   return (
-    <div className="flex min-h-screen">
-      {/* Mobile sidebar overlay */}
+    <div className="flex min-h-screen overflow-hidden" style={{ perspective: "1200px" }}>
+      {/* Mobile sidebar drawer as a layer behind the floating content */}
       {!isDesktop && (
         <div
           className={cn(
-            "fixed inset-0 z-50 transition-all duration-300 lg:hidden",
+            "fixed inset-0 z-40 lg:hidden",
             sidebarOpen ? "pointer-events-auto" : "pointer-events-none",
           )}
         >
           <motion.div
             initial={{ opacity: 0 }}
-            animate={{ opacity: sidebarOpen ? 1 : 0 }}
-            transition={{ duration: 0.25 }}
-            className={cn(
-              "absolute inset-0 transition-opacity",
-              sidebarOpen ? "bg-black/60 backdrop-blur-sm" : "bg-transparent",
-            )}
+            animate={{ opacity: sidebarOpen ? 0.55 : 0 }}
+            transition={{ duration: 0.3 }}
+            className="absolute inset-0 bg-black backdrop-blur-md"
             onClick={closeSidebar}
           />
-          <motion.div
+          <motion.aside
             initial={{ x: "100%" }}
             animate={{ x: sidebarOpen ? 0 : "100%" }}
-            transition={{ type: "spring", stiffness: 280, damping: 30, mass: 1 }}
+            transition={{ type: "spring", stiffness: 250, damping: 28, mass: 0.9 }}
             className="absolute inset-y-0 right-0 z-10 shadow-2xl"
+            style={{ width: MOBILE_SIDEBAR_WIDTH }}
           >
             {sidebarContent}
-          </motion.div>
+          </motion.aside>
         </div>
       )}
 
@@ -275,9 +282,16 @@ export default function DashboardLayout({ children }: DashboardLayoutProps): Rea
         </div>
       )}
 
-      {/* Main content */}
+      {/* ── 3D Floating Content ── */}
       <motion.div
-        animate={isDesktop && sidebarOpen ? {
+        animate={isOpenOnMobile ? {
+          scale: CONTENT_SCALE,
+          x: "-12%",
+          borderRadius: `${CONTENT_RADIUS}px`,
+          boxShadow: CONTENT_SHADOW,
+          overflow: "hidden",
+          rotateY: "-4deg",
+        } : isOpenOnDesktop ? {
           scale: 0.93,
           borderRadius: "20px",
           overflow: "hidden",
@@ -290,7 +304,9 @@ export default function DashboardLayout({ children }: DashboardLayoutProps): Rea
           maxWidth: "calc(100% - 300px)",
         } : {
           scale: 1,
+          x: "0%",
           borderRadius: "0px",
+          rotateY: "0deg",
           boxShadow: "0 0 0 rgba(0,0,0,0)",
           marginLeft: "0px",
           marginRight: "0px",
@@ -299,9 +315,9 @@ export default function DashboardLayout({ children }: DashboardLayoutProps): Rea
           height: "auto",
           maxWidth: "100%",
         }}
-        transition={{ type: "spring", stiffness: 300, damping: 28, mass: 0.9 }}
-        style={{ originX: 1, originY: 0.5 }}
-        className="flex flex-1 flex-col"
+        transition={{ type: "spring", stiffness: 280, damping: 28, mass: 0.9 }}
+        style={{ originX: 1, originY: 0.5, transformStyle: "preserve-3d" }}
+        className="relative z-30 flex flex-1 flex-col bg-neutral-50 dark:bg-neutral-950 will-change-transform"
       >
         <Header
           title="لوحة التحكم"
