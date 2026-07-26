@@ -51,9 +51,7 @@ export abstract class BaseRepository<T extends { readonly id: string }> {
 
       await docRef.set(firestoreData);
 
-      const savedDoc = await docRef.get();
-      const savedData = savedDoc.data() as Record<string, unknown>;
-      const docWithId = { ...savedData, id: savedDoc.id } as unknown as T;
+      const docWithId = { ...firestoreData, id: docId } as unknown as T;
 
       return { ok: true, value: docWithId };
     } catch (error) {
@@ -124,6 +122,7 @@ export abstract class BaseRepository<T extends { readonly id: string }> {
       }
 
       const now = Timestamp.now();
+      const existingData = docSnap.data() as Record<string, unknown>;
       const updateData = {
         ...data,
         updatedAt: now,
@@ -131,11 +130,8 @@ export abstract class BaseRepository<T extends { readonly id: string }> {
 
       await docRef.update(updateData);
 
-      const savedDoc = await docRef.get();
-      const savedData = savedDoc.data() as Record<string, unknown>;
-      const docWithId = { ...savedData, id: savedDoc.id } as unknown as T;
-
-      return { ok: true, value: docWithId };
+      const mergedData = { ...existingData, ...updateData, id };
+      return { ok: true, value: mergedData as unknown as T };
     } catch (error) {
       return this.formatError(error as Error, requestId);
     }

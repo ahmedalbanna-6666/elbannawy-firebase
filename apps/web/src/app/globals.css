@@ -132,6 +132,16 @@
 
 @custom-variant rtl (&:where([dir="rtl"], [dir="rtl"] *));
 
+*, *::before, *::after {
+  transition-property: width, height, min-width, min-height, max-width, max-height, padding, margin, gap, inset, transform, opacity;
+  transition-duration: 250ms;
+  transition-timing-function: ease-out;
+}
+
+video, iframe, img {
+  transition: width 250ms ease-out, height 250ms ease-out;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

@@ -22,9 +22,9 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
     const [userDoc, lessonsSnap, unitsSnap, vocabSnap] = await Promise.all([
       db.collection('users').doc(decoded.uid).get(),
-      db.collection('lessons').where('isPublished', '==', true).get(),
-      db.collection('units').where('published', '==', true).get(),
-      db.collection('vocabularyItems').get(),
+      db.collection('lessons').where('isPublished', '==', true).limit(200).get(),
+      db.collection('units').where('published', '==', true).limit(100).get(),
+      db.collection('vocabularyItems').limit(500).get(),
     ]);
 
     const userData = userDoc.data();
@@ -65,7 +65,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
           .map((d) => ({ id: d.id, word: d.data().word, translation: d.data().translation, lessonId: d.data().lessonId, type: 'vocabulary' as const }))
       : [];
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       success: true,
       data: {
         lessons: filteredLessons,
@@ -73,6 +73,8 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         vocabulary: filteredVocab,
       },
     });
+    response.headers.set('Cache-Control', 'private, max-age=60, stale-while-revalidate=300');
+    return response;
   } catch {
     return NextResponse.json({ success: false, error: { code: 'UNAUTHORIZED', message: 'Invalid token' } }, { status: 401 });
   }

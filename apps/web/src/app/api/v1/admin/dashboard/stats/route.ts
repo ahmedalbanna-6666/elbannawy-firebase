@@ -11,15 +11,15 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const db = getAdminDb();
 
     const [studentsSnap, teachersSnap] = await Promise.all([
-      db.collection('users').where('role', '==', 'student').get().catch(() => null),
-      db.collection('users').where('role', '==', 'teacher').get().catch(() => null),
+      db.collection('users').where('role', '==', 'student').count().get().catch(() => null),
+      db.collection('users').where('role', '==', 'teacher').count().get().catch(() => null),
     ]);
 
     return NextResponse.json({
       success: true,
       data: {
-        studentsCount: studentsSnap ? studentsSnap.docs.filter(d => !d.data().deletedAt).length : 0,
-        teachersCount: teachersSnap ? teachersSnap.docs.filter(d => !d.data().deletedAt).length : 0,
+        studentsCount: studentsSnap ? studentsSnap.data().count : 0,
+        teachersCount: teachersSnap ? teachersSnap.data().count : 0,
         academicYearsCount: 0,
       },
     });

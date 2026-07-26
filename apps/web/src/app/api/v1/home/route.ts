@@ -14,7 +14,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
     const [userDoc, progressSnap, xpSnap, walletSnap, statsSnap, achievementsSnap, bookingsSnap, pendingHomeworkSnap] = await Promise.all([
       db.collection('users').doc(studentId).get(),
-      db.collection('lessonProgress').where('studentId', '==', studentId).get(),
+      db.collection('lessonProgress').where('studentId', '==', studentId).orderBy('updatedAt', 'desc').get(),
       db.collection('xpAccounts').doc(studentId).get(),
       db.collection('wallets').doc(studentId).get(),
       db.collection('studentStats').doc(studentId).get(),
@@ -43,7 +43,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         lessonId: inProgress.lessonId,
       };
     } else if (progressDocs.length > 0) {
-      const last = progressDocs.sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))[0];
+      const last = progressDocs[0];
       if (last) {
         const lessonDoc = await db.collection('lessons').doc(last.lessonId).get().catch(() => null);
         const unitDoc = last.unitId ? await db.collection('units').doc(last.unitId).get().catch(() => null) : null;
@@ -57,7 +57,6 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     }
 
     const recentActivity = progressDocs
-      .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))
       .slice(0, 20)
       .map((p) => ({
         id: p.lessonId,
@@ -97,7 +96,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       }
     }
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       success: true,
       data: {
         user: {
@@ -130,6 +129,8 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         },
       },
     });
+    response.headers.set('Cache-Control', 'private, max-age=30, stale-while-revalidate=120');
+    return response;
   } catch {
     return NextResponse.json(
       { success: false, error: { code: 'SERVER_ERROR', message: 'Internal server error' } },
