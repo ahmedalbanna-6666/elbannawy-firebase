@@ -333,15 +333,15 @@ export default function DashboardLayout({ children }: DashboardLayoutProps): Rea
           onNotificationClick={(): void => { router.push("/dashboard/notifications"); }}
         />
 
-        <main className="flex-1 overflow-y-auto p-4 pb-24 lg:p-6 lg:pb-6">
+        <main className="flex-1 overflow-y-auto p-4 pb-[88px] lg:p-6 lg:pb-6">
           {children}
         </main>
-
-        <BottomNav items={bottomNavItems} centerId="home" />
-        <PwaInstallPrompt />
-        <NotificationPrompt />
-        <ToastContainer />
       </motion.div>
+
+      <BottomNav items={bottomNavItems} centerId="home" />
+      <PwaInstallPrompt />
+      <NotificationPrompt />
+      <ToastContainer />
     </div>
   );
 }

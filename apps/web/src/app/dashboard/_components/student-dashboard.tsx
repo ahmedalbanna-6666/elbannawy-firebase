@@ -273,7 +273,7 @@ export function StudentDashboard(): ReactNode {
       <AnimatedContainer animation="fade-slide-up" delay={120}>
         <section className="grid grid-cols-2 gap-3 sm:gap-4">
 
-        <ToolCard icon={Sparkles} label="اسأل البنا AI" color="from-purple-500 to-pink-500" textColor="text-white" onClick={(): void => { router.push("/dashboard/ai"); }} />
+        <ToolCard icon={Sparkles} label="اسأل البنا AI" color="bg-gradient-to-br from-purple-500 to-pink-500" textColor="text-white" onClick={(): void => { router.push("/dashboard/ai"); }} />
         <ToolCard icon={Users} label="احجز حصة مباشرة" color="bg-success-500/10" textColor="text-success-500" onClick={(): void => { router.push("/dashboard/live"); }} />
         <ToolCard icon={RefreshCw} label="تعلم من أخطائك" color="bg-danger-500/10" textColor="text-danger-500" onClick={(): void => { router.push("/dashboard/mistakes"); }} />
         <ToolCard icon={Gamepad2} label="الألعاب التعليمية" color="bg-purple-500/10" textColor="text-purple-500" onClick={(): void => { router.push("/dashboard/games"); }} />
