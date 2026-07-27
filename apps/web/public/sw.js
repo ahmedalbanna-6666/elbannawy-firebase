@@ -1,4 +1,4 @@
-const CACHE = "el-bannawy-v2";
+const CACHE = "el-bannawy-v3";
 
 const PRECACHE_URLS = ["/", "/offline"];
 
