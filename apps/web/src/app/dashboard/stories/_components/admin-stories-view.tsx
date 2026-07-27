@@ -171,7 +171,7 @@ export function AdminStoriesView(): ReactNode {
                       </h3>
                     </div>
                     <p className="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400">
-                      {story.grade.stage.name} — {story.grade.name}
+                      {story.grade?.stage?.name ?? ""} — {story.grade?.name ?? ""}
                     </p>
                   </div>
                   <Badge

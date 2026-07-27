@@ -166,7 +166,7 @@ function useVideoProgress(videoId: string | null): UseQueryResult<VideoProgressD
     },
     enabled: !!videoId,
     staleTime: 0,
-    refetchInterval: 15_000,
+    refetchInterval: 60_000,
   });
 }
 

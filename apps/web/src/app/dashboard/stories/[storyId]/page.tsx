@@ -164,7 +164,7 @@ export default function StoryDetailPage(): ReactNode {
             {story.title}
           </h1>
           <p className="mt-1 text-sm text-neutral-500">
-            {story.grade.stage.name} — {story.grade.name}
+            {story.grade?.stage?.name ?? ""} — {story.grade?.name ?? ""}
           </p>
           {story.description && (
             <p className="mt-2 text-sm text-neutral-600 dark:text-neutral-400">

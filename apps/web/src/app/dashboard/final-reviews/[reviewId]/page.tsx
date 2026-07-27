@@ -166,7 +166,7 @@ export default function FinalReviewDetailPage(): ReactNode {
             {review.title}
           </h1>
           <p className="mt-1 text-sm text-neutral-500">
-            {review.grade.stage.name} — {review.grade.name}
+            {review.grade?.stage?.name ?? ""} — {review.grade?.name ?? ""}
           </p>
           {review.description && (
             <p className="mt-2 text-sm text-neutral-600 dark:text-neutral-400">

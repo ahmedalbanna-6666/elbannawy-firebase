@@ -7,12 +7,9 @@ import {
   ChevronLeft,
   ChevronRight,
   X,
-  User,
-  Facebook,
-  MessageCircle,
-  Send,
-  Youtube,
   Smartphone,
+  Youtube,
+  Facebook,
   type LucideIcon,
 } from "lucide-react";
 import { useAuthStore } from "@/lib/auth-store";
@@ -50,6 +47,27 @@ interface SidebarProps {
   children?: ReactNode;
 }
 
+/* ── SVG Brand Icons ──────────────────────────────────────── */
+
+function InstagramIcon({ className }: { className?: string }): ReactNode {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
+      <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+      <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
+    </svg>
+  );
+}
+
+function WhatsAppIcon({ className }: { className?: string }): ReactNode {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3 21l1.65-3.8a9 9 0 1 1 3.4 2.9L3 21" />
+      <path d="M9 10a.5.5 0 0 0 1 0V9a.5.5 0 0 0-1 0v1a5 5 0 0 0 5 5h1a.5.5 0 0 0 0-1h-1a.5.5 0 0 0 0 1" />
+    </svg>
+  );
+}
+
 /* ── Helpers ──────────────────────────────────────────────── */
 
 function isSection(item: SidebarItem | SidebarSection): item is SidebarSection {
@@ -63,11 +81,11 @@ function isDivider(item: SidebarItem): boolean {
 /* ── Constants ────────────────────────────────────────────── */
 
 const SOCIAL_LINKS = [
-  { icon: Facebook, href: "#", label: "Facebook", color: "hover:text-blue-400" },
-  { icon: MessageCircle, href: "#", label: "WhatsApp", color: "hover:text-green-400" },
-  { icon: Send, href: "#", label: "Telegram", color: "hover:text-sky-400" },
-  { icon: Youtube, href: "#", label: "YouTube", color: "hover:text-red-400" },
-];
+  { icon: Youtube, href: "#", label: "YouTube", color: "hover:text-[#FF0000]" },
+  { icon: Facebook, href: "#", label: "Facebook", color: "hover:text-[#1877F2]" },
+  { icon: InstagramIcon, href: "#", label: "Instagram", color: "hover:text-[#E4405F]" },
+  { icon: WhatsAppIcon, href: "#", label: "WhatsApp", color: "hover:text-[#25D366]" },
+] as const;
 
 const SPRING_FAST = { type: "spring" as const, stiffness: 400, damping: 25 };
 
@@ -92,63 +110,33 @@ function ProfileCard({ collapsed, onProfileClick, gradeLabel }: { collapsed?: bo
           <div className="h-10 w-10 overflow-hidden rounded-full border-2 border-primary-400 shadow-[0_0_14px_rgba(34,211,238,0.2)]">
             <img src={avatarUrl} alt="" className="h-full w-full object-cover" />
           </div>
-          <div className="absolute -bottom-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-primary-500">
-            <User className="h-2.5 w-2.5 text-white" />
-          </div>
         </motion.button>
       </div>
     );
   }
 
   return (
-    <motion.div
+    <motion.button
+      onClick={onProfileClick}
       initial={{ opacity: 0, y: -8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
-      className="mx-2 mb-5 mt-2 overflow-hidden rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl light:border-neutral-200 light:bg-black/3"
-      style={{ boxShadow: "0 8px 32px rgba(0,0,0,0.08)" }}
+      whileHover={{ scale: 1.02 }}
+      whileTap={{ scale: 0.97 }}
+      className="mx-2 mb-4 mt-2 flex items-center gap-3 overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-3 backdrop-blur-xl text-right transition-all hover:border-primary-500/30 hover:bg-white/10 light:border-neutral-200 light:bg-neutral-50 light:hover:border-primary-400/40 light:hover:bg-primary-50/50"
     >
-      <div className="p-3.5">
-        <motion.button
-          onClick={onProfileClick}
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.97 }}
-          transition={SPRING_FAST}
-          className="group w-full text-right"
-        >
-          <div className="flex items-center gap-3">
-            <div className="h-12 w-12 shrink-0 overflow-hidden rounded-full border-2 border-primary-400 shadow-[0_0_16px_rgba(34,211,238,0.15)]">
-              <img src={avatarUrl} alt="" className="h-full w-full object-cover" />
-            </div>
-            <div className="flex min-w-0 flex-1 flex-col">
-              <span className="truncate text-sm font-bold text-neutral-100 light:text-neutral-900">
-                {firstName || "User"}
-              </span>
-              <span className="truncate text-[11px] font-semibold text-neutral-400 light:text-neutral-600">
-                {gradeLabel}
-              </span>
-            </div>
-          </div>
-        </motion.button>
+      <div className="h-11 w-11 shrink-0 overflow-hidden rounded-full border-2 border-primary-400 shadow-[0_0_14px_rgba(34,211,238,0.15)]">
+        <img src={avatarUrl} alt="" className="h-full w-full object-cover" />
       </div>
-
-      <div className="h-px bg-gradient-to-r from-transparent via-white/10 to-transparent light:via-neutral-200" />
-
-      <div className="px-3.5 py-2.5">
-        <motion.button
-          onClick={onProfileClick}
-          whileHover={{ x: -3 }}
-          transition={{ type: "spring", stiffness: 300, damping: 20 }}
-          className="flex w-full items-center justify-between text-xs font-bold text-primary-400 transition-colors hover:text-primary-300"
-        >
-          <span className="flex items-center gap-1.5">
-            <User className="h-3.5 w-3.5" />
-            <span>الملف الشخصي</span>
-          </span>
-          <ChevronLeft className="h-3.5 w-3.5" />
-        </motion.button>
+      <div className="flex min-w-0 flex-1 flex-col">
+        <span className="truncate text-sm font-bold text-neutral-100 light:text-neutral-900">
+          {firstName || "User"}
+        </span>
+        <span className="truncate text-[11px] font-semibold text-neutral-400 light:text-neutral-600">
+          {gradeLabel}
+        </span>
       </div>
-    </motion.div>
+    </motion.button>
   );
 }
 
@@ -161,25 +149,28 @@ function SocialDock({ collapsed }: { collapsed?: boolean }): ReactNode {
       transition={{ delay: 0.2 }}
       className="relative z-10 shrink-0 border-t border-white/5 px-4 py-3 light:border-neutral-200"
     >
-      <div className="flex items-center justify-center gap-3">
-        {SOCIAL_LINKS.map((social) => (
-          <motion.a
-            key={social.label}
-            href={social.href}
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label={social.label}
-            whileHover={{ scale: 1.12 }}
-            whileTap={{ scale: 0.9 }}
-            transition={SPRING_FAST}
-            className={cn(
-              "flex h-8 w-8 items-center justify-center rounded-lg text-neutral-500 light:text-neutral-600 transition-colors hover:bg-white/10 light:hover:bg-neutral-100",
-              social.color,
-            )}
-          >
-            <social.icon className="h-4 w-4" />
-          </motion.a>
-        ))}
+      <div className="flex items-center justify-center gap-2.5">
+        {SOCIAL_LINKS.map((social) => {
+          const Icon = social.icon;
+          return (
+            <motion.a
+              key={social.label}
+              href={social.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={social.label}
+              whileHover={{ scale: 1.12 }}
+              whileTap={{ scale: 0.9 }}
+              transition={SPRING_FAST}
+              className={cn(
+                "flex h-9 w-9 items-center justify-center rounded-xl text-neutral-500 transition-all duration-200 hover:bg-white/10 light:text-neutral-500 light:hover:bg-neutral-100",
+                social.color,
+              )}
+            >
+              <Icon className="h-[18px] w-[18px]" />
+            </motion.a>
+          );
+        })}
       </div>
     </motion.div>
   );
@@ -232,8 +223,8 @@ export function Sidebar({ items, className, onClose, onToggle, onProfileClick, p
     onClose?.();
   }, [onClose]);
 
-  const activeClasses = "bg-primary-400/15 text-primary-400 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] before:absolute before:right-0 before:top-1/2 before:h-7 before:w-1 before:-translate-y-1/2 before:rounded-r-full before:bg-primary-400 before:shadow-[0_0_8px_rgba(34,211,238,0.4)] light:bg-primary-400/10 light:shadow-none light:before:shadow-[0_0_6px_rgba(34,211,238,0.3)]";
-  const hoverClasses = "text-neutral-300 hover:bg-white/10 hover:text-primary-300 hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] light:text-neutral-700 light:hover:bg-neutral-100 light:hover:text-primary-600 light:hover:shadow-none";
+  const activeClasses = "bg-primary-400/15 text-primary-400 border border-primary-500/25 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] before:absolute before:right-0 before:top-1/2 before:h-7 before:w-1 before:-translate-y-1/2 before:rounded-r-full before:bg-primary-400 before:shadow-[0_0_8px_rgba(34,211,238,0.4)] light:bg-primary-400/10 light:shadow-none light:border-primary-400/30 light:before:shadow-[0_0_6px_rgba(34,211,238,0.3)]";
+  const hoverClasses = "border border-transparent text-neutral-300 hover:border-white/10 hover:bg-white/8 hover:text-primary-300 hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] light:border-transparent light:text-neutral-700 light:hover:border-neutral-200 light:hover:bg-neutral-100 light:hover:text-primary-600 light:hover:shadow-none";
 
   return (
     <motion.aside
@@ -272,7 +263,7 @@ export function Sidebar({ items, className, onClose, onToggle, onProfileClick, p
         </motion.button>
       </div>
 
-      {/* ── Profile Card ── */}
+      {/* ── Profile ── */}
       <ProfileCard collapsed={collapsed} onProfileClick={onProfileClick} gradeLabel={gradeLabel} />
 
       {/* ── Navigation ── */}
@@ -282,7 +273,7 @@ export function Sidebar({ items, className, onClose, onToggle, onProfileClick, p
         "[&::-webkit-scrollbar]:w-[3px] [&::-webkit-scrollbar-track]:bg-transparent",
         "[&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-white/8 light:[&::-webkit-scrollbar-thumb]:bg-neutral-300",
       )}>
-        <div className="flex flex-col gap-0.5">
+        <div className="flex flex-col gap-1.5 px-0.5">
           {Array.isArray(items) ? items.map((entry) => {
             if (!entry || typeof entry !== "object") return null;
 
@@ -291,7 +282,7 @@ export function Sidebar({ items, className, onClose, onToggle, onProfileClick, p
               return (
                 <div key={entry.title}>
                   {!collapsed && (
-                    <p className="px-3 pb-1 pt-4 text-[10px] font-bold uppercase tracking-[0.12em] text-neutral-500/70">
+                    <p className="px-3 pb-1.5 pt-4 text-[10px] font-bold uppercase tracking-[0.12em] text-neutral-500/70">
                       {entry.title}
                     </p>
                   )}
@@ -306,7 +297,7 @@ export function Sidebar({ items, className, onClose, onToggle, onProfileClick, p
                         whileTap={{ scale: collapsed ? 0.94 : 0.97 }}
                         transition={{ type: "spring", stiffness: 400, damping: 20 }}
                         className={cn(
-                          "group relative flex w-full items-center gap-3 rounded-xl font-bold transition-colors",
+                          "group relative flex w-full items-center gap-3 rounded-xl font-bold transition-all duration-150",
                           collapsed ? "justify-center py-3" : "px-3 py-2.5 text-sm",
                           item.active ? activeClasses : item.danger ? "border border-danger-500/20 bg-danger-500/6 text-neutral-100 hover:bg-danger-500 hover:text-white light:border-danger-500/25 light:text-neutral-900" : hoverClasses,
                         )}

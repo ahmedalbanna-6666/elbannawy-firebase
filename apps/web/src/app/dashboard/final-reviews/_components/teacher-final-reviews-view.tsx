@@ -196,7 +196,7 @@ export function TeacherFinalReviewsView(): ReactNode {
                       </h3>
                     </div>
                     <p className="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400">
-                      {review.grade.stage.name} — {review.grade.name}
+                      {review.grade?.stage?.name ?? ""} — {review.grade?.name ?? ""}
                     </p>
                   </div>
                   <Badge

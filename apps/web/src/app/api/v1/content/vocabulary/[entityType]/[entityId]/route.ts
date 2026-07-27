@@ -95,7 +95,7 @@ export async function DELETE(
     if (role !== 'administrator' && role !== 'teacher') return NextResponse.json({ success: false, error: { code: 'FORBIDDEN', message: 'Admin or teacher only' } }, { status: 403 });
     const { entityType, entityId } = await params;
     const db = getAdminDb();
-    const snap = await db.collection(COLLECTION).where('entityId', '==', entityId).get();
+    const snap = await db.collection(COLLECTION).where('entityId', '==', entityId).select('entityType').get();
     const toDelete = snap.docs.filter(d => d.data().entityType === entityType.toUpperCase());
     const batch = db.batch();
     toDelete.forEach(d => batch.delete(d.ref));
