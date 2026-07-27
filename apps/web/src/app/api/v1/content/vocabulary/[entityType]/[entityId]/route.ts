@@ -65,7 +65,7 @@ export async function POST(
     if (!word) return NextResponse.json({ success: false, error: { code: 'INVALID_INPUT', message: 'word is required' } }, { status: 400 });
     if (!translation) return NextResponse.json({ success: false, error: { code: 'INVALID_INPUT', message: 'translation is required' } }, { status: 400 });
     const db = getAdminDb();
-    const existingSnap = await db.collection(COLLECTION).where('entityId', '==', entityId).get();
+    const existingSnap = await db.collection(COLLECTION).where('entityId', '==', entityId).select('entityType', 'displayOrder').get();
     const sameEntityItems = existingSnap.docs.filter(d => d.data().entityType === entityType.toUpperCase());
     const maxOrder = sameEntityItems.length > 0 ? Math.max(...sameEntityItems.map(d => d.data().displayOrder as number ?? 0)) : 0;
     const id = `cvoc_${Date.now()}`;

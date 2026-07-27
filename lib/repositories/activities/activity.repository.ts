@@ -132,6 +132,7 @@ export class ActivityRepository implements IActivityRepository {
       if (page.cursor) {
         try { const cursor = JSON.parse(page.cursor) as ICursor; query.withCursor(cursor); } catch { return { ok: false, error: { code: 'INVALID_INPUT', message: 'Invalid cursor', retryable: false, requestId: '' } }; }
       }
+      query.withProjections(['lessonId', 'type', 'title', 'subtitle', 'displayOrder', 'status', 'isRequired', 'isScorable', 'isPractice', 'metadata', 'createdAt']);
       const result = await query.execute(COLLECTION);
       if (!result.ok) return result;
       const items = result.value.items.map((d) => ActivityFirestoreMapper.toSummary(d));

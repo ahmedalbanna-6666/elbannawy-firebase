@@ -76,6 +76,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
           .where('teacherId', '==', u.id as string)
           .where('deletedAt', '==', null)
           .where('status', '==', 'active')
+          .select('gradeId')
           .get();
         gradeCount = assignSnap.size;
 

@@ -31,7 +31,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const totalSnap = await query.count().get();
     const total = totalSnap.data().count;
 
-    const snap = await query.orderBy('firstIncorrectAt', 'desc').offset((page - 1) * limit).limit(limit).get();
+    const snap = await query.orderBy('firstIncorrectAt', 'desc').offset((page - 1) * limit).limit(limit).select('questionId', 'sourceType', 'questionSnapshot', 'correctAnswerSnapshot', 'studentAnswer', 'explanationSnapshot', 'firstIncorrectAt', 'sourceId', 'unitId', 'lessonId').get();
 
     const items = snap.docs.map((d) => {
       const data = d.data();

@@ -86,7 +86,7 @@ export async function DELETE(
     if (role !== 'administrator' && role !== 'teacher') return NextResponse.json({ success: false, error: { code: 'FORBIDDEN', message: 'Admin or teacher only' } }, { status: 403 });
     const { entityType, entityId } = await params;
     const db = getAdminDb();
-    const snap = await db.collection(COLLECTION).where('entityId', '==', entityId).get();
+    const snap = await db.collection(COLLECTION).where('entityId', '==', entityId).select('entityType').get();
     const existing = snap.docs.find(d => d.data().entityType === entityType.toUpperCase());
     if (!existing) return NextResponse.json({ success: false, error: { code: 'NOT_FOUND', message: 'Quiz not found' } }, { status: 404 });
     await existing.ref.delete();

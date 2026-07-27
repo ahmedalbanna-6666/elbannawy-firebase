@@ -152,6 +152,7 @@ export class UserRepository
       query.withFilter('mobileNumber', 'eq', mobileNumber);
       query.withFilter('deletedAt', 'eq', null);
       query.withLimit(1);
+      query.withProjections(['role', 'fullName', 'mobileNumber', 'isActive', 'createdAt', 'updatedAt']);
 
       const result = await query.execute(COLLECTION_USERS);
       if (!result.ok) {
@@ -195,6 +196,7 @@ export class UserRepository
       query.withFilter('email', 'eq', email);
       query.withFilter('deletedAt', 'eq', null);
       query.withLimit(1);
+      query.withProjections(['role', 'fullName', 'mobileNumber', 'isActive', 'createdAt', 'updatedAt']);
 
       const result = await query.execute(COLLECTION_USERS);
       if (!result.ok) {
@@ -299,6 +301,7 @@ export class UserRepository
         }
       }
 
+      query.withProjections(['role', 'fullName', 'mobileNumber', 'isActive', 'createdAt']);
       const result = await query.execute(COLLECTION_USERS);
       if (!result.ok) {
         return result as unknown as RepositoryResult<Page<UserSummary>>;

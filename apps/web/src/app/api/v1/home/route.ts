@@ -19,13 +19,13 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
     const [userDoc, progressSnap, xpSnap, walletSnap, statsSnap, achievementsSnap, bookingsSnap, pendingHomeworkSnap] = await Promise.all([
       db.collection('users').doc(studentId).get(),
-      db.collection('lessonProgress').where('studentId', '==', studentId).get(),
+      db.collection('lessonProgress').where('studentId', '==', studentId).select('lessonId', 'status', 'percentage', 'unitId', 'completedAt', 'updatedAt').get(),
       db.collection('xpAccounts').doc(studentId).get(),
       db.collection('wallets').doc(studentId).get(),
       db.collection('studentStats').doc(studentId).get(),
-      db.collection('userAchievements').where('studentId', '==', studentId).get(),
-      db.collection('liveBookings').where('studentId', '==', studentId).where('status', '==', 'CONFIRMED').get(),
-      db.collection('homeworkAttempts').where('studentId', '==', studentId).where('status', '==', 'in_progress').get(),
+      db.collection('userAchievements').where('studentId', '==', studentId).select().get(),
+      db.collection('liveBookings').where('studentId', '==', studentId).where('status', '==', 'CONFIRMED').select('sessionId').get(),
+      db.collection('homeworkAttempts').where('studentId', '==', studentId).where('status', '==', 'in_progress').select().get(),
     ]);
 
     const userData = userDoc.data() ?? { fullName: 'User', role: 'student' };

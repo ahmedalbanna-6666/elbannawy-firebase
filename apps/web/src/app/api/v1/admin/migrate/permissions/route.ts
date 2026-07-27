@@ -5,7 +5,7 @@ import { getPermissionsForRole, type UserRole } from '@el-bannawy/shared';
 export async function POST(_request: NextRequest): Promise<NextResponse> {
   try {
     const db = getAdminDb();
-    const usersSnap = await db.collection('users').where('role', '==', 'teacher').get();
+    const usersSnap = await db.collection('users').where('role', '==', 'teacher').select().get();
     const results = { updated: 0, skipped: 0, errors: 0, details: [] as string[] };
 
     for (const doc of usersSnap.docs) {

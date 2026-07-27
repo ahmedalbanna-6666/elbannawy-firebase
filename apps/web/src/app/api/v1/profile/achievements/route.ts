@@ -12,7 +12,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const db = getAdminDb();
 
     const [userAchievementsSnap, achievementsSnap] = await Promise.all([
-      db.collection('userAchievements').where('studentId', '==', decoded.uid).get(),
+      db.collection('userAchievements').where('studentId', '==', decoded.uid).select('achievementId', 'studentId', 'earnedAt').get(),
       db.collection('achievements').where('active', '==', true).get(),
     ]);
 

@@ -81,7 +81,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     try {
       if (result.value?.gradeId) {
-        const gradeSnap = await db.collection('users').where('gradeId', '==', result.value.gradeId).where('role', '==', 'student').get();
+        const gradeSnap = await db.collection('users').where('gradeId', '==', result.value.gradeId).where('role', '==', 'student').select().get();
         const studentIds = gradeSnap.docs.map((d) => d.id);
         for (const uid of studentIds) {
           await dispatcher.liveSessionCreated(uid, result.value.title || 'حصّة مباشرة', result.value.gradeId);

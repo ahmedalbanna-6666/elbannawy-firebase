@@ -67,7 +67,7 @@ export async function GET(
     const vocabItems = vocabResult.ok ? vocabResult.value : [];
 
     const db = getAdminDb();
-    const videoSnap = await db.collection('lessonVideos').where('lessonId', '==', id).orderBy('displayOrder', 'asc').get();
+    const videoSnap = await db.collection('lessonVideos').where('lessonId', '==', id).orderBy('displayOrder', 'asc').select('title', 'youtubeUrl', 'youtubeId', 'providerName', 'providerVideoId', 'providerUrl', 'duration', 'displayOrder').get();
     const videos = videoSnap.docs.map(d => {
       const dta = d.data() as Record<string, unknown>;
       return { id: d.id, title: String(dta.title ?? ''), youtubeUrl: String(dta.youtubeUrl ?? ''), youtubeId: String(dta.youtubeId ?? ''), providerName: String(dta.providerName ?? 'youtube'), providerVideoId: String(dta.providerVideoId ?? ''), providerUrl: String(dta.providerUrl ?? ''), duration: Number(dta.duration ?? 0), displayOrder: Number(dta.displayOrder ?? 0) };

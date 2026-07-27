@@ -22,9 +22,9 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
     const [userDoc, lessonsSnap, unitsSnap, vocabSnap] = await Promise.all([
       db.collection('users').doc(decoded.uid).get(),
-      db.collection('lessons').where('isPublished', '==', true).limit(200).get(),
-      db.collection('units').where('published', '==', true).limit(100).get(),
-      db.collection('vocabularyItems').limit(500).get(),
+      db.collection('lessons').where('isPublished', '==', true).select('title', 'titleAr', 'gradeId').limit(200).get(),
+      db.collection('units').where('published', '==', true).select('name', 'nameAr', 'title', 'titleAr', 'gradeId').limit(100).get(),
+      db.collection('vocabularyItems').select('word', 'translation', 'lessonId').limit(500).get(),
     ]);
 
     const userData = userDoc.data();

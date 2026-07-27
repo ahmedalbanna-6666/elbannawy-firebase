@@ -35,7 +35,7 @@ export async function POST(
     }
 
     try {
-      const bookingsSnap = await db.collection('liveBookings').where('liveSessionId', '==', id).where('status', '==', 'CONFIRMED').get();
+      const bookingsSnap = await db.collection('liveBookings').where('liveSessionId', '==', id).where('status', '==', 'CONFIRMED').select('studentId').get();
       const bookedUserIds = bookingsSnap.docs.map((d) => (d.data() as any).studentId);
       if (bookedUserIds.length > 0) {
         await dispatcher.liveSessionStarted(bookedUserIds, result.value?.title || 'حصّة مباشرة', id);

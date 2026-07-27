@@ -8,8 +8,8 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   try {
     const db = getAdminDb();
     const [yearsSnap, termsSnap] = await Promise.all([
-      db.collection('academicYears').where('deletedAt', '==', null).orderBy('createdAt', 'desc').get().catch(() => db.collection('academicYears').where('deletedAt', '==', null).get()),
-      db.collection('academicTerms').where('deletedAt', '==', null).orderBy('order', 'asc').get().catch(() => db.collection('academicTerms').where('deletedAt', '==', null).get()),
+      db.collection('academicYears').where('deletedAt', '==', null).orderBy('createdAt', 'desc').select('name', 'nameAr', 'educationalSystemId', 'isActive', 'isCurrent', 'startDate', 'endDate', 'createdAt').get().catch(() => db.collection('academicYears').where('deletedAt', '==', null).select('name', 'nameAr', 'educationalSystemId', 'isActive', 'isCurrent', 'startDate', 'endDate').get()),
+      db.collection('academicTerms').where('deletedAt', '==', null).orderBy('order', 'asc').select('academicYearId', 'name', 'nameAr', 'order').get().catch(() => db.collection('academicTerms').where('deletedAt', '==', null).select('academicYearId', 'name', 'nameAr', 'order').get()),
     ]);
 
     const termsByYear = new Map<string, { id: string; name: string; academicYearId: string; displayOrder: number }[]>();

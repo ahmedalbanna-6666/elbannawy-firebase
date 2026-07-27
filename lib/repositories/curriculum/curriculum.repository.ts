@@ -244,6 +244,7 @@ export class CurriculumRepository implements ICurriculumRepository {
       if (page.cursor) {
         try { query.withCursor(JSON.parse(page.cursor)); } catch { return { ok: false, error: { code: 'INVALID_INPUT', message: 'Invalid cursor', retryable: false, requestId: '' } }; }
       }
+      query.withProjections(['name', 'isCurrent', 'startDate', 'endDate', 'createdAt']);
       const result = await query.execute(COLLECTION_ACADEMIC_YEARS);
       if (!result.ok) return result as unknown as RepositoryResult<Page<IAcademicYearSummary>>;
       const items = result.value.items.map((d) => this.mapper.academicYearToSummary(d as unknown as AcademicYearFirestoreDoc));
@@ -347,6 +348,7 @@ export class CurriculumRepository implements ICurriculumRepository {
       if (page.cursor) {
         try { query.withCursor(JSON.parse(page.cursor)); } catch { return { ok: false, error: { code: 'INVALID_INPUT', message: 'Invalid cursor', retryable: false, requestId: '' } }; }
       }
+      query.withProjections(['academicYearId', 'name', 'nameAr', 'order', 'isCurrent', 'createdAt']);
       const result = await query.execute(COLLECTION_ACADEMIC_TERMS);
       if (!result.ok) return result as unknown as RepositoryResult<Page<IAcademicTermSummary>>;
       const items = result.value.items.map((d) => this.mapper.academicTermToSummary(d as unknown as AcademicTermFirestoreDoc));

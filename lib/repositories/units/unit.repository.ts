@@ -131,6 +131,7 @@ export class UnitRepository implements IUnitRepository {
       if (page.cursor) {
         try { query.withCursor(JSON.parse(page.cursor)); } catch { return { ok: false, error: { code: 'INVALID_INPUT', message: 'Invalid cursor', retryable: false, requestId: '' } }; }
       }
+      query.withProjections(['academicTermId', 'gradeId', 'academicYearId', 'educationalSystemId', 'name', 'nameAr', 'order', 'isActive', 'isPremium', 'priceCoins', 'published', 'lockedOverride', 'createdAt']);
       const result = await query.execute(COLLECTION);
       if (!result.ok) return result as unknown as RepositoryResult<Page<IUnitSummary>>;
       const items = result.value.items.map((d) => this.mapper.toSummary(d as unknown as UnitFirestoreDoc));

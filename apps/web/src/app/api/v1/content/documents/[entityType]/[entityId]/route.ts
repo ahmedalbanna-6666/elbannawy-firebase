@@ -61,7 +61,7 @@ export async function POST(
       return NextResponse.json({ success: false, error: { code: 'INVALID_INPUT', message: 'Invalid JSON' } }, { status: 400 });
     }
     const db = getAdminDb();
-    const existingSnap = await db.collection(COLLECTION).where('entityId', '==', entityId).get();
+    const existingSnap = await db.collection(COLLECTION).where('entityId', '==', entityId).select('entityType').get();
     const existing = existingSnap.docs.find(d => d.data().entityType === entityType.toUpperCase());
     if (existing) await existing.ref.delete();
     const now = new Date().toISOString();
@@ -97,7 +97,7 @@ export async function PATCH(
       return NextResponse.json({ success: false, error: { code: 'INVALID_INPUT', message: 'Invalid JSON' } }, { status: 400 });
     }
     const db = getAdminDb();
-    const snap = await db.collection(COLLECTION).where('entityId', '==', entityId).get();
+    const snap = await db.collection(COLLECTION).where('entityId', '==', entityId).select('entityType').get();
     const existing = snap.docs.find(d => d.data().entityType === entityType.toUpperCase());
     if (!existing) return NextResponse.json({ success: false, error: { code: 'NOT_FOUND', message: 'Document not found' } }, { status: 404 });
     const updates: Record<string, unknown> = { ...body, updatedAt: new Date().toISOString() };
@@ -123,7 +123,7 @@ export async function DELETE(
     if (role !== 'administrator' && role !== 'teacher') return NextResponse.json({ success: false, error: { code: 'FORBIDDEN', message: 'Admin or teacher only' } }, { status: 403 });
     const { entityType, entityId } = await params;
     const db = getAdminDb();
-    const snap = await db.collection(COLLECTION).where('entityId', '==', entityId).get();
+    const snap = await db.collection(COLLECTION).where('entityId', '==', entityId).select('entityType').get();
     const existing = snap.docs.find(d => d.data().entityType === entityType.toUpperCase());
     if (!existing) return NextResponse.json({ success: false, error: { code: 'NOT_FOUND', message: 'Document not found' } }, { status: 404 });
     await existing.ref.delete();

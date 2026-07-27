@@ -10,7 +10,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     }
 
     const db = getAdminDb();
-    const mistakesSnap = await db.collection('mistakes').where('studentId', '==', decoded.uid).get();
+    const mistakesSnap = await db.collection('mistakes').where('studentId', '==', decoded.uid).select('unitId', 'lessonId', 'sourceType').get();
 
     const unitIds = new Set<string>();
     const lessonIds = new Set<string>();

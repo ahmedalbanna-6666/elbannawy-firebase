@@ -131,6 +131,7 @@ export class LessonRepository implements ILessonRepository {
       if (page.cursor) {
         try { const cursor = JSON.parse(page.cursor) as ICursor; query.withCursor(cursor); } catch { return { ok: false, error: { code: 'INVALID_INPUT', message: 'Invalid cursor', retryable: false, requestId: '' } }; }
       }
+      query.withProjections(['unitId', 'title', 'slug', 'displayOrder', 'status', 'isPublished', 'isVisible', 'isPremium', 'lockedOverride', 'homeworkEnabled', 'quizEnabled', 'estimatedDuration', 'createdAt']);
       const result = await query.execute(COLLECTION);
       if (!result.ok) return result;
       const items = result.value.items.map((d) => this.mapper.toSummary(d));

@@ -14,7 +14,7 @@ export async function GET(
 
     const u = doc.data() as Record<string, unknown>;
     const [gradesSnap, permissionsSnap] = await Promise.all([
-      db.collection('teacherAssignments').where('teacherId', '==', id).where('deletedAt', '==', null).where('status', '==', 'active').get().catch(() => null),
+      db.collection('teacherAssignments').where('teacherId', '==', id).where('deletedAt', '==', null).where('status', '==', 'active').select('gradeId').get().catch(() => null),
       db.collection('userPermissions').doc(id).get().catch(() => null),
     ]);
 
