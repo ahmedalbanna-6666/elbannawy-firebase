@@ -5,7 +5,6 @@ import {
   ScrollText,
   BookMarked,
   Users,
-  Sparkles,
   GraduationCap,
   BarChart3,
   Settings,

@@ -12,7 +12,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
 import { PlyrVideoPlayer, VideoPlayerSkeleton } from "@/components/plyr-player";
 import {
-  CheckCircle,
   BookMarked,
   FileText,
   Puzzle,
@@ -126,12 +125,6 @@ function useVideoProgress(videoId: string | null): UseQueryResult<VideoProgressD
 
 // ── Helpers ──────────────────────────────────────────────────────────
 
-function formatSeconds(totalSeconds: number): string {
-  const mins = Math.floor(totalSeconds / 60);
-  const secs = totalSeconds % 60;
-  return `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
-}
-
 function buildReviews(stages: Stage[]): ReviewInfo[] {
   const allUnits = stages.flatMap((stage) =>
     stage.grades.flatMap((grade) => grade.units),
@@ -142,6 +135,7 @@ function buildReviews(stages: Stage[]): ReviewInfo[] {
   const reviews: ReviewInfo[] = [];
   for (let i = 0; i < allUnits.length; i += 2) {
     const unitA = allUnits[i];
+    if (!unitA) continue;
     const unitB = i + 1 < allUnits.length ? allUnits[i + 1] : null;
     const coverage = unitB
       ? `Unit ${String(unitA.displayOrder)} + Unit ${String(unitB.displayOrder)}`
@@ -157,7 +151,7 @@ function buildReviews(stages: Stage[]): ReviewInfo[] {
             { id: unitB.id, displayOrder: unitB.displayOrder },
           ]
         : [{ id: unitA.id, displayOrder: unitA.displayOrder }],
-      firstLessonId: unitA.lessons.length > 0 ? unitA.lessons[0].id : null,
+      firstLessonId: unitA.lessons.length > 0 ? (unitA.lessons.at(0)?.id ?? null) : null,
     });
   }
 
@@ -375,11 +369,11 @@ export default function FinalReviewPlayerPage(): ReactNode {
   const review = reviews[reviewId];
   const totalReviews = reviews.length;
 
-  const lessonId: string | null = review.firstLessonId;
+  const lessonId: string | null = review?.firstLessonId ?? null;
   const { data: lesson } = useLesson(lessonId);
 
   const activeVideo: LessonVideo | null =
-    lesson && lesson.videos.length > 0 ? lesson.videos[0] : null;
+    lesson && lesson.videos.length > 0 ? (lesson.videos[0] ?? null) : null;
   const { data: videoProgress } = useVideoProgress(activeVideo?.id ?? null);
 
   const handleVideoProgress = useCallback(
@@ -392,11 +386,6 @@ export default function FinalReviewPlayerPage(): ReactNode {
   );
 
   // ── Derived non-hook values ──
-  const videoWatchedPct =
-    activeVideo && videoProgress && activeVideo.duration > 0
-      ? Math.min(100, Math.round((videoProgress.watchedSeconds / activeVideo.duration) * 100))
-      : 0;
-
   // ── Guards ──
   if (curriculumLoading) return <ReviewPlayerSkeleton />;
 
@@ -430,7 +419,7 @@ export default function FinalReviewPlayerPage(): ReactNode {
     <div className="flex flex-col gap-6 pb-4">
       <Breadcrumb />
 
-      <ReviewHeader index={review.index} coverage={review.coverage} />
+      <ReviewHeader index={review?.index ?? 0} coverage={review?.coverage ?? ''} />
 
       {/* Video Player */}
       <section aria-label="فيديو المراجعة">

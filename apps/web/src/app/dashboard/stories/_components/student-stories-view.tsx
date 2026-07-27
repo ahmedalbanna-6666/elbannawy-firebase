@@ -19,16 +19,6 @@ interface StoryChapter {
   published: boolean;
 }
 
-interface Story {
-  id: string;
-  title: string;
-  description: string | null;
-  coverImageUrl: string | null;
-  displayOrder: number;
-  published: boolean;
-  chapters: StoryChapter[];
-}
-
 type ChapterStatus = "completed" | "current" | "upcoming";
 
 interface ConnectorPoint {
@@ -44,16 +34,31 @@ function getChapterStatus(index: number): ChapterStatus {
 export function StudentStoriesView(): ReactNode {
   const router = useRouter();
 
-  const { data: stories, isLoading, isError, error } = useQuery({
+  const { data: stories, isLoading: storiesLoading, isError: storiesError } = useQuery({
     queryKey: ["stories", "student"],
     queryFn: async () => {
-      const res = await api.get<Story[]>("/stories");
-      return res.data ?? [];
+      const res = await api.get<{ items?: StoryChapter[]; nextCursor?: string | null } | StoryChapter[]>("/stories");
+      const raw = res.data ?? [];
+      return Array.isArray(raw) ? raw : [];
     },
     staleTime: 300_000,
   });
 
-  const allChapters = (stories ?? []).flatMap((story) => story.chapters);
+  const firstStoryId = Array.isArray(stories) && stories.length > 0 ? (stories[0] as { id: string }).id : null;
+
+  const { data: chapters, isLoading: chaptersLoading } = useQuery({
+    queryKey: ["story-chapters-student", firstStoryId],
+    queryFn: async () => {
+      if (!firstStoryId) return [];
+      const res = await api.get<StoryChapter[] | { items: StoryChapter[]; nextCursor?: string | null }>(`/stories/${firstStoryId}/chapters`);
+      const raw = res.data ?? [];
+      return Array.isArray(raw) ? raw : raw.items ?? [];
+    },
+    enabled: !!firstStoryId,
+    staleTime: 300_000,
+  });
+
+  const allChapters = chapters ?? [];
 
   const wrapperRef = useRef<HTMLDivElement>(null);
   const nodeRefs = useRef<(HTMLDivElement | null)[]>([]);
@@ -92,12 +97,15 @@ export function StudentStoriesView(): ReactNode {
 
     setNodes(points);
 
-    let bgD = `M ${String(points[0].x)} ${String(points[0].y)}`;
-    let dotsD = `M ${String(points[0].x)} ${String(points[0].y)}`;
+    const firstPt = points.at(0);
+    if (!firstPt) return;
+    let bgD = `M ${String(firstPt.x)} ${String(firstPt.y)}`;
+    let dotsD = `M ${String(firstPt.x)} ${String(firstPt.y)}`;
 
     for (let i = 1; i < points.length; i++) {
-      const prev = points[i - 1];
-      const curr = points[i];
+      const prev = points.at(i - 1);
+      const curr = points.at(i);
+      if (!prev || !curr) continue;
       const dx = curr.x - prev.x;
       const dy = curr.y - prev.y;
       const segLen = Math.max(Math.abs(dx), Math.abs(dy));
@@ -118,7 +126,7 @@ export function StudentStoriesView(): ReactNode {
   }, []);
 
   useEffect(() => {
-    if (!isLoading && allChapters.length > 0) {
+    if (!chaptersLoading && allChapters.length > 0) {
       requestAnimationFrame(() => {
         drawPath();
       });
@@ -127,12 +135,13 @@ export function StudentStoriesView(): ReactNode {
     return (): void => {
       window.removeEventListener("resize", drawPath);
     };
-  }, [isLoading, allChapters, drawPath]);
+  }, [chaptersLoading, allChapters, drawPath]);
 
   const reversed = [...allChapters].reverse();
+  const isLoading = storiesLoading || chaptersLoading;
 
   if (isLoading) return <StorySkeleton />;
-  if (isError) return <ErrorState title="فشل تحميل القصة" description={error instanceof Error ? error.message : "حدث خطأ غير متوقع"} />;
+  if (storiesError) return <ErrorState title="فشل تحميل القصة" description="حدث خطأ غير متوقع" />;
 
   if (reversed.length === 0) {
     return (
@@ -224,7 +233,7 @@ export function StudentStoriesView(): ReactNode {
                     CHAPTER
                   </span>
                   <span className="font-cairo text-[2.2rem] font-black leading-none text-neutral-900 dark:text-neutral-100">
-                    {chapter.displayOrder}
+                    {chapter.displayOrder ?? 0}
                   </span>
                   <span className="line-clamp-1 max-w-[70px] text-center text-[9px] font-medium text-neutral-400">
                     {chapter.title}

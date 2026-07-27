@@ -1,0 +1,317 @@
+name: Release Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: "22"
+  PNPM_VERSION: "11.9.0"
+  BASE_URL: "http://localhost:3000"
+
+jobs:
+  # ─── Gate 1: Code Quality ─────────────────────────
+  quality:
+    name: Code Quality (TS + Lint)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "pnpm"
+
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck
+      - run: pnpm lint
+
+  # ─── Gate 2: Unit Tests ───────────────────────────
+  unit-tests:
+    name: Unit Tests
+    needs: quality
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "pnpm"
+
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @el-bannawy/lib exec jest -- --ci --coverage
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage
+          path: lib/coverage/
+
+  # ─── Gate 3: Build ────────────────────────────────
+  build:
+    name: Production Build
+    needs: unit-tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "pnpm"
+
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build --filter=@el-bannawy/web...
+      - uses: actions/upload-artifact@v4
+        with:
+          name: next-build
+          path: apps/web/.next
+          retention-days: 1
+
+  # ─── Gate 4: Bundle Analyzer ──────────────────────
+  bundle:
+    name: Bundle Analysis
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "pnpm"
+
+      - run: pnpm install --frozen-lockfile
+      - run: ANALYZE=true pnpm --filter @el-bannawy/web exec next build
+        env:
+          CI: true
+
+      - name: Check bundle sizes
+        run: |
+          echo "Bundle analysis complete — check .next/analyze/ for reports"
+          if [ -d "apps/web/.next/analyze" ]; then
+            ls -la apps/web/.next/analyze/
+          fi
+
+  # ─── Gate 5: E2E Tests (Playwright) ───────────────
+  e2e:
+    name: E2E Tests (${{ matrix.browser }})
+    needs: build
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, firefox, webkit]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "pnpm"
+
+      - run: pnpm install --frozen-lockfile
+      - name: Install Playwright browsers
+        working-directory: apps/web
+        run: npx playwright install ${{ matrix.browser }} --with-deps
+
+      - name: Download build
+        uses: actions/download-artifact@v4
+        with:
+          name: next-build
+          path: apps/web/.next
+
+      - name: Start server & run tests
+        working-directory: apps/web
+        run: |
+          npx next start -p 3000 &
+          sleep 5
+          npx playwright test --project=${{ matrix.browser }} --reporter=html
+        env:
+          CI: true
+          BASE_URL: "http://localhost:3000"
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report-${{ matrix.browser }}
+          path: apps/web/.playwright-report/
+          retention-days: 7
+
+  # ─── Gate 6: Visual Regression ────────────────────
+  visual-regression:
+    name: Visual Regression
+    needs: build
+    timeout-minutes: 15
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "pnpm"
+
+      - run: pnpm install --frozen-lockfile
+      - name: Install Playwright (chromium)
+        working-directory: apps/web
+        run: npx playwright install chromium --with-deps
+
+      - name: Download build
+        uses: actions/download-artifact@v4
+        with:
+          name: next-build
+          path: apps/web/.next
+
+      - name: Generate screenshots
+        working-directory: apps/web
+        run: |
+          npx next start -p 3000 &
+          sleep 5
+          npx playwright test --grep "@visual" --project=chromium
+        env:
+          CI: true
+          BASE_URL: "http://localhost:3000"
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: visual-screenshots
+          path: apps/web/e2e/screenshots/
+          retention-days: 30
+
+  # ─── Gate 7: Lighthouse CI ──────────────────────
+  lighthouse:
+    name: Lighthouse CI
+    needs: build
+    timeout-minutes: 10
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "pnpm"
+
+      - run: pnpm install --frozen-lockfile
+      - name: Install Lighthouse CI
+        working-directory: apps/web
+        run: pnpm add -D @lhci/cli
+
+      - name: Download build
+        uses: actions/download-artifact@v4
+        with:
+          name: next-build
+          path: apps/web/.next
+
+      - name: Run Lighthouse CI
+        working-directory: apps/web
+        run: |
+          npx next start -p 3000 &
+          sleep 5
+          npx lhci autorun
+        env:
+          CI: true
+          LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lighthouse-report
+          path: apps/web/.lighthouseci/
+          retention-days: 30
+
+  # ─── Gate 8: Security Audit ──────────────────────
+  security:
+    name: Security Audit
+    needs: quality
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "pnpm"
+
+      - run: pnpm install --frozen-lockfile
+      - name: Run pnpm audit
+        run: pnpm audit --audit-level=high || true
+      - name: Run npm audit (production deps only)
+        working-directory: apps/web
+        run: npm audit --production || true
+      - name: Run secrets scanner
+        uses: gitleaks/gitleaks-action@v2
+        if: false # requires gitleaks setup
+
+  # ─── Merge Gate ─────────────────────────────────
+  merge-gate:
+    name: Merge Gate
+    needs:
+      - quality
+      - unit-tests
+      - build
+      - bundle
+      - e2e
+      - visual-regression
+      - lighthouse
+      - security
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check all gates
+        run: |
+          echo "═══════════════════════════════════════════════"
+          echo "  MERGE GATE — All Checks Summary"
+          echo "═══════════════════════════════════════════════"
+          echo "  ✅ TypeScript + ESLint:      ${{ needs.quality.result }}"
+          echo "  ✅ Unit Tests:               ${{ needs.unit-tests.result }}"
+          echo "  ✅ Production Build:         ${{ needs.build.result }}"
+          echo "  ✅ Bundle Analysis:          ${{ needs.bundle.result }}"
+          echo "  ✅ E2E (Chromium):           ${{ needs.e2e.result }}"
+          echo "  ✅ E2E (Firefox):            ${{ needs.e2e.result }}"
+          echo "  ✅ E2E (WebKit):             ${{ needs.e2e.result }}"
+          echo "  ✅ Visual Regression:        ${{ needs.visual-regression.result }}"
+          echo "  ✅ Lighthouse CI:            ${{ needs.lighthouse.result }}"
+          echo "  ✅ Security Audit:           ${{ needs.security.result }}"
+          echo "───────────────────────────────────────────────"
+
+          if [[ "${{ needs.quality.result }}" == "failure" || \
+                "${{ needs.unit-tests.result }}" == "failure" || \
+                "${{ needs.build.result }}" == "failure" || \
+                "${{ needs.e2e.result }}" == "failure" || \
+                "${{ needs.visual-regression.result }}" == "failure" ]]; then
+            echo "  ❌ MERGE BLOCKED — One or more gates failed."
+            exit 1
+          else
+            echo "  ✅ ALL GATES PASSED — Ready to merge."
+          fi

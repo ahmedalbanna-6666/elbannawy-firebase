@@ -100,11 +100,11 @@ export function SectionFormDialog({
       if (section) {
         payload.published = formData.published;
         return api.patch(
-          `/final-reviews/${reviewId}/sections/${section.id}`,
+          `/final-reviews/${reviewId}/units/${section.id}`,
           payload,
         );
       }
-      return api.post(`/final-reviews/${reviewId}/sections`, payload);
+      return api.post(`/final-reviews/${reviewId}/units`, payload);
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({

@@ -1,77 +1,25 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getAdminDb } from '@/lib/firebase/admin';
-import { authenticateRequest, normalizeRole } from '@/lib/firebase/auth-helper';
-import { FinalReviewRepository } from '@el-bannawy/lib';
+import { NextRequest, NextResponse } from "next/server";
+import { FinalReviewService } from "@el-bannawy/lib";
+import { authenticateAdminOrTeacher, handleRepoResult, handleRepoResultCreated, internalError, getRequestBody } from "@/lib/route-helpers";
 
-const reviewRepo = new FinalReviewRepository();
+const reviewService = new FinalReviewService();
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-): Promise<NextResponse> {
+export async function GET(_request: NextRequest, { params: _params }: { params: Promise<{ id: string }> }): Promise<NextResponse> {
   try {
-    const decoded = await authenticateRequest(request);
-    if (!decoded) {
-      return NextResponse.json({ success: false, error: { code: 'UNAUTHORIZED', message: 'Not authenticated' } }, { status: 401 });
-    }
-
-    const { searchParams } = new URL(request.url);
-    const unitId = searchParams.get('unitId');
-    if (!unitId) {
-      return NextResponse.json({ success: false, error: { code: 'INVALID_INPUT', message: 'unitId query parameter is required' } }, { status: 400 });
-    }
-
-    const result = await reviewRepo.listLessons(unitId);
-    if (!result.ok) {
-      return NextResponse.json({ success: false, error: result.error }, { status: 500 });
-    }
-    return NextResponse.json({ success: true, data: result.value });
-  } catch (error) {
-    return NextResponse.json({ success: false, error: { code: 'INTERNAL', message: error instanceof Error ? error.message : 'Unknown error' } }, { status: 500 });
-  }
+    const { searchParams } = new URL(_request.url);
+    const unitId = searchParams.get("unitId");
+    if (!unitId) return NextResponse.json({ success: false, error: { code: "INVALID_INPUT", message: "unitId query parameter is required" }, timestamp: new Date().toISOString() }, { status: 400 });
+    return handleRepoResult(await reviewService.listLessons(unitId));
+  } catch (error) { return internalError(error); }
 }
 
-export async function POST(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-): Promise<NextResponse> {
+export async function POST(request: NextRequest, { params: _params }: { params: Promise<{ id: string }> }): Promise<NextResponse> {
   try {
-    const decoded = await authenticateRequest(request);
-    if (!decoded) {
-      return NextResponse.json({ success: false, error: { code: 'UNAUTHORIZED', message: 'Not authenticated' } }, { status: 401 });
-    }
-
-    const db = getAdminDb();
-    const userDoc = await db.collection('users').doc(decoded.uid).get();
-    if (userDoc.exists) {
-      const data = userDoc.data()!;
-      const roleVal = (data as Record<string, unknown>).role;
-      let rawRole: string;
-      if (typeof roleVal === 'string') rawRole = roleVal;
-      else if (roleVal && typeof roleVal === 'object') rawRole = (roleVal as Record<string, unknown>).role as string || '';
-      else return NextResponse.json({ success: false, error: { code: 'FORBIDDEN', message: 'Insufficient permissions' } }, { status: 403 });
-      const normalized = normalizeRole(rawRole);
-      if (normalized !== 'administrator' && normalized !== 'teacher') {
-        return NextResponse.json({ success: false, error: { code: 'FORBIDDEN', message: 'Insufficient permissions' } }, { status: 403 });
-      }
-    } else {
-      return NextResponse.json({ success: false, error: { code: 'FORBIDDEN', message: 'Insufficient permissions' } }, { status: 403 });
-    }
-
-    let body: Record<string, unknown>;
-    try {
-      body = await request.json() as Record<string, unknown>;
-    } catch {
-      return NextResponse.json({ success: false, error: { code: 'INVALID_INPUT', message: 'Invalid JSON body' } }, { status: 400 });
-    }
-
+    const admin = await authenticateAdminOrTeacher(request);
+    if (admin instanceof NextResponse) return admin;
+    const body = await getRequestBody<Record<string, unknown>>(request);
+    if (body instanceof NextResponse) return body;
     const lessonId = crypto.randomUUID();
-    const result = await reviewRepo.createLesson({ ...body, id: lessonId } as Partial<import('@el-bannawy/lib').IFinalReviewLesson>);
-    if (!result.ok) {
-      return NextResponse.json({ success: false, error: result.error }, { status: 500 });
-    }
-    return NextResponse.json({ success: true, data: result.value }, { status: 201 });
-  } catch (error) {
-    return NextResponse.json({ success: false, error: { code: 'INTERNAL', message: error instanceof Error ? error.message : 'Unknown error' } }, { status: 500 });
-  }
+    return handleRepoResultCreated(await reviewService.createLesson({ ...body, id: lessonId } as Record<string, unknown>));
+  } catch (error) { return internalError(error); }
 }

@@ -22,7 +22,12 @@
     "firebase:audit": "node scripts/data-audit.mjs",
     "firebase:export": "firebase emulators:export ./firebase-seed-data",
     "emulators": "pnpm firebase:emulators",
-    "dev:web": "pnpm --filter @el-bannawy/web dev"
+    "dev:web": "pnpm --filter @el-bannawy/web dev",
+    "test:e2e": "pnpm --filter @el-bannawy/web test:e2e",
+    "test:e2e:ui": "pnpm --filter @el-bannawy/web test:e2e:ui",
+    "test:visual": "pnpm --filter @el-bannawy/web test:visual",
+    "test:visual:update": "pnpm --filter @el-bannawy/web test:visual:update",
+    "pw:install": "pnpm --filter @el-bannawy/web exec playwright install --with-deps"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.0",

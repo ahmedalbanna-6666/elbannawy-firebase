@@ -18,9 +18,9 @@ interface SelectProps extends Omit<SelectHTMLAttributes<HTMLSelectElement>, "siz
 }
 
 const sizeStyles = {
-  sm: "h-10 text-sm",
-  md: "h-12 text-base",
-  lg: "h-14 text-lg",
+  sm: "h-11 text-sm min-h-[44px]",
+  md: "h-12 text-base min-h-[44px]",
+  lg: "h-14 text-lg min-h-[44px]",
 };
 
 const Select = forwardRef<HTMLSelectElement, SelectProps>(

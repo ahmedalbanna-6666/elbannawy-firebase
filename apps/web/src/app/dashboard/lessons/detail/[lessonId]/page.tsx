@@ -225,12 +225,6 @@ function getQuizStatus(
 
 // ── Helpers ──────────────────────────────────────────────────────────
 
-function formatSeconds(totalSeconds: number): string {
-  const mins = Math.floor(totalSeconds / 60);
-  const secs = totalSeconds % 60;
-  return `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
-}
-
 // ── Sub-components ───────────────────────────────────────────────────
 
 function Breadcrumb({
@@ -622,7 +616,7 @@ export default function LessonDetailPage(): ReactNode {
   }, [lessonLoading, lesson, queryClient, lessonId]);
 
   const firstVideoId: string | null =
-    lesson && lesson.videos.length > 0 ? lesson.videos[0].id : null;
+    lesson && lesson.videos.length > 0 ? (lesson.videos.at(0)?.id ?? null) : null;
   const { data: videoProgress } = useVideoProgress(firstVideoId);
 
   const { data: stages } = useCurriculum();
@@ -672,7 +666,7 @@ export default function LessonDetailPage(): ReactNode {
 
   // ── Derived values requiring guaranteed non-null lesson ──
   const activeVideo: LessonVideo | null =
-    lesson.videos.length > 0 ? lesson.videos[0] : null;
+    lesson.videos.length > 0 ? (lesson.videos.at(0) ?? null) : null;
 
   const totalActivities = lesson.videos.reduce(
     (sum, v) => sum + v.activities.length,
@@ -805,7 +799,7 @@ function findAdjacentLessons(
   const nextLesson = currentIdx < allLessons.length - 1 ? allLessons[currentIdx + 1] : null;
 
   return {
-    prev: prevLesson !== null ? { id: prevLesson.id, title: prevLesson.title, displayOrder: prevLesson.displayOrder } : null,
-    next: nextLesson !== null ? { id: nextLesson.id, title: nextLesson.title, displayOrder: nextLesson.displayOrder } : null,
+    prev: prevLesson != null ? { id: prevLesson.id, title: prevLesson.title, displayOrder: prevLesson.displayOrder } : null,
+    next: nextLesson != null ? { id: nextLesson.id, title: nextLesson.title, displayOrder: nextLesson.displayOrder } : null,
   };
 }

@@ -10,7 +10,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Moon, Sun, Bell, Menu, Flame, Coins, Zap, Trophy, History } from "lucide-react";
 import { Button } from "./button";
 import { AcademicContextBar } from "./academic-context-bar";
-import { type ReactNode } from "react";
+import { memo, type ReactNode } from "react";
 import type { DashboardData } from "@/app/dashboard/_components/student-dashboard";
 
 interface HeaderProps {
@@ -21,7 +21,7 @@ interface HeaderProps {
   className?: string;
 }
 
-export function Header({
+export const Header = memo(function Header({
   onMenuClick,
   onNotificationClick,
   notificationCount,
@@ -49,11 +49,11 @@ export function Header({
   return (
     <header
       className={cn(
-        "sticky top-0 z-30 flex flex-col border-b border-neutral-200 bg-neutral-50/80 px-4 backdrop-blur-md dark:border-neutral-700 dark:bg-neutral-900/80 lg:px-6",
+        "sticky top-0 z-30 flex flex-col border-b border-neutral-200 bg-neutral-50/80 backdrop-blur-md pt-[env(safe-area-inset-top,0px)] dark:border-neutral-700 dark:bg-neutral-900/80",
         className,
       )}
     >
-      <div className="flex h-12 items-center justify-between">
+      <div className="flex h-12 items-center justify-between px-4 lg:px-6">
         <div className="flex items-center gap-3">
           <Button
             variant="ghost"
@@ -64,13 +64,13 @@ export function Header({
             <Menu className="h-5 w-5" />
           </Button>
           {firstName && (
-            <h1 className="text-base font-semibold text-neutral-900 dark:text-neutral-100">
-              مرحباً، {firstName} 👋
+            <h1 className="text-base font-semibold text-neutral-900 dark:text-neutral-100 sm:text-lg">
+              مرحباً، {firstName}
             </h1>
           )}
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1 sm:gap-2">
           <Button
             variant="ghost"
             size="icon-sm"
@@ -130,6 +130,6 @@ export function Header({
       )}
     </header>
   );
-}
+});
 
 export type { HeaderProps };

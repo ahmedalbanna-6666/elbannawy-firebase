@@ -27,7 +27,6 @@ export function AcademicSettings(): ReactNode {
 
   const educationalSystem = useAcademicContextStore((s) => s.educationalSystem);
   const stage = useAcademicContextStore((s) => s.stage);
-  const grade = useAcademicContextStore((s) => s.grade);
   const gradeId = useAcademicContextStore((s) => s.gradeId);
   const term = useAcademicContextStore((s) => s.term);
   const setEducationalSystem = useAcademicContextStore((s) => s.setEducationalSystem);
@@ -70,7 +69,8 @@ export function AcademicSettings(): ReactNode {
     if (!myGrades || !isTeacher) return;
     const gs = Array.isArray(myGrades.grades) ? myGrades.grades : [];
     if (gs.length === 1) {
-      const g = gs[0];
+      const g = gs.at(0);
+      if (!g) return;
       const stageKey = stageLabelToKey(g.stage.name) ?? g.stage.name;
       setEducationalSystem("");
       setStage(stageKey);
@@ -78,8 +78,10 @@ export function AcademicSettings(): ReactNode {
     } else if (gs.length > 1) {
       const storedGrade = useAcademicContextStore.getState().grade;
       if (!storedGrade || !gs.some((g) => g.name === storedGrade)) {
-        const stageKey = stageLabelToKey(gs[0].stage.name) ?? gs[0].stage.name;
-        setGrade(gs[0].name, gs[0].id);
+        const g0 = gs.at(0);
+        if (!g0) return;
+        const stageKey = stageLabelToKey(g0.stage.name) ?? g0.stage.name;
+        setGrade(g0.name, g0.id);
         setStage(stageKey);
       }
     }

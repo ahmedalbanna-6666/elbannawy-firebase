@@ -1,6 +1,6 @@
 import type { NextConfig } from "next";
 
-const nextConfig: NextConfig = {
+let nextConfig: NextConfig = {
   reactStrictMode: true,
   eslint: {
     ignoreDuringBuilds: true,
@@ -17,5 +17,13 @@ const nextConfig: NextConfig = {
     return config;
   },
 };
+
+const ANALYZE = process.env.ANALYZE === "true";
+if (ANALYZE) {
+  const withBundleAnalyzer = require("@next/bundle-analyzer")({
+    enabled: true,
+  });
+  nextConfig = withBundleAnalyzer(nextConfig);
+}
 
 export default nextConfig;

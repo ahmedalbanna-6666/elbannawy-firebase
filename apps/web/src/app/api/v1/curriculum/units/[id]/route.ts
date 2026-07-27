@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { UnitService, UnitApplicationService, LessonRepository } from '@el-bannawy/lib';
-import { toFrontendUnit, toFrontendLesson, toFrontendUnitEnriched, fromFrontendUnitUpdate } from '../../_shared/transforms';
+import { toFrontendUnit, toFrontendLesson, fromFrontendUnitUpdate } from '../../_shared/transforms';
 
 const unitService = new UnitService();
 const applicationService = new UnitApplicationService(unitService);

@@ -20,16 +20,6 @@ interface StoryChapter {
   published: boolean;
 }
 
-interface Story {
-  id: string;
-  title: string;
-  description: string | null;
-  coverImageUrl: string | null;
-  displayOrder: number;
-  published: boolean;
-  chapters: StoryChapter[];
-}
-
 type ChapterStatus = "completed" | "current" | "upcoming";
 
 interface ConnectorPoint {
@@ -44,24 +34,33 @@ function getChapterStatus(index: number, _total: number): ChapterStatus {
 
 export default function StoryPage(): ReactNode {
   const router = useRouter();
-  const { isAdmin, isTeacher, isStaff } = usePermissions();
+  const {  } = usePermissions();
 
-  useEffect(() => {
-    if (isAdmin || isTeacher || isStaff) {
-      router.replace("/dashboard/stories");
-    }
-  }, [isAdmin, isTeacher, isStaff, router]);
-
-  const { data: stories, isLoading, isError, error } = useQuery({
+  const { data: stories, isLoading: storiesLoading, isError, error } = useQuery({
     queryKey: ["stories", "student"],
     queryFn: async () => {
-      const res = await api.get<Story[]>("/stories");
-      return res.data ?? [];
+      const res = await api.get<{ items?: Record<string, unknown>[]; nextCursor?: string | null } | Record<string, unknown>[]>("/stories");
+      const raw = res.data ?? [];
+      return Array.isArray(raw) ? raw : [];
     },
     staleTime: 300_000,
   });
 
-  const allChapters = (stories ?? []).flatMap((story) => story.chapters);
+  const firstStoryId = stories && stories.length > 0 ? (stories[0] as { id: string }).id : null;
+
+  const { data: chapters, isLoading: chaptersLoading } = useQuery({
+    queryKey: ["story-chapters-student-page", firstStoryId],
+    queryFn: async () => {
+      if (!firstStoryId) return [];
+      const res = await api.get<StoryChapter[] | { items: StoryChapter[]; nextCursor?: string | null }>(`/stories/${firstStoryId}/chapters`);
+      const raw = res.data ?? [];
+      return Array.isArray(raw) ? raw : raw.items ?? [];
+    },
+    enabled: !!firstStoryId,
+    staleTime: 300_000,
+  });
+
+  const allChapters = chapters ?? [];
 
   const wrapperRef = useRef<HTMLDivElement>(null);
   const nodeRefs = useRef<(HTMLDivElement | null)[]>([]);
@@ -100,12 +99,15 @@ export default function StoryPage(): ReactNode {
 
     setNodes(points);
 
-    let bgD = `M ${String(points[0].x)} ${String(points[0].y)}`;
-    let dotsD = `M ${String(points[0].x)} ${String(points[0].y)}`;
+    const firstPt = points.at(0);
+    if (!firstPt) return;
+    let bgD = `M ${String(firstPt.x)} ${String(firstPt.y)}`;
+    let dotsD = `M ${String(firstPt.x)} ${String(firstPt.y)}`;
 
     for (let i = 1; i < points.length; i++) {
-      const prev = points[i - 1];
-      const curr = points[i];
+      const prev = points.at(i - 1);
+      const curr = points.at(i);
+      if (!prev || !curr) continue;
       const dx = curr.x - prev.x;
       const dy = curr.y - prev.y;
       const segLen = Math.max(Math.abs(dx), Math.abs(dy));
@@ -126,7 +128,7 @@ export default function StoryPage(): ReactNode {
   }, []);
 
   useEffect(() => {
-    if (!isLoading && allChapters.length > 0) {
+    if (!chaptersLoading && allChapters.length > 0) {
       requestAnimationFrame(() => {
         drawPath();
       });
@@ -135,9 +137,10 @@ export default function StoryPage(): ReactNode {
     return (): void => {
       window.removeEventListener("resize", drawPath);
     };
-  }, [isLoading, allChapters, drawPath]);
+  }, [chaptersLoading, allChapters, drawPath]);
 
   const reversed = [...allChapters].reverse();
+  const isLoading = storiesLoading || chaptersLoading;
 
   if (isLoading) return <StorySkeleton />;
   if (isError) return <ErrorState title="فشل تحميل القصة" description={error instanceof Error ? error.message : "حدث خطأ غير متوقع"} />;
@@ -169,7 +172,7 @@ export default function StoryPage(): ReactNode {
         <p className="mt-1 text-sm text-neutral-500">تابع قصة المنهج التعليمي</p>
       </div>
 
-      <div ref={wrapperRef} className="relative mx-auto max-w-md pb-4">
+      <div ref={wrapperRef} className="relative mx-auto w-full max-w-lg pb-4 lg:max-w-xl xl:max-w-2xl">
         <svg className="pointer-events-none absolute inset-0 z-0 h-full w-full overflow-visible">
           <path
             ref={bgPathRef}
@@ -194,7 +197,7 @@ export default function StoryPage(): ReactNode {
           ))}
         </svg>
 
-        <div className="relative z-10 flex flex-col items-center gap-4 md:gap-5">
+        <div className="relative z-10 flex flex-col items-center gap-3 md:gap-5">
           {reversed.map((chapter, idx) => {
             const status = getChapterStatus(idx, reversed.length);
             const isOdd = idx % 2 === 0;
@@ -214,7 +217,11 @@ export default function StoryPage(): ReactNode {
             return (
               <div
                 key={chapter.id}
-                className={isOdd ? "flex flex-col items-center md:translate-x-14" : "flex flex-col items-center md:-translate-x-14"}
+                className={`flex flex-col items-center ${
+                  isOdd
+                    ? "md:ltr:translate-x-14 md:rtl:-translate-x-14"
+                    : "md:ltr:-translate-x-14 md:rtl:translate-x-14"
+                }`}
               >
                 {status === "current" && (
                   <span className="mb-1.5 rounded-full bg-success-500 px-2.5 py-0.5 text-[10px] font-bold text-white shadow-[0_0_8px_rgba(16,185,129,0.35)]">
@@ -232,7 +239,7 @@ export default function StoryPage(): ReactNode {
                     CHAPTER
                   </span>
                   <span className="font-cairo text-[2.2rem] font-black leading-none text-neutral-900 dark:text-neutral-100">
-                    {chapter.displayOrder}
+                    {chapter.displayOrder ?? 0}
                   </span>
                   <span className="line-clamp-1 max-w-[70px] text-center text-[9px] font-medium text-neutral-400">
                     {chapter.title}

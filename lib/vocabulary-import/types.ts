@@ -27,3 +27,26 @@ export type ParsedSection = VocabularySection | SynonymSection;
 export interface VocabularyDocument {
   sections: ParsedSection[];
 }
+
+export type DocumentBlockType = 'heading' | 'paragraph' | 'table';
+
+export interface DocumentBlock {
+  readonly type: DocumentBlockType;
+  readonly level: number;
+  readonly text: string;
+  readonly html: string;
+  readonly index: number;
+  readonly rows?: readonly (readonly string[])[];
+}
+
+export interface DuplicateInfo {
+  readonly word: string;
+  readonly existingSection: string;
+  readonly existingTranslation: string;
+}
+
+export interface ParsedDocument {
+  readonly blocks: readonly DocumentBlock[];
+  readonly orphanTables: readonly DocumentBlock[];
+  readonly warnings: readonly string[];
+}

@@ -2,7 +2,7 @@
 
 import { type ReactNode } from "react";
 import { useRouter } from "next/navigation";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { CardEdge } from "@/components/ui/card-edge";
 import { GraduationCap, UserCog, ChevronLeft } from "lucide-react";
 

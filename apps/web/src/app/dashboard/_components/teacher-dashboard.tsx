@@ -6,12 +6,12 @@ import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api-client";
 import { Card } from "@/components/ui/card";
 import { CardEdge } from "@/components/ui/card-edge";
+import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
 import { usePermissions } from "@/lib/use-permissions";
 import { useAuthStore } from "@/lib/auth-store";
 import { useAcademicContext } from "@/lib/academic-context-store";
 import { getDashboardModules } from "@/lib/nav-registry";
-import { useLiveSessions } from "@/lib/live-api";
 import { GraduationCap, ChevronLeft, BookOpen, Users, Trophy } from "lucide-react";
 
 function formatTodayArabic(): string {
@@ -37,7 +37,7 @@ export function TeacherDashboard(): ReactNode {
   const academicContext = useAcademicContext();
   const gradeId = academicContext.gradeId;
 
-  const { data: stats } = useQuery({
+  const { data: stats, isLoading: statsLoading, isError: statsError } = useQuery({
     queryKey: ["teacher-stats", gradeId],
     queryFn: async () => {
       const params = new URLSearchParams();
@@ -86,35 +86,47 @@ export function TeacherDashboard(): ReactNode {
         </p>
       </div>
 
-      <section className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="rounded-2xl bg-primary-500/10 p-4 text-center">
-          <Users className="mx-auto mb-1 h-6 w-6 text-primary-500" />
-          <p className="text-2xl font-bold text-primary-600 dark:text-primary-400">
-            {stats?.totalStudents ?? "—"}
-          </p>
-          <p className="text-xs text-primary-600/70 dark:text-primary-400/70">
-            الطلاب
-          </p>
-        </div>
-        <div className="rounded-2xl bg-success-500/10 p-4 text-center">
-          <BookOpen className="mx-auto mb-1 h-6 w-6 text-success-500" />
-          <p className="text-2xl font-bold text-success-600 dark:text-success-400">
-            {stats?.totalUnits ?? "—"}
-          </p>
-          <p className="text-xs text-success-600/70 dark:text-success-400/70">
-            الوحدات
-          </p>
-        </div>
-        <div className="rounded-2xl bg-amber-500/10 p-4 text-center">
-          <Trophy className="mx-auto mb-1 h-6 w-6 text-amber-500" />
-          <p className="text-2xl font-bold text-amber-600 dark:text-amber-400">
-            {stats?.activeStudents ?? "—"}
-          </p>
-          <p className="text-xs text-amber-600/70 dark:text-amber-400/70">
-            نشط خلال 30 يوم
-          </p>
-        </div>
-      </section>
+      {statsLoading ? (
+        <section className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {[1, 2, 3].map((i) => <Skeleton key={i} className="h-28 rounded-2xl" />)}
+        </section>
+      ) : statsError ? (
+        <section className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="rounded-2xl bg-danger-500/10 p-4 text-center">
+            <p className="text-sm text-danger-600">فشل تحميل الإحصائيات</p>
+          </div>
+        </section>
+      ) : (
+        <section className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="rounded-2xl bg-primary-500/10 p-4 text-center">
+            <Users className="mx-auto mb-1 h-6 w-6 text-primary-500" />
+            <p className="text-2xl font-bold text-primary-600 dark:text-primary-400">
+              {stats?.totalStudents ?? "—"}
+            </p>
+            <p className="text-xs text-primary-600/70 dark:text-primary-400/70">
+              الطلاب
+            </p>
+          </div>
+          <div className="rounded-2xl bg-success-500/10 p-4 text-center">
+            <BookOpen className="mx-auto mb-1 h-6 w-6 text-success-500" />
+            <p className="text-2xl font-bold text-success-600 dark:text-success-400">
+              {stats?.totalUnits ?? "—"}
+            </p>
+            <p className="text-xs text-success-600/70 dark:text-success-400/70">
+              الوحدات
+            </p>
+          </div>
+          <div className="rounded-2xl bg-amber-500/10 p-4 text-center">
+            <Trophy className="mx-auto mb-1 h-6 w-6 text-amber-500" />
+            <p className="text-2xl font-bold text-amber-600 dark:text-amber-400">
+              {stats?.activeStudents ?? "—"}
+            </p>
+            <p className="text-xs text-amber-600/70 dark:text-amber-400/70">
+              نشط خلال 30 يوم
+            </p>
+          </div>
+        </section>
+      )}
 
       {!hasAssignedGrades && (
         <EmptyState

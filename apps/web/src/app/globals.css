@@ -4,6 +4,22 @@
 @custom-variant portrait (&:where(.orientation-portrait, .orientation-portrait *));
 @custom-variant landscape (&:where(.orientation-landscape, .orientation-landscape *));
 
+/* ─── Safe Area CSS variables ─────────────────── */
+:root {
+  --safe-area-top: env(safe-area-inset-top, 0px);
+  --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-area-left: env(safe-area-inset-left, 0px);
+  --safe-area-right: env(safe-area-inset-right, 0px);
+  /* Bottom nav height + safe area */
+  --bottom-nav-height: 72px;
+  --bottom-nav-total: calc(var(--bottom-nav-height) + var(--safe-area-bottom));
+  /* Header height */
+  --header-height: 48px;
+  /* Sidebar widths */
+  --sidebar-expanded: 280px;
+  --sidebar-collapsed: 64px;
+}
+
 @theme {
   /* Font families */
   --font-sans: var(--font-inter), "system-ui", "Arial", "sans-serif";
@@ -122,6 +138,38 @@
   --max-width-page: 1200px;
   --gutter-page: 16px;
 
+  /* Responsive typography - fluid scale (clamp-based) */
+  --text-xs: clamp(0.6875rem, 0.65rem + 0.15vw, 0.8125rem);
+  --text-sm: clamp(0.8125rem, 0.775rem + 0.15vw, 0.9375rem);
+  --text-base: clamp(0.9375rem, 0.875rem + 0.25vw, 1.0625rem);
+  --text-lg: clamp(1rem, 0.925rem + 0.35vw, 1.1875rem);
+  --text-xl: clamp(1.125rem, 1rem + 0.5vw, 1.5rem);
+  --text-2xl: clamp(1.375rem, 1.125rem + 0.75vw, 1.875rem);
+  --text-3xl: clamp(1.625rem, 1.25rem + 1vw, 2.25rem);
+
+  /* Responsive spacing scale (clamp-based) */
+  --space-1: clamp(0.1875rem, 0.175rem + 0.05vw, 0.25rem);
+  --space-2: clamp(0.375rem, 0.35rem + 0.1vw, 0.5rem);
+  --space-3: clamp(0.5625rem, 0.525rem + 0.15vw, 0.75rem);
+  --space-4: clamp(0.75rem, 0.625rem + 0.5vw, 1rem);
+  --space-5: clamp(0.9375rem, 0.75rem + 0.75vw, 1.25rem);
+  --space-6: clamp(1.125rem, 0.875rem + 1vw, 1.5rem);
+  --space-8: clamp(1.5rem, 1rem + 2vw, 2rem);
+  --space-10: clamp(2rem, 1.5rem + 2vw, 2.5rem);
+
+  /* Touch target minimum */
+  --touch-min: 44px;
+
+  /* Icon size scale (responsive) */
+  --icon-xs: clamp(12px, 11px + 0.3vw, 14px);
+  --icon-sm: clamp(14px, 13px + 0.4vw, 16px);
+  --icon-md: clamp(18px, 16px + 0.6vw, 20px);
+  --icon-lg: clamp(22px, 20px + 0.8vw, 24px);
+  --icon-xl: clamp(26px, 24px + 1vw, 28px);
+
+  /* Ultra-wide container breakpoint */
+  --max-width-ultra: 1600px;
+
   /* Z-index tokens */
   --z-dropdown: 50;
   --z-modal: 100;
@@ -204,17 +252,6 @@ html {
   }
 }
 
-@keyframes scale-in {
-  from {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
 @keyframes toast-slide-in {
   from {
     opacity: 0;
@@ -261,6 +298,34 @@ html {
   }
 }
 
+/* ─── Safe area utility classes ──────────────── */
+.safe-area-top {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.safe-area-x {
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
+}
+
+/* ─── Touch target helper ───────────────────── */
+.touch-target {
+  min-height: var(--touch-min);
+  min-width: var(--touch-min);
+}
+
+.touch-target-y {
+  min-height: var(--touch-min);
+}
+
+.touch-target-x {
+  min-width: var(--touch-min);
+}
+
 @layer base {
   *,
   *::before,
@@ -276,8 +341,8 @@ html {
 
   body {
     font-family: var(--font-sans);
-    font-size: 16px;
-    line-height: 1.5;
+    font-size: var(--text-base);
+    line-height: 1.6;
     color: var(--color-neutral-900);
     background: linear-gradient(to bottom, #f2f7fa, #f7f9fc);
   }
@@ -339,18 +404,32 @@ html {
     width: 100%;
     margin-inline: auto;
     padding-inline: var(--gutter-page);
+    max-width: min(var(--max-width-page), 100%);
   }
 
   @media (width >= 768px) {
     .container-page {
-      padding-inline: 24px;
+      padding-inline: clamp(20px, 3vw, 24px);
     }
   }
 
   @media (width >= 1024px) {
     .container-page {
-      padding-inline: 32px;
-      max-width: var(--max-width-page);
+      padding-inline: clamp(24px, 3.5vw, 32px);
+    }
+  }
+
+  @media (width >= 1440px) {
+    .container-page {
+      max-width: var(--max-width-ultra);
+      padding-inline: clamp(32px, 4vw, 48px);
+    }
+  }
+
+  /* Ultra-wide: center content with generous padding */
+  @media (width >= 1920px) {
+    .container-page {
+      padding-inline: clamp(48px, 6vw, 80px);
     }
   }
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, type ReactNode } from "react";
+import { useEffect, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api-client";
 import { Select } from "@/components/ui/select";
@@ -26,7 +26,6 @@ interface MyGradesResponse {
 export function AcademicContextBar({ className }: AcademicContextBarProps): ReactNode {
   const educationalSystem = useAcademicContextStore((s) => s.educationalSystem);
   const stage = useAcademicContextStore((s) => s.stage);
-  const grade = useAcademicContextStore((s) => s.grade);
   const gradeIdVal = useAcademicContextStore((s) => s.gradeId);
   const setEducationalSystem = useAcademicContextStore((s) => s.setEducationalSystem);
   const setStage = useAcademicContextStore((s) => s.setStage);
@@ -68,7 +67,7 @@ export function AcademicContextBar({ className }: AcademicContextBarProps): Reac
     }
   }, [activeCtx, applyPlatformContext]);
 
-  const { data: allStages } = useQuery({
+  useQuery({
     queryKey: ["curriculum-stages"],
     queryFn: async () => {
       const res = await api.get<{ id: string; name: string; grades: { id: string; name: string }[] }[]>("/curriculum/stages");
@@ -77,27 +76,6 @@ export function AcademicContextBar({ className }: AcademicContextBarProps): Reac
     enabled: isAdmin,
     staleTime: Infinity,
   });
-
-  const gradeToId = useMemo(() => {
-    const map = new Map<string, string>();
-    if (isTeacher && myGrades && Array.isArray(myGrades.grades)) {
-      for (const g of myGrades.grades) {
-        map.set(g.name, g.id);
-        map.set(g.id, g.id);
-      }
-    }
-    if (isAdmin && Array.isArray(allStages)) {
-      for (const stage of allStages) {
-        if (stage && typeof stage === "object" && Array.isArray(stage.grades)) {
-          for (const g of stage.grades) {
-            map.set(g.name, g.id);
-            map.set(g.id, g.id);
-          }
-        }
-      }
-    }
-    return map;
-  }, [isTeacher, isAdmin, myGrades, allStages]);
 
   const assignedGradeIds = new Set(myGrades?.grades.map((g) => g.id) ?? []);
 

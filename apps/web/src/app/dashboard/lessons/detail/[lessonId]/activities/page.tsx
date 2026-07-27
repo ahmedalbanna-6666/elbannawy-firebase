@@ -68,7 +68,7 @@ export default function StudentActivitiesPage(): ReactNode {
       });
       return submitRes.data;
     },
-    onSuccess: (_data, vars) => {
+    onSuccess: (_data, _vars) => {
       setCompletedCount(c => c + 1);
       void queryClient.invalidateQueries({ queryKey: ["lesson-activities", lessonId] });
     },

@@ -41,12 +41,14 @@ interface StoryManagement {
   readonly published: boolean;
   readonly createdAt: string;
   readonly updatedAt: string;
-  readonly grade: {
+  readonly grade?: {
     readonly id: string;
     readonly name: string;
     readonly stage: { readonly id: string; readonly name: string };
   };
-  readonly _count: { readonly chapters: number };
+  readonly gradeId?: string;
+  readonly stageId?: string;
+  readonly _count?: { readonly chapters: number };
 }
 
 function formatRelativeDate(dateStr: string): string {
@@ -102,8 +104,9 @@ export function TeacherStoriesView(): ReactNode {
     queryKey: ["management-stories", filterParams],
     queryFn: async () => {
       const endpoint = `/stories/management${filterParams ? `?${filterParams}` : ""}`;
-      const res = await api.get<StoryManagement[]>(endpoint);
-      return res.data ?? [];
+      const res = await api.get<StoryManagement[] | { items: StoryManagement[]; nextCursor?: string | null }>(endpoint);
+      const raw = res.data ?? [];
+      return Array.isArray(raw) ? raw : raw.items ?? [];
     },
     staleTime: 30_000,
   });
@@ -131,7 +134,7 @@ export function TeacherStoriesView(): ReactNode {
       title: story.title,
       description: story.description,
       coverImageUrl: null,
-      gradeId: story.grade.id,
+      gradeId: story.grade?.id ?? story.gradeId ?? "",
       displayOrder: story.displayOrder,
       published: story.published,
     });
@@ -190,14 +193,14 @@ export function TeacherStoriesView(): ReactNode {
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
                       <span className="text-[11px] font-semibold text-neutral-400">
-                        #{String(story.displayOrder)}
+                        #{String(story.displayOrder ?? 0)}
                       </span>
                       <h3 className="truncate text-sm font-bold text-neutral-900 dark:text-neutral-100">
                         {story.title}
                       </h3>
                     </div>
                     <p className="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400">
-                      {story.grade?.stage?.name ?? ""} — {story.grade?.name ?? ""}
+                      {story.grade?.name ?? ""}
                     </p>
                   </div>
                   <Badge
@@ -217,7 +220,7 @@ export function TeacherStoriesView(): ReactNode {
                 <div className="mt-auto flex items-center gap-4 text-[11px] text-neutral-400">
                   <span className="flex items-center gap-1">
                     <Layers className="h-3.5 w-3.5" />
-                    {String(story._count.chapters)} فصول
+                    {String(story._count?.chapters ?? 0)} فصول
                   </span>
                   <span className="flex items-center gap-1">
                     <Clock className="h-3.5 w-3.5" />

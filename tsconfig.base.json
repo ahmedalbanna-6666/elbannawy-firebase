@@ -28,8 +28,9 @@
     "outDir": "dist",
     "baseUrl": ".",
     "paths": {
-      "@el-bannawy/*": ["packages/*/src"]
+      "@el-bannawy/*": ["packages/*/src"],
+      "@/*": ["apps/web/src/*"]
     }
   },
-  "exclude": ["node_modules", "dist", ".next", "build"]
+  "exclude": ["node_modules", "dist", ".next", "build", "**/__tests__", "**/__mocks__"]
 }

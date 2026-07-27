@@ -4,15 +4,13 @@ import { type ReactNode } from "react";
 import { useParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api-client";
-import { usePermissions } from "@/lib/use-permissions";
 import { useAuthStore } from "@/lib/auth-store";
 import { Skeleton } from "@/components/ui/skeleton";
-import { EmptyState } from "@/components/ui/empty-state";
 import { ErrorState } from "@/components/ui/error-state";
 import { Breadcrumb } from "@/components/units/breadcrumb";
 import { EntityContentBlocks, type ContentConfig } from "@/components/content/content-blocks";
 import { TeacherContextBanner } from "@/components/ui/teacher-context-banner";
-import { BookMarked } from "lucide-react";
+
 
 export default function SectionContentPage(): ReactNode {
   const params = useParams();

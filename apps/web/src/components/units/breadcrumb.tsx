@@ -2,7 +2,7 @@
 
 import { type ReactNode } from "react";
 import Link from "next/link";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export interface BreadcrumbItem {
@@ -39,7 +39,12 @@ export function Breadcrumb({ items, className }: BreadcrumbProps): ReactNode {
                   {item.label}
                 </span>
               )}
-              {!isLast && <ChevronLeft className="h-3.5 w-3.5 text-neutral-400" />}
+              {!isLast && (
+                <span className="rtl:hidden"><ChevronLeft className="h-3.5 w-3.5 text-neutral-400" /></span>
+              )}
+              {!isLast && (
+                <span className="ltr:hidden"><ChevronRight className="h-3.5 w-3.5 text-neutral-400" /></span>
+              )}
             </li>
           );
         })}

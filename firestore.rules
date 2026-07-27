@@ -93,19 +93,27 @@ service cloud.firestore {
 
     // ── Student progress (owner only) ───────────────────────────
     match /lessonProgress/{doc} {
-      allow read, write: if request.auth != null && request.auth.uid == resource.data.userId;
+      allow read: if request.auth != null && request.auth.uid == resource.data.userId;
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
+      allow update: if request.auth != null && request.auth.uid == resource.data.userId;
     }
 
     match /videoProgress/{doc} {
-      allow read, write: if request.auth != null && request.auth.uid == resource.data.userId;
+      allow read: if request.auth != null && request.auth.uid == resource.data.userId;
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
+      allow update: if request.auth != null && request.auth.uid == resource.data.userId;
     }
 
     match /activityProgress/{doc} {
-      allow read, write: if request.auth != null && request.auth.uid == resource.data.userId;
+      allow read: if request.auth != null && request.auth.uid == resource.data.userId;
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
+      allow update: if request.auth != null && request.auth.uid == resource.data.userId;
     }
 
     match /studentStats/{doc} {
-      allow read, write: if request.auth != null && request.auth.uid == resource.data.userId;
+      allow read: if request.auth != null && request.auth.uid == resource.data.userId;
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
+      allow update: if request.auth != null && request.auth.uid == resource.data.userId;
     }
 
     // ── Homework & Quiz attempts ────────────────────────────────
@@ -114,7 +122,8 @@ service cloud.firestore {
         request.auth.uid == resource.data.userId ||
         isTeacher()
       );
-      allow write: if request.auth != null && request.auth.uid == resource.data.userId;
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
+      allow update: if request.auth != null && request.auth.uid == resource.data.userId;
     }
 
     match /quizAttempts/{doc} {
@@ -122,13 +131,15 @@ service cloud.firestore {
         request.auth.uid == resource.data.userId ||
         isTeacher()
       );
-      allow write: if request.auth != null && request.auth.uid == resource.data.userId;
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
+      allow update: if request.auth != null && request.auth.uid == resource.data.userId;
     }
 
     // ── Gamification ────────────────────────────────────────────
     match /xpAccounts/{doc} {
       allow read: if request.auth != null && request.auth.uid == resource.data.userId;
-      allow write: if request.auth != null && request.auth.uid == resource.data.userId;
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
+      allow update: if request.auth != null && request.auth.uid == resource.data.userId;
     }
 
     match /achievements/{doc} {
@@ -137,7 +148,9 @@ service cloud.firestore {
     }
 
     match /userAchievements/{doc} {
-      allow read, write: if request.auth != null && request.auth.uid == resource.data.userId;
+      allow read: if request.auth != null && request.auth.uid == resource.data.userId;
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
+      allow update: if request.auth != null && request.auth.uid == resource.data.userId;
     }
 
     // ── Payments & Wallet ───────────────────────────────────────
@@ -161,7 +174,9 @@ service cloud.firestore {
 
     // ── Notifications ───────────────────────────────────────────
     match /notificationPreferences/{doc} {
-      allow read, write: if request.auth != null && request.auth.uid == resource.data.userId;
+      allow read: if request.auth != null && request.auth.uid == resource.data.userId;
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
+      allow update: if request.auth != null && request.auth.uid == resource.data.userId;
     }
 
     match /notifications/{doc} {
@@ -178,7 +193,9 @@ service cloud.firestore {
 
     // ── AI ──────────────────────────────────────────────────────
     match /conversations/{conversationId} {
-      allow read, write: if request.auth != null && request.auth.uid == resource.data.userId;
+      allow read: if request.auth != null && request.auth.uid == resource.data.userId;
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
+      allow update: if request.auth != null && request.auth.uid == resource.data.userId;
       match /messages/{messageId} {
         allow read, write: if request.auth != null && request.auth.uid == get(/databases/$(database)/documents/conversations/$(conversationId)).data.userId;
       }
@@ -186,7 +203,8 @@ service cloud.firestore {
 
     match /aiAssessments/{doc} {
       allow read: if request.auth != null && request.auth.uid == resource.data.userId;
-      allow write: if request.auth != null && request.auth.uid == resource.data.userId;
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
+      allow update: if request.auth != null && request.auth.uid == resource.data.userId;
     }
 
     // ── Support ─────────────────────────────────────────────────
@@ -195,7 +213,8 @@ service cloud.firestore {
         request.auth.uid == resource.data.userId ||
         isAdmin()
       );
-      allow write: if request.auth != null && request.auth.uid == resource.data.userId;
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
+      allow update: if request.auth != null && request.auth.uid == resource.data.userId;
       match /messages/{messageId} {
         allow read: if request.auth != null && (
           request.auth.uid == get(/databases/$(database)/documents/supportTickets/$(ticketId)).data.userId ||
@@ -223,7 +242,9 @@ service cloud.firestore {
 
     // ── Referrals ───────────────────────────────────────────────
     match /referralProfiles/{doc} {
-      allow read, write: if request.auth != null && request.auth.uid == resource.data.userId;
+      allow read: if request.auth != null && request.auth.uid == resource.data.userId;
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
+      allow update: if request.auth != null && request.auth.uid == resource.data.userId;
     }
 
     match /referralPolicies/{doc} {
@@ -238,7 +259,8 @@ service cloud.firestore {
     }
     match /liveBookings/{doc} {
       allow read: if request.auth != null && request.auth.uid == resource.data.studentId;
-      allow write: if request.auth != null && request.auth.uid == resource.data.studentId;
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.studentId;
+      allow update: if request.auth != null && request.auth.uid == resource.data.studentId;
     }
     match /teacherAvailability/{doc} {
       allow read: if request.auth != null;
@@ -274,7 +296,9 @@ service cloud.firestore {
       allow write: if isTeacher();
     }
     match /storyProgress/{doc} {
-      allow read, write: if request.auth != null && request.auth.uid == resource.data.studentId;
+      allow read: if request.auth != null && request.auth.uid == resource.data.studentId;
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.studentId;
+      allow update: if request.auth != null && request.auth.uid == resource.data.studentId;
     }
 
     // ── Final Reviews ───────────────────────────────────────────
@@ -287,11 +311,13 @@ service cloud.firestore {
     match /finalReviewQuestions/{doc} { allow read: if request.auth != null; allow write: if isAdmin(); }
     match /finalReviewAttempts/{doc} {
       allow read: if request.auth != null && (request.auth.uid == resource.data.studentId || isTeacher());
-      allow write: if request.auth != null && request.auth.uid == resource.data.studentId;
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.studentId;
+      allow update: if request.auth != null && request.auth.uid == resource.data.studentId;
     }
     match /finalReviewAnswers/{doc} {
       allow read: if request.auth != null && request.auth.uid == resource.data.studentId;
-      allow write: if request.auth != null && request.auth.uid == resource.data.studentId;
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.studentId;
+      allow update: if request.auth != null && request.auth.uid == resource.data.studentId;
     }
 
     // ── Competitions ────────────────────────────────────────────
@@ -301,7 +327,8 @@ service cloud.firestore {
     }
     match /competitionParticipants/{doc} {
       allow read: if request.auth != null;
-      allow write: if request.auth != null && (request.auth.uid == resource.data.studentId || isTeacher());
+      allow create: if request.auth != null && (request.auth.uid == request.resource.data.studentId || isTeacher());
+      allow update: if request.auth != null && (request.auth.uid == resource.data.studentId || isTeacher());
     }
     match /competitionQuestions/{doc} {
       allow read: if request.auth != null;
@@ -309,7 +336,8 @@ service cloud.firestore {
     }
     match /competitionAttempts/{doc} {
       allow read: if request.auth != null && request.auth.uid == resource.data.studentId;
-      allow write: if request.auth != null && request.auth.uid == resource.data.studentId;
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.studentId;
+      allow update: if request.auth != null && request.auth.uid == resource.data.studentId;
     }
 
     // ── Coins & Wallet ──────────────────────────────────────────

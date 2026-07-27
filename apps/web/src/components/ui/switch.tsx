@@ -36,8 +36,8 @@ const Switch = forwardRef<HTMLInputElement, SwitchProps>(
             >
               <span
                 className={cn(
-                  "block h-5 w-5 translate-x-0.5 rounded-full bg-white shadow-sm transition-transform duration-150",
-                  checked && "translate-x-[22px]",
+                  "block h-5 w-5 rounded-full bg-white shadow-sm transition-transform duration-150 ltr:translate-x-0.5 rtl:-translate-x-0.5",
+                  checked && "ltr:translate-x-[22px] rtl:-translate-x-[22px]",
                 )}
               />
             </span>
@@ -52,7 +52,7 @@ const Switch = forwardRef<HTMLInputElement, SwitchProps>(
           )}
         </div>
         {helperText && (
-          <p className="ps-14 text-sm text-neutral-400">{helperText}</p>
+          <p className="ps-14 text-sm text-neutral-400 max-sm:ps-0">{helperText}</p>
         )}
       </div>
     );

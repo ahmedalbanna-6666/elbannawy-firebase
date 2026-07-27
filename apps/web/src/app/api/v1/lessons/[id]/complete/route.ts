@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAdminDb, getAdminAuth } from '@/lib/firebase/admin';
+import { getAdminAuth } from '@/lib/firebase/admin';
 import { LessonProgressRepository } from '@el-bannawy/lib';
 
 const progressRepo = new LessonProgressRepository();

@@ -1,0 +1,17 @@
+{
+  "student": {
+    "email": "student@elbannawy.test",
+    "password": "Test123456!",
+    "uid": "test-student-uid"
+  },
+  "teacher": {
+    "email": "teacher@elbannawy.test",
+    "password": "Test123456!",
+    "uid": "test-teacher-uid"
+  },
+  "admin": {
+    "email": "admin@elbannawy.test",
+    "password": "Test123456!",
+    "uid": "test-admin-uid"
+  }
+}

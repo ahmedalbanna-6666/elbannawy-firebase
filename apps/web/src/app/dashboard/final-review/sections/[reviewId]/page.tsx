@@ -5,15 +5,12 @@ import { useParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api-client";
 import { useAuthStore } from "@/lib/auth-store";
-import { Skeleton } from "@/components/ui/skeleton";
-import { EmptyState } from "@/components/ui/empty-state";
-import { ErrorState } from "@/components/ui/error-state";
 import { PlyrVideoPlayer } from "@/components/plyr-player";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import {
-  MonitorPlay, Languages, FileText, GraduationCap, ClipboardList, BookMarked, Eye,
+  MonitorPlay, Languages, FileText, GraduationCap, ClipboardList, Eye,
 } from "lucide-react";
 
 const API_BASE = "/api/v1/content";

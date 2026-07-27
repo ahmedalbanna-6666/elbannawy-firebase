@@ -171,7 +171,8 @@ export class AssessmentPlayerEngine {
     }
 
     if (this._questions.length > 0) {
-      this.markVisited(this._questions[0].id);
+      const q = this._questions.at(0);
+      if (q) this.markVisited(q.id);
     }
 
     this.transitionTo(PlayerState.Ready);
@@ -392,14 +393,14 @@ export class AssessmentPlayerEngine {
       case NavigationDirection.Next: {
         const nextIndex = this._currentQuestionIndex + 1;
         if (nextIndex < this._questions.length) {
-          return this._questions[nextIndex];
+          return this._questions[nextIndex] ?? null;
         }
         return null;
       }
       case NavigationDirection.Previous: {
         const prevIndex = this._currentQuestionIndex - 1;
         if (prevIndex >= 0) {
-          return this._questions[prevIndex];
+          return this._questions[prevIndex] ?? null;
         }
         return null;
       }

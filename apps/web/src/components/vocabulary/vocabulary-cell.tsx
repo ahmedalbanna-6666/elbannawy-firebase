@@ -47,7 +47,7 @@ export function VocabCell({
           onClick={(): void => {
             if (isSupported) speak(pronunciationText, vocab.id);
           }}
-          className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 ${
+          className={`mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 ${
             !isSupported
               ? "cursor-not-allowed text-neutral-300 dark:text-neutral-600"
               : speaking

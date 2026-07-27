@@ -22,7 +22,6 @@ import {
   Video,
   Gamepad2,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { type SidebarContent } from "@/components/ui/sidebar";
 import { type BottomNavItem } from "@/components/ui/bottom-nav";
 
@@ -213,12 +212,11 @@ export default function DashboardLayout({ children }: DashboardLayoutProps): Rea
     </Sidebar>
   );
 
-  const SIDEBAR_WIDTH = 230;
-  const CONTENT_SCALE = 0.88;
-  const CONTENT_RADIUS = 20;
+  const SIDEBAR_WIDTH = 280;
 
   return (
-    <div className="flex min-h-screen overflow-hidden" style={{ perspective: "1400px" }}>
+    <div className="flex min-h-screen overflow-hidden">
+      {/* Mobile sidebar backdrop */}
       <AnimatePresence>
         {sidebarOpen && (
           <motion.div
@@ -226,13 +224,14 @@ export default function DashboardLayout({ children }: DashboardLayoutProps): Rea
             initial={{ opacity: 0 }}
             animate={{ opacity: 0.65 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.25 }}
-            className="fixed inset-0 z-40 bg-black"
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 z-40 bg-black lg:hidden"
             onClick={closeSidebar}
           />
         )}
       </AnimatePresence>
 
+      {/* Mobile drawer sidebar */}
       <AnimatePresence>
         {sidebarOpen && (
           <motion.aside
@@ -240,54 +239,42 @@ export default function DashboardLayout({ children }: DashboardLayoutProps): Rea
             initial={{ x: "100%" }}
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
-            transition={{ type: "spring", stiffness: 260, damping: 30, mass: 0.9 }}
-            className="fixed inset-y-0 right-0 z-50 shadow-2xl"
+            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            className="fixed inset-y-0 right-0 z-50 shadow-2xl lg:hidden"
             style={{ width: `${SIDEBAR_WIDTH}px` }}
+            aria-label="القائمة الجانبية"
           >
             {sidebarContent}
           </motion.aside>
         )}
       </AnimatePresence>
 
-      <motion.div
-        animate={sidebarOpen ? {
-          scale: CONTENT_SCALE,
-          x: `-${SIDEBAR_WIDTH * 0.45}px`,
-          borderRadius: `${CONTENT_RADIUS}px`,
-          boxShadow: "0 30px 80px rgba(0,0,0,0.35)",
-          rotateY: "-2deg",
-          marginTop: "10px",
-          marginBottom: "10px",
-          height: "calc(100vh - 20px)",
-        } : {
-          scale: 1,
-          x: "0px",
-          borderRadius: "0px",
-          rotateY: "0deg",
-          boxShadow: "0 0 0 rgba(0,0,0,0)",
-          marginTop: "0px",
-          marginBottom: "0px",
-          height: "auto",
-        }}
-        transition={{ type: "spring", stiffness: 260, damping: 28, mass: 0.8 }}
-        style={{ originX: 1, originY: 0.5, transformStyle: "preserve-3d" }}
-        className={cn(
-          "relative z-30 flex min-h-screen flex-col bg-neutral-50 dark:bg-neutral-950 will-change-transform",
-          sidebarOpen && "overflow-hidden",
-        )}
+      {/* Desktop persistent sidebar */}
+      <aside
+        className="hidden lg:flex lg:flex-col lg:shrink-0"
+        style={{ width: `${SIDEBAR_WIDTH}px` }}
+        aria-label="القائمة الجانبية"
       >
+        {sidebarContent}
+      </aside>
+
+      {/* Main content area */}
+      <div className="relative z-30 flex min-h-screen flex-1 flex-col bg-neutral-50 dark:bg-neutral-950">
         <Header
           title="لوحة التحكم"
           onMenuClick={toggleSidebar}
           onNotificationClick={(): void => { router.push("/dashboard/notifications"); }}
         />
 
-        <main className="flex-1 overflow-y-auto p-4">
+        <main id="main-content" className="flex-1 overflow-y-auto p-4 pb-[calc(var(--bottom-nav-height)+var(--safe-area-bottom)+8px)] lg:pb-6">
           {children}
         </main>
+      </div>
 
+      {/* Bottom Navigation - Mobile only */}
+      <nav className="fixed bottom-0 left-0 right-0 z-30 lg:hidden" aria-label="التنقل السفلي">
         <BottomNav items={bottomNavItems} centerId="home" />
-      </motion.div>
+      </nav>
 
       <PwaInstallPrompt />
       <NotificationPrompt />

@@ -11,7 +11,7 @@ import { CardEdge } from "@/components/ui/card-edge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ErrorState } from "@/components/ui/error-state";
-import { AnimatedContainer, StaggerList } from "@/components/ui/animated-container";
+import { AnimatedContainer } from "@/components/ui/animated-container";
 import {
   Sparkles,
   GraduationCap,
@@ -150,59 +150,59 @@ export function StudentDashboard(): ReactNode {
         </Card>
       </section>
 
-      {/* SECTION 2 — Curriculum Units */}
-      <div onClick={(): void => { router.push("/dashboard/units"); }} role="button" tabIndex={0} onKeyDown={(e): void => { if (e.key === "Enter") { router.push("/dashboard/units"); } }}>
-      <Card variant="outline" padding="md" className="cursor-pointer transition-colors hover:bg-neutral-50 dark:hover:bg-neutral-800/50">
-        <CardContent>
-          <div className="flex items-center gap-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary-500/10">
-              <BookOpen className="h-6 w-6 text-primary-500" />
-            </div>
-            <div className="flex-1">
-              <h3 className="font-semibold text-neutral-900 dark:text-neutral-100">الوحدات التعليمية</h3>
-              <p className="text-sm text-neutral-500">تصفح جميع الوحدات وتابع تقدمك</p>
-            </div>
-            <ChevronRight className="h-5 w-5 text-neutral-400" />
-          </div>
-        </CardContent>
-      </Card>
-      </div>
+      {/* SECTION 2 — Quick Links Grid */}
+      <section className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div onClick={(): void => { router.push("/dashboard/units"); }} role="button" tabIndex={0} onKeyDown={(e): void => { if (e.key === "Enter") { router.push("/dashboard/units"); } }}>
+          <Card variant="outline" padding="md" className="h-full cursor-pointer transition-colors hover:bg-neutral-50 dark:hover:bg-neutral-800/50">
+            <CardContent>
+              <div className="flex items-center gap-4">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary-500/10">
+                  <BookOpen className="h-6 w-6 text-primary-500" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <h3 className="font-semibold text-neutral-900 dark:text-neutral-100">الوحدات التعليمية</h3>
+                  <p className="text-sm text-neutral-500 truncate">تصفح جميع الوحدات وتابع تقدمك</p>
+                </div>
+                <ChevronRight className="h-5 w-5 shrink-0 text-neutral-400" />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
 
-      {/* SECTION 3 — Story */}
-      <div onClick={(): void => { router.push("/dashboard/story"); }} role="button" tabIndex={0} onKeyDown={(e): void => { if (e.key === "Enter") { router.push("/dashboard/story"); } }}>
-      <Card variant="outline" padding="md" className="cursor-pointer transition-colors hover:bg-neutral-50 dark:hover:bg-neutral-800/50">
-        <CardContent>
-          <div className="flex items-center gap-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-orange-500/10">
-              <ScrollText className="h-6 w-6 text-orange-500" />
-            </div>
-            <div className="flex-1">
-              <h3 className="font-semibold text-neutral-900 dark:text-neutral-100">قصة المنهج</h3>
-              <p className="text-sm text-neutral-500">تابع قصة المنهج التعليمي</p>
-            </div>
-            <ChevronRight className="h-5 w-5 text-neutral-400" />
-          </div>
-        </CardContent>
-      </Card>
-      </div>
+        <div onClick={(): void => { router.push("/dashboard/story"); }} role="button" tabIndex={0} onKeyDown={(e): void => { if (e.key === "Enter") { router.push("/dashboard/story"); } }}>
+          <Card variant="outline" padding="md" className="h-full cursor-pointer transition-colors hover:bg-neutral-50 dark:hover:bg-neutral-800/50">
+            <CardContent>
+              <div className="flex items-center gap-4">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-orange-500/10">
+                  <ScrollText className="h-6 w-6 text-orange-500" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <h3 className="font-semibold text-neutral-900 dark:text-neutral-100">قصة المنهج</h3>
+                  <p className="text-sm text-neutral-500 truncate">تابع قصة المنهج التعليمي</p>
+                </div>
+                <ChevronRight className="h-5 w-5 shrink-0 text-neutral-400" />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
 
-      {/* SECTION 4 — Final Review */}
-      <div onClick={(): void => { router.push("/dashboard/final-review"); }} role="button" tabIndex={0} onKeyDown={(e): void => { if (e.key === "Enter") { router.push("/dashboard/final-review"); } }}>
-      <Card variant="outline" padding="md" className="cursor-pointer transition-colors hover:bg-neutral-50 dark:hover:bg-neutral-800/50">
-        <CardContent>
-          <div className="flex items-center gap-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-500/10">
-              <BookMarked className="h-6 w-6 text-amber-500" />
-            </div>
-            <div className="flex-1">
-              <h3 className="font-semibold text-neutral-900 dark:text-neutral-100">المراجعة النهائية</h3>
-              <p className="text-sm text-neutral-500">راجع المنهج بالكامل واستعد للاختبارات</p>
-            </div>
-            <ChevronRight className="h-5 w-5 text-neutral-400" />
-          </div>
-        </CardContent>
-      </Card>
-      </div>
+        <div onClick={(): void => { router.push("/dashboard/final-review"); }} role="button" tabIndex={0} onKeyDown={(e): void => { if (e.key === "Enter") { router.push("/dashboard/final-review"); } }}>
+          <Card variant="outline" padding="md" className="h-full cursor-pointer transition-colors hover:bg-neutral-50 dark:hover:bg-neutral-800/50">
+            <CardContent>
+              <div className="flex items-center gap-4">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-amber-500/10">
+                  <BookMarked className="h-6 w-6 text-amber-500" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <h3 className="font-semibold text-neutral-900 dark:text-neutral-100">المراجعة النهائية</h3>
+                  <p className="text-sm text-neutral-500 truncate">راجع المنهج بالكامل واستعد للاختبارات</p>
+                </div>
+                <ChevronRight className="h-5 w-5 shrink-0 text-neutral-400" />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </section>
 
 
       {/* SECTION 5 — Live Classes */}
@@ -289,7 +289,7 @@ export function StudentDashboard(): ReactNode {
 
       {/* SECTION 6 — Quick Learning Tools */}
       <AnimatedContainer animation="fade-slide-up" delay={120}>
-        <section className="grid grid-cols-2 gap-3 sm:gap-4">
+        <section className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
 
         <ToolCard icon={Sparkles} label="اسأل البنا AI" color="bg-gradient-to-br from-purple-500 to-pink-500" textColor="text-white" onClick={(): void => { router.push("/dashboard/ai"); }} />
         <ToolCard icon={Users} label="احجز حصة مباشرة" color="bg-success-500/10" textColor="text-success-500" onClick={(): void => { router.push("/dashboard/live"); }} />
@@ -324,21 +324,26 @@ function ToolCard({ icon: Icon, label, color, textColor, onClick }: { icon: type
 
 function DashboardSkeleton(): ReactNode {
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-5">
       <Skeleton className="h-24 w-full rounded-xl" />
-      <div className="grid gap-4 md:grid-cols-4">
-        {Array.from({ length: 4 }, (_, i) => (
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {Array.from({ length: 3 }, (_, i) => (
           <Skeleton key={i} className="h-20 rounded-xl" />
         ))}
       </div>
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-        {Array.from({ length: 4 }, (_, i) => (
-          <Skeleton key={i} className="h-20 rounded-xl" />
+      <div className="flex flex-col gap-2">
+        {Array.from({ length: 2 }, (_, i) => (
+          <Skeleton key={i} className="h-24 rounded-xl" />
         ))}
       </div>
-      {Array.from({ length: 3 }, (_, i) => (
-        <Skeleton key={i} className="h-20 rounded-xl" />
-      ))}
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
+        {Array.from({ length: 4 }, (_, i) => (
+          <div key={i} className="flex flex-col items-center gap-2 rounded-xl border border-neutral-100 p-4 dark:border-neutral-800">
+            <Skeleton className="h-10 w-10 rounded-xl" />
+            <Skeleton className="h-4 w-20" />
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

@@ -2,7 +2,7 @@
 
 import { cn } from "@/lib/utils";
 import type { LucideIcon } from "lucide-react";
-import type { ReactNode } from "react";
+import { memo, type ReactNode } from "react";
 
 interface BottomNavItem {
   id: string;
@@ -20,12 +20,12 @@ interface BottomNavProps {
   className?: string;
 }
 
-export function BottomNav({ items, centerId, className }: BottomNavProps): ReactNode {
+export const BottomNav = memo(function BottomNav({ items, centerId, className }: BottomNavProps): ReactNode {
   const navItems = Array.isArray(items) ? items : [];
   return (
     <nav
       className={cn(
-        "fixed bottom-0 left-0 right-0 z-30 flex h-[72px] items-center justify-around border-t border-neutral-200 bg-neutral-50/90 backdrop-blur-md dark:border-neutral-700 dark:bg-neutral-900/90",
+        "flex h-[calc(72px+env(safe-area-inset-bottom,0px))] items-center justify-around border-t border-neutral-200 bg-neutral-50/90 backdrop-blur-md pb-[env(safe-area-inset-bottom,0px)] dark:border-neutral-700 dark:bg-neutral-900/90",
         className,
       )}
     >
@@ -38,8 +38,8 @@ export function BottomNav({ items, centerId, className }: BottomNavProps): React
             onClick={item.onClick}
             aria-label={item.label}
             className={cn(
-              "relative flex flex-col items-center gap-0.5 px-3 py-2 text-xs font-medium transition-all duration-200 focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2",
-              isCenter ? "-mt-5" : "",
+              "relative flex flex-col items-center gap-0.5 px-3 py-1 text-xs font-medium transition-all duration-200 focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 touch-target",
+              isCenter ? "-mt-3" : "",
               item.active
                 ? "text-violet-600 dark:text-violet-400"
                 : "text-neutral-400 dark:text-neutral-500",
@@ -70,6 +70,6 @@ export function BottomNav({ items, centerId, className }: BottomNavProps): React
       })}
     </nav>
   );
-}
+});
 
 export type { BottomNavProps, BottomNavItem };

@@ -1,45 +1,19 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getAdminDb } from '@/lib/firebase/admin';
-import { authenticateRequest, normalizeRole } from '@/lib/firebase/auth-helper';
-import { StoryRepository } from '@el-bannawy/lib';
+import { NextRequest, NextResponse } from "next/server";
+import { StoryService, StoryApplicationService } from "@el-bannawy/lib";
+import { authenticateAdminOrTeacher, handleRepoResult, internalError } from "@/lib/route-helpers";
 
-const storyRepo = new StoryRepository();
-
-async function isAdminOrTeacher(uid: string): Promise<boolean> {
-  try {
-    const db = getAdminDb();
-    const doc = await db.collection('users').doc(uid).get();
-    if (!doc.exists) return false;
-    const data = doc.data()!;
-    const roleVal = (data as Record<string, unknown>).role;
-    let rawRole: string;
-    if (typeof roleVal === 'string') rawRole = roleVal;
-    else if (roleVal && typeof roleVal === 'object') rawRole = (roleVal as Record<string, unknown>).role as string || '';
-    else return false;
-    const normalized = normalizeRole(rawRole);
-    return normalized === 'administrator' || normalized === 'teacher';
-  } catch { return false; }
-}
+const appService = new StoryApplicationService(new StoryService());
 
 export async function GET(request: NextRequest): Promise<NextResponse> {
   try {
-    const decoded = await authenticateRequest(request);
-    if (!decoded) {
-      return NextResponse.json({ success: false, error: { code: 'UNAUTHORIZED', message: 'Not authenticated' } }, { status: 401 });
-    }
-    if (!(await isAdminOrTeacher(decoded.uid))) {
-      return NextResponse.json({ success: false, error: { code: 'FORBIDDEN', message: 'Insufficient permissions' } }, { status: 403 });
-    }
+    const admin = await authenticateAdminOrTeacher(request);
+    if (admin instanceof NextResponse) return admin;
     const { searchParams } = new URL(request.url);
     const filter: Record<string, unknown> = {};
-    if (searchParams.get('gradeId')) filter.gradeId = searchParams.get('gradeId');
-    if (searchParams.get('published') !== null) filter.published = searchParams.get('published') === 'true';
-    const result = await storyRepo.list(filter as { gradeId?: string; published?: boolean });
-    if (!result.ok) {
-      return NextResponse.json({ success: false, error: result.error }, { status: 500 });
-    }
-    return NextResponse.json({ success: true, data: result.value });
-  } catch (error) {
-    return NextResponse.json({ success: false, error: { code: 'INTERNAL', message: error instanceof Error ? error.message : 'Unknown error' } }, { status: 500 });
-  }
+    if (searchParams.get("gradeId")) filter.gradeId = searchParams.get("gradeId");
+    if (searchParams.get("published") !== null) filter.published = searchParams.get("published") === "true";
+    const limit = Math.min(Math.max(Number(searchParams.get("limit")) || 50, 1), 200);
+    const cursor = searchParams.get("cursor") ?? undefined;
+    return handleRepoResult(await appService.list(filter, { limit, cursor }));
+  } catch (error) { return internalError(error); }
 }

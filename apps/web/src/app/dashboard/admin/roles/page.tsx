@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorState } from "@/components/ui/error-state";
 import { Badge } from "@/components/ui/badge";
-import { Shield, ChevronDown, ChevronUp, Search } from "lucide-react";
+import { Shield, ChevronDown, ChevronUp } from "lucide-react";
 import { Input } from "@/components/ui/input";
 
 interface PermissionInfo {

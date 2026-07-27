@@ -18,7 +18,7 @@ export default function ChapterContentPage(): ReactNode {
   const params = useParams();
   const user = useAuthStore((s) => s.user);
   const rawRole = user?.role;
-  const { isAdmin, isTeacher } = usePermissions();
+  const {  } = usePermissions();
   const storyId = params.storyId as string;
   const chapterId = params.chapterId as string;
   const hydrated = typeof rawRole === "string";

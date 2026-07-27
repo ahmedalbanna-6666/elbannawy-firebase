@@ -11,7 +11,7 @@ import { ErrorState } from "@/components/ui/error-state";
 import { Badge } from "@/components/ui/badge";
 import { TeacherContextBanner } from "@/components/ui/teacher-context-banner";
 import {
-  ChevronLeft,
+  ChevronRight,
   CheckCircle,
   XCircle,
   Trophy,
@@ -261,7 +261,7 @@ export function AssessmentPlayer({ lessonId, type: t }: AssessmentPlayerProps): 
         <p className="text-sm text-neutral-500">{prereqError}</p>
         <Link href={`/dashboard/lessons/${lessonId}`}>
           <Button variant="outline" size="sm">
-            <ChevronLeft className="ms-2 h-4 w-4" />
+            <ChevronRight className="ms-2 h-4 w-4" />
             العودة للدرس
           </Button>
         </Link>
@@ -339,7 +339,7 @@ export function AssessmentPlayer({ lessonId, type: t }: AssessmentPlayerProps): 
           href={`/dashboard/lessons/detail/${lessonId}`}
           className="mb-4 flex items-center gap-1 text-sm text-primary-500 hover:text-primary-600"
         >
-          <ChevronLeft className="h-4 w-4" />
+          <ChevronRight className="h-4 w-4" />
           العودة للدرس
         </Link>
         <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">

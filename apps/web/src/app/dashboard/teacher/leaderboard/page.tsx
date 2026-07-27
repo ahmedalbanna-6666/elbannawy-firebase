@@ -1,14 +1,11 @@
 "use client";
 
-import { useMemo, type ReactNode } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { type ReactNode } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api-client";
-import { usePermissions } from "@/lib/use-permissions";
-import { PERMISSIONS } from "@el-bannawy/shared";
 import { useAcademicContext } from "@/lib/academic-context-store";
 import { useAuthStore } from "@/lib/auth-store";
 import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -17,7 +14,6 @@ import { TeacherContextBanner } from "@/components/ui/teacher-context-banner";
 import {
   Trophy,
   Zap,
-  GraduationCap,
   Medal,
   Crown,
   Star,
@@ -64,7 +60,6 @@ const RANK_STYLES: Record<number, { ring: string; bg: string; icon: ReactNode; l
 
 export default function TeacherLeaderboardPage(): ReactNode {
   const userId = useAuthStore((s) => s.user?.id);
-  const { can } = usePermissions();
   const academicContext = useAcademicContext();
 
   const gradeId = academicContext.gradeId;

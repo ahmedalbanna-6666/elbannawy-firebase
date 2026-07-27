@@ -22,7 +22,6 @@ interface TermOption {
 export default function OnboardingPage(): ReactNode {
   const router = useRouter();
   const { user } = useAuthStore();
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [done, setDone] = useState(false);

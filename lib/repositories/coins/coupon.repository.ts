@@ -58,7 +58,7 @@ export class CouponRepository implements ICouponRepository {
 
   async list(): Promise<RepositoryResult<ICoupon[]>> {
     try {
-      const snap = await this.db().collection(COLLECTION).orderBy('createdAt', 'desc').get();
+      const snap = await this.db().collection(COLLECTION).orderBy('createdAt', 'desc').limit(100).get();
       return { ok: true, value: snap.docs.map((d) => d.data() as ICoupon) };
     } catch (error) { return { ok: false, error: { ...toRepositoryError(error) } } as unknown as RepositoryResult<ICoupon[]>; }
   }

@@ -159,3 +159,17 @@ export type {
   CreateTeacherAssignmentType,
   TeacherAssignmentFilterType,
 } from './teacher.validator';
+
+export {
+  CreateStoryInputSchema,
+  UpdateStoryInputSchema,
+  StoryFilterSchema,
+  StoryIdSchema,
+} from './story.validator';
+
+export {
+  CreateFinalReviewInputSchema,
+  UpdateFinalReviewInputSchema,
+  FinalReviewFilterSchema,
+  FinalReviewIdSchema,
+} from './final-review.validator';

@@ -75,9 +75,11 @@ export function useSpeechRecognition(): {
     recognition.onresult = (event: RecognitionEvent): void => {
       let text = "";
       for (const result of event.results) {
-        text += result[0].transcript;
+        const firstResult = result[0];
+        if (!firstResult) continue;
+        text += firstResult.transcript;
         if (result.isFinal) {
-          setFinalTranscript(result[0].transcript);
+          setFinalTranscript(firstResult.transcript);
         }
       }
       setTranscript(text);

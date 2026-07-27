@@ -42,8 +42,6 @@ interface Stage {
   }[];
 }
 
-type UnitStatus = "completed" | "current" | "upcoming";
-
 interface ConnectorPoint {
   x: number;
   y: number;
@@ -83,7 +81,7 @@ export function StudentUnitsView(): ReactNode {
         setProgressMap(map);
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "┘╪┤┘ ╪ز╪ص┘à┘è┘ ╪د┘┘à┘┘ç╪ش");
+      setError(err instanceof Error ? err.message : "فشل تحميل المنهج");
     } finally {
       setLoading(false);
     }
@@ -124,12 +122,15 @@ export function StudentUnitsView(): ReactNode {
 
     setNodes(points);
 
-    let bgD = `M ${String(points[0].x)} ${String(points[0].y)}`;
-    let dotsD = `M ${String(points[0].x)} ${String(points[0].y)}`;
+    const firstPt = points.at(0);
+    if (!firstPt) return;
+    let bgD = `M ${String(firstPt.x)} ${String(firstPt.y)}`;
+    let dotsD = `M ${String(firstPt.x)} ${String(firstPt.y)}`;
 
     for (let i = 1; i < points.length; i++) {
-      const prev = points[i - 1];
-      const curr = points[i];
+      const prev = points.at(i - 1);
+      const curr = points.at(i);
+      if (!prev || !curr) continue;
       const dx = curr.x - prev.x;
       const dy = curr.y - prev.y;
       const segLen = Math.max(Math.abs(dx), Math.abs(dy));
@@ -170,13 +171,13 @@ export function StudentUnitsView(): ReactNode {
   const currentUnitId = reversed.find((u) => (progressMap.get(u.id) ?? 0) > 0)?.id;
 
   if (loading) return <UnitsSkeleton />;
-  if (error) return <ErrorState title="┘╪┤┘ ╪ز╪ص┘à┘è┘ ╪د┘┘à┘┘ç╪ش" description={error} />;
+  if (error) return <ErrorState title="فشل تحميل المنهج" description={error} />;
 
   if (reversed.length === 0) {
     return (
       <EmptyState
-        title="┘╪د ┘è┘ê╪ش╪» ┘à┘┘ç╪ش ┘à╪ز╪د╪ص"
-        description="┘è╪ز┘à ╪ح┘╪┤╪د╪ة ┘à╪ص╪ز┘ê┘ë ╪د┘┘à┘┘ç╪ش ╪ص╪د┘┘è╪د┘ï"
+        title="لا يوجد منهج متاح"
+        description="يتم إنشاء محتوى المنهج حالياً"
         icon={<BookOpen className="h-16 w-16" />}
       />
     );

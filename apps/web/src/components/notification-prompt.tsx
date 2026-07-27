@@ -35,7 +35,7 @@ export function NotificationPrompt(): ReactNode {
   };
 
   return (
-    <div className="fixed bottom-36 left-4 right-4 z-50 lg:bottom-6 lg:left-auto lg:right-6 lg:w-96">
+    <div className="fixed bottom-[calc(72px+env(safe-area-inset-bottom,0px)+8px+60px)] left-4 right-4 z-50 lg:bottom-6 lg:left-auto lg:ltr:right-6 lg:rtl:left-6 lg:w-96">
       <div className="flex items-start gap-3 rounded-2xl border border-primary-500/20 bg-neutral-900/95 p-4 shadow-2xl backdrop-blur-lg dark:bg-neutral-900/95">
         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary-500/10">
           <BellOff className="h-5 w-5 text-primary-500" />

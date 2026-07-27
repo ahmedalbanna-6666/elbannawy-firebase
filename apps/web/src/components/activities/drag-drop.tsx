@@ -24,9 +24,11 @@ export function DragDropActivity({
     if (toIndex < 0 || toIndex >= items.length) return;
     setItems((prev) => {
       const next = [...prev];
-      const tmp = next[fromIndex];
-      next[fromIndex] = next[toIndex];
-      next[toIndex] = tmp;
+      const from = next[fromIndex];
+      const to = next[toIndex];
+      if (from === undefined || to === undefined) return prev;
+      next[fromIndex] = to;
+      next[toIndex] = from;
       return next;
     });
   };

@@ -359,7 +359,7 @@ export default function UnitDetailPage(): ReactNode {
         <LessonFormDialog
           open={createDialogOpen}
           onClose={(): void => { setCreateDialogOpen(false); }}
-          unitId={unitId}
+          unitId={unitId ?? ''}
         />
       )}
 
@@ -367,7 +367,7 @@ export default function UnitDetailPage(): ReactNode {
         <LessonFormDialog
           open={editTarget !== null}
           onClose={(): void => { setEditTarget(null); }}
-          unitId={unitId}
+          unitId={unitId ?? ''}
           lesson={editTarget}
         />
       )}

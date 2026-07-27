@@ -63,7 +63,7 @@ const PODIUM_STYLES: Record<number, { ring: string; bg: string; icon: LucideIcon
 };
 
 function avatarFor(name: string, url: string | null): string {
-  const first = name ? name.split(" ")[0] : "User";
+  const first = (name ? name.split(" ")[0] : "User") ?? "User";
   return (
     url ??
     `https://ui-avatars.com/api/?name=${encodeURIComponent(first)}&background=22D3EE&color=fff&bold=true&font-size=0.33&size=128`
@@ -150,7 +150,8 @@ export default function LeaderboardPage(): ReactNode {
           {/* Podium */}
           <div className="grid grid-cols-1 sm:grid-cols-3 items-end gap-3">
             {podiumOrder.map((entry) => {
-              const style = PODIUM_STYLES[entry.rank] ?? PODIUM_STYLES[3];
+              const style = PODIUM_STYLES[entry.rank];
+              if (!style) return null;
               const Icon = style.icon;
               const isMe = entry.id === userId;
               return (

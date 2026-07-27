@@ -12,7 +12,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
-import { ErrorState } from "@/components/ui/error-state";
 import {
   Dialog,
   DialogContent,
@@ -46,12 +45,13 @@ interface StoryDetailManagement {
   readonly description: string | null;
   readonly displayOrder: number;
   readonly published: boolean;
-  readonly grade: {
+  readonly gradeId?: string;
+  readonly stageId?: string;
+  readonly grade?: {
     readonly id: string;
     readonly name: string;
     readonly stage: { readonly id: string; readonly name: string };
   };
-  readonly chapters: readonly ChapterManagement[];
 }
 
 export default function StoryDetailPage(): ReactNode {
@@ -72,13 +72,22 @@ export default function StoryDetailPage(): ReactNode {
 
   const hydrated = typeof rawRole === "string";
 
-  const { data: story, isLoading, isError, error } = useQuery({
+  const { data: story, isLoading: storyLoading } = useQuery({
     queryKey: ["management-story", storyId],
     queryFn: async () => {
-      const res = await api.get<StoryDetailManagement>(
-        `/stories/management/${storyId}`,
-      );
+      const res = await api.get<StoryDetailManagement>(`/stories/${storyId}`);
       return res.data ?? null;
+    },
+    staleTime: 30_000,
+    enabled: hydrated && isManagement,
+  });
+
+  const { data: chapters, isLoading: chaptersLoading } = useQuery({
+    queryKey: ["management-story-chapters", storyId],
+    queryFn: async () => {
+      const res = await api.get<ChapterManagement[] | { items: ChapterManagement[]; nextCursor?: string | null }>(`/stories/${storyId}/chapters`);
+      const raw = res.data ?? [];
+      return Array.isArray(raw) ? raw : raw.items ?? [];
     },
     staleTime: 30_000,
     enabled: hydrated && isManagement,
@@ -89,7 +98,7 @@ export default function StoryDetailPage(): ReactNode {
       api.delete(`/stories/${storyId}/chapters/${id}`),
     onSuccess: () => {
       void queryClient.invalidateQueries({
-        queryKey: ["management-story", storyId],
+        queryKey: ["management-story-chapters", storyId],
       });
       setDeleteTarget(null);
     },
@@ -97,24 +106,17 @@ export default function StoryDetailPage(): ReactNode {
 
   const sortedChapters = useMemo(
     () =>
-      [...(story?.chapters ?? [])].sort((a, b) => a.displayOrder - b.displayOrder),
-    [story],
+      [...(chapters ?? [])].sort((a, b) => a.displayOrder - b.displayOrder),
+    [chapters],
   );
+
+  const isLoading = storyLoading || chaptersLoading;
 
   if (!hydrated || !isManagement) {
     return null;
   }
 
   if (isLoading) return <StoryDetailSkeleton />;
-
-  if (isError) {
-    return (
-      <ErrorState
-        title="فشل تحميل القصة"
-        description={error instanceof Error ? error.message : "حدث خطأ غير متوقع"}
-      />
-    );
-  }
 
   if (!story) {
     return (
@@ -151,7 +153,7 @@ export default function StoryDetailPage(): ReactNode {
         <div className="min-w-0">
           <div className="flex items-center gap-2">
             <span className="text-xs font-semibold text-primary-500">
-              Story #{String(story.displayOrder)}
+              Story #{String(story.displayOrder ?? 0)}
             </span>
             <Badge
               variant={story.published ? "success" : "warning"}
@@ -164,7 +166,7 @@ export default function StoryDetailPage(): ReactNode {
             {story.title}
           </h1>
           <p className="mt-1 text-sm text-neutral-500">
-            {story.grade?.stage?.name ?? ""} — {story.grade?.name ?? ""}
+            {story.grade?.name ?? story.gradeId ?? ""}
           </p>
           {story.description && (
             <p className="mt-2 text-sm text-neutral-600 dark:text-neutral-400">

@@ -11,7 +11,6 @@ import type {
   IUpdateLiveSessionDto,
   ICreateTeacherAvailabilityDto,
   IBookSessionDto,
-  IBookBySlotDto,
 } from "@el-bannawy/shared";
 
 interface TeacherInfo {
@@ -177,7 +176,7 @@ export function useAvailableSlots(teacherId?: string): UseQueryResult<AvailableS
       const future = new Date(now);
       future.setDate(future.getDate() + 30);
       const dateTo = future.toISOString().split("T")[0];
-      const params = new URLSearchParams({ dateFrom, dateTo });
+      const params = new URLSearchParams({ dateFrom: dateFrom ?? '', dateTo: dateTo ?? '' });
       if (teacherId) params.set("teacherId", teacherId);
       const res = await api.get<AvailableSlotItem[]>(
         `/live/available-slots?${params.toString()}`,

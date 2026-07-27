@@ -41,12 +41,14 @@ interface FinalReviewManagement {
   readonly published: boolean;
   readonly createdAt: string;
   readonly updatedAt: string;
-  readonly grade: {
+  readonly grade?: {
     readonly id: string;
     readonly name: string;
     readonly stage: { readonly id: string; readonly name: string };
   };
-  readonly _count: { readonly sections: number };
+  readonly gradeId?: string;
+  readonly stageId?: string;
+  readonly _count?: { readonly sections: number };
 }
 
 function formatRelativeDate(dateStr: string): string {
@@ -101,8 +103,9 @@ export function TeacherFinalReviewsView(): ReactNode {
     queryKey: ["management-final-reviews", filterParams],
     queryFn: async () => {
       const endpoint = `/final-reviews/management${filterParams ? `?${filterParams}` : ""}`;
-      const res = await api.get<FinalReviewManagement[]>(endpoint);
-      return res.data ?? [];
+      const res = await api.get<FinalReviewManagement[] | { items: FinalReviewManagement[]; nextCursor?: string | null }>(endpoint);
+      const raw = res.data ?? [];
+      return Array.isArray(raw) ? raw : raw.items ?? [];
     },
     staleTime: 30_000,
   });
@@ -130,7 +133,7 @@ export function TeacherFinalReviewsView(): ReactNode {
       title: review.title,
       description: review.description,
       coverImageUrl: null,
-      gradeId: review.grade.id,
+      gradeId: review.grade?.id ?? review.gradeId ?? "",
       displayOrder: review.displayOrder,
       published: review.published,
     });
@@ -189,14 +192,14 @@ export function TeacherFinalReviewsView(): ReactNode {
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
                       <span className="text-[11px] font-semibold text-neutral-400">
-                        #{String(review.displayOrder)}
+                        #{String(review.displayOrder ?? 0)}
                       </span>
                       <h3 className="truncate text-sm font-bold text-neutral-900 dark:text-neutral-100">
                         {review.title}
                       </h3>
                     </div>
                     <p className="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400">
-                      {review.grade?.stage?.name ?? ""} — {review.grade?.name ?? ""}
+                      {review.grade?.name ?? ""}
                     </p>
                   </div>
                   <Badge
@@ -216,7 +219,7 @@ export function TeacherFinalReviewsView(): ReactNode {
                 <div className="mt-auto flex items-center gap-4 text-[11px] text-neutral-400">
                   <span className="flex items-center gap-1">
                     <Layers className="h-3.5 w-3.5" />
-                    {String(review._count.sections)} أقسام
+                    {String(review._count?.sections ?? 0)} أقسام
                   </span>
                   <span className="flex items-center gap-1">
                     <Clock className="h-3.5 w-3.5" />

@@ -2182,6 +2182,9 @@ export interface IStory {
   readonly termId: string;
   readonly displayOrder: number;
   readonly published: boolean;
+  readonly isPremium: boolean;
+  readonly priceCoins?: number;
+  readonly lockedOverride: boolean | null;
   readonly contentVersion: number;
   readonly createdAt: string;
   readonly updatedAt: string;
@@ -2242,6 +2245,7 @@ export interface IStoryRepository {
   getById(id: string): Promise<RepositoryResult<IStory | null>>;
   update(id: string, input: Partial<IStory>): Promise<RepositoryResult<IStory>>;
   delete(id: string): Promise<RepositoryResult<void>>;
+  restore(id: string, requestId: string): Promise<RepositoryResult<void>>;
   list(filter: IStoryFilter): Promise<RepositoryResult<IStory[]>>;
   listByGrade(gradeId: string): Promise<RepositoryResult<IStory[]>>;
   createChapter(input: Partial<IStoryChapter>): Promise<RepositoryResult<IStoryChapter>>;
@@ -2274,6 +2278,9 @@ export interface IFinalReview {
   readonly closesAt: string;
   readonly enabled: boolean;
   readonly published: boolean;
+  readonly isPremium: boolean;
+  readonly priceCoins?: number;
+  readonly lockedOverride: boolean | null;
   readonly createdBy: string;
   readonly displayOrder: number;
   readonly contentVersion: number;
@@ -2381,6 +2388,7 @@ export interface IFinalReviewRepository {
   getById(id: string): Promise<RepositoryResult<IFinalReview | null>>;
   update(id: string, input: Partial<IFinalReview>): Promise<RepositoryResult<IFinalReview>>;
   delete(id: string): Promise<RepositoryResult<void>>;
+  restore(id: string, requestId: string): Promise<RepositoryResult<void>>;
   list(filter: IFinalReviewFilter): Promise<RepositoryResult<IFinalReview[]>>;
   listByGrade(gradeId: string): Promise<RepositoryResult<IFinalReview[]>>;
   createUnit(input: Partial<IFinalReviewUnit>): Promise<RepositoryResult<IFinalReviewUnit>>;
@@ -2414,6 +2422,9 @@ export interface IFinalReviewRepository {
   ): Promise<RepositoryResult<IFinalReviewAttempt[]>>;
   createAnswer(input: IFinalReviewAnswer): Promise<RepositoryResult<IFinalReviewAnswer>>;
   listAnswers(attemptId: string): Promise<RepositoryResult<IFinalReviewAnswer[]>>;
+  getProgress(studentId: string, finalReviewId: string): Promise<RepositoryResult<IFinalReviewProgress | null>>;
+  upsertProgress(input: IFinalReviewProgress): Promise<RepositoryResult<IFinalReviewProgress>>;
+  listStudentProgress(studentId: string): Promise<RepositoryResult<IFinalReviewProgress[]>>;
 }
 
 // ===== Notification Contracts =====

@@ -35,14 +35,6 @@ async function getEffectiveUserRole(uid: string): Promise<string> {
   return 'student';
 }
 
-function mapErrorCode(code: string): number {
-  switch (code) {
-    case 'NOT_FOUND': return 404;
-    case 'FORBIDDEN': return 403;
-    case 'INVALID_INPUT': return 400;
-    default: return 500;
-  }
-}
 
 export async function GET(
   request: NextRequest,

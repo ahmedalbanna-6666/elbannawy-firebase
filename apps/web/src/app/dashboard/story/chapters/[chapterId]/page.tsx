@@ -1,53 +1,70 @@
 "use client";
 
 import { type ReactNode } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api-client";
 import { useAuthStore } from "@/lib/auth-store";
-import { Skeleton } from "@/components/ui/skeleton";
-import { EmptyState } from "@/components/ui/empty-state";
-import { ErrorState } from "@/components/ui/error-state";
 import { PlyrVideoPlayer } from "@/components/plyr-player";
 import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import {
-  MonitorPlay, Languages, FileText, GraduationCap, ClipboardList, BookOpen, Play, Eye,
+  MonitorPlay, Languages, FileText, GraduationCap, ClipboardList, Eye, ArrowLeft,
 } from "lucide-react";
 
 const API_BASE = "/api/v1/content";
 
 export default function StudentChapterContentPage(): ReactNode {
+  const router = useRouter();
   const params = useParams();
   const user = useAuthStore((s) => s.user);
   const hydrated = typeof user?.role === "string";
   const chapterId = params.chapterId as string;
   const path = `${API_BASE}/videos/CHAPTER/${chapterId}`;
 
-  const { data: videos = [] } = useQuery({
+  const { data: videos = [], isLoading: vLoading } = useQuery({
     queryKey: [path],
     queryFn: async () => { const res = await api.get<{ id: string; title: string; youtubeUrl: string; youtubeId: string }[]>(path); return res.data ?? []; },
     enabled: hydrated,
   });
 
-  const { data: vocabs = [] } = useQuery({
+  const { data: vocabs = [], isLoading: vocLoading } = useQuery({
     queryKey: [`${API_BASE}/vocabulary/CHAPTER/${chapterId}`],
     queryFn: async () => { const res = await api.get<{ id: string; word: string; translation: string; definition: string | null }[]>(`${API_BASE}/vocabulary/CHAPTER/${chapterId}`); return res.data ?? []; },
     enabled: hydrated,
   });
 
-  const { data: doc } = useQuery({
+  const { data: doc, isLoading: docLoading } = useQuery({
     queryKey: [`${API_BASE}/documents/CHAPTER/${chapterId}`],
     queryFn: async () => { const res = await api.get<{ storagePath?: string; fileName: string; downloadable: boolean } | null>(`${API_BASE}/documents/CHAPTER/${chapterId}`); return res.data ?? null; },
     enabled: hydrated,
   });
 
-  if (!hydrated) return null;
+  if (!hydrated) return <div className="mx-auto flex max-w-4xl flex-col gap-6 px-4 py-6"><Skeleton className="h-12 w-full rounded-xl" /><Skeleton className="h-64 w-full rounded-xl" /><Skeleton className="h-32 w-full rounded-xl" /></div>;
+
+  const isLoading = vLoading || vocLoading || docLoading;
+
+  if (isLoading) {
+    return (
+      <div className="mx-auto flex max-w-4xl flex-col gap-6 px-4 py-6">
+        <div className="flex items-center gap-2">
+          <Skeleton className="h-8 w-8 rounded-lg" />
+          <Skeleton className="h-5 w-32" />
+        </div>
+        <Skeleton className="h-64 w-full rounded-xl" />
+        <Skeleton className="h-32 w-full rounded-xl" />
+        <Skeleton className="h-24 w-full rounded-xl" />
+      </div>
+    );
+  }
 
   return (
     <div className="mx-auto flex max-w-4xl flex-col gap-6 px-4 py-6">
+      <button onClick={(): void => { router.push("/dashboard/story"); }} className="flex w-fit items-center gap-1 text-sm text-primary-500 hover:text-primary-600">
+        <ArrowLeft className="h-4 w-4" />العودة للقصة
+      </button>
       {/* Video Section */}
       {videos.length > 0 && (
         <Card>

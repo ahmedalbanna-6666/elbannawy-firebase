@@ -11,7 +11,7 @@ export async function POST(
   const lessonId = (await params).id;
   try {
     const formData = await request.formData();
-    const file = formData.get('file') as File | null;
+    const file = (formData as unknown as { get(n: string): string | File | null }).get('file') as File | null;
     if (!file) {
       return NextResponse.json({ success: false, error: { code: 'INVALID_INPUT', message: 'No file provided' } }, { status: 400 });
     }

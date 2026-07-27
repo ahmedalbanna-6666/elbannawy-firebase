@@ -14,8 +14,8 @@ export function parseDisplayWord(raw: string): DisplayWord {
     return { displayWord: trimmed, pronunciationText: trimmed, partOfSpeech: null };
   }
 
-  const wordPart = match[1].trim();
-  const posCandidate = match[2].trim().toLowerCase();
+  const wordPart = match[1]?.trim() ?? '';
+  const posCandidate = match[2]?.trim().toLowerCase() ?? '';
 
   if (POS_PATTERN.test(posCandidate)) {
     return { displayWord: wordPart, pronunciationText: wordPart, partOfSpeech: posCandidate };

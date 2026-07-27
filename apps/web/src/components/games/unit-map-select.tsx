@@ -16,9 +16,9 @@ export function UnitMapSelect({
   onSelect,
 }: UnitMapSelectProps): ReactNode {
   return (
-    <div className="relative mx-auto w-full max-w-md overflow-x-hidden py-2">
-      <div className="pointer-events-none absolute inset-y-0 left-1/2 w-1 -translate-x-1/2 rounded-full bg-gradient-to-b from-primary-500/15 via-primary-500/45 to-primary-500/15" />
-      <div className="relative flex flex-col items-center gap-6">
+    <div className="relative mx-auto w-full max-w-lg overflow-x-hidden py-2 lg:max-w-xl xl:max-w-2xl">
+      <div className="pointer-events-none absolute inset-y-0 start-1/2 w-1 -translate-x-1/2 rounded-full bg-gradient-to-b from-primary-500/15 via-primary-500/45 to-primary-500/15" />
+      <div className="relative flex flex-col items-center gap-4 md:gap-6">
         {units.map((unit, idx) => {
           const isOdd = idx % 2 === 0;
           const active = selectedId === unit.id;
@@ -30,7 +30,9 @@ export function UnitMapSelect({
                 onSelect(unit.id);
               }}
               className={`relative z-10 flex flex-col items-center gap-2 ${
-                isOdd ? "md:translate-x-14" : "md:-translate-x-14"
+                isOdd
+                  ? "md:ltr:translate-x-14 md:rtl:-translate-x-14"
+                  : "md:ltr:-translate-x-14 md:rtl:translate-x-14"
               }`}
             >
               <span
@@ -42,13 +44,13 @@ export function UnitMapSelect({
               >
                 {String(idx + 1)}
                 {unit.isPremium && (
-                  <span className="absolute -right-1 -top-1 flex h-6 w-6 items-center justify-center rounded-full bg-amber-500 text-white shadow-[0_0_10px_rgba(245,158,11,0.5)]">
+                  <span className="absolute -end-1 -top-1 flex h-6 w-6 items-center justify-center rounded-full bg-amber-500 text-white shadow-[0_0_10px_rgba(245,158,11,0.5)]">
                     <Lock className="h-3 w-3" />
                   </span>
                 )}
               </span>
               <span
-                className={`max-w-[150px] text-center text-sm font-bold ${
+                className={`max-w-[160px] text-center text-sm font-bold ${
                   active
                     ? "text-primary-600 dark:text-primary-400"
                     : "text-neutral-700 dark:text-neutral-200"

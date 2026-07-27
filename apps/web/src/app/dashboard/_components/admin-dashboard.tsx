@@ -10,7 +10,7 @@ import { api } from "@/lib/api-client";
 import { Card } from "@/components/ui/card";
 import { CardEdge } from "@/components/ui/card-edge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ChevronLeft, GraduationCap, UserCog, BookOpen, Layers, BookMarked, Calendar } from "lucide-react";
+import { ChevronLeft, GraduationCap, UserCog, BookOpen, Layers, Calendar } from "lucide-react";
 
 interface DashboardStats {
   studentsCount: number;

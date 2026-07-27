@@ -273,9 +273,11 @@ export function QuestionImportPreviewDialog({
         const targetIdx = direction === "up" ? idx - 1 : idx + 1;
         if (targetIdx < 0 || targetIdx >= g.items.length) return g;
         const items = [...g.items];
-        const temp = items[idx];
-        items[idx] = items[targetIdx];
-        items[targetIdx] = temp;
+        const fromItem = items[idx];
+        const toItem = items[targetIdx];
+        if (fromItem === undefined || toItem === undefined) return g;
+        items[idx] = toItem;
+        items[targetIdx] = fromItem;
         return { ...g, items };
       }),
     );

@@ -1,65 +1,36 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { authenticateRequest } from '@/lib/firebase/auth-helper';
-import { StoryRepository } from '@el-bannawy/lib';
+import { NextRequest, NextResponse } from "next/server";
+import { StoryService } from "@el-bannawy/lib";
+import { authenticateRequest } from "@/lib/firebase/auth-helper";
+import { handleRepoResult, internalError, unauthorized } from "@/lib/route-helpers";
 
-const storyRepo = new StoryRepository();
+const storyService = new StoryService();
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-): Promise<NextResponse> {
+export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }): Promise<NextResponse> {
   try {
-    const decoded = await authenticateRequest(request);
-    if (!decoded) {
-      return NextResponse.json({ success: false, error: { code: 'UNAUTHORIZED', message: 'Not authenticated' } }, { status: 401 });
-    }
-
+    const decoded = await authenticateRequest(_request);
+    if (!decoded) return unauthorized();
     const { id: storyId } = await params;
-    const result = await storyRepo.getProgress(decoded.uid, storyId);
-    if (!result.ok) {
-      return NextResponse.json({ success: false, error: result.error }, { status: 500 });
-    }
-    return NextResponse.json({ success: true, data: result.value });
-  } catch (error) {
-    return NextResponse.json({ success: false, error: { code: 'INTERNAL', message: error instanceof Error ? error.message : 'Unknown error' } }, { status: 500 });
-  }
+    return handleRepoResult(await storyService.getProgress(decoded.uid, storyId));
+  } catch (error) { return internalError(error); }
 }
 
-export async function PATCH(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-): Promise<NextResponse> {
+export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }): Promise<NextResponse> {
   try {
     const decoded = await authenticateRequest(request);
-    if (!decoded) {
-      return NextResponse.json({ success: false, error: { code: 'UNAUTHORIZED', message: 'Not authenticated' } }, { status: 401 });
-    }
-
-    let body: Record<string, unknown>;
-    try {
-      body = await request.json() as Record<string, unknown>;
-    } catch {
-      return NextResponse.json({ success: false, error: { code: 'INVALID_INPUT', message: 'Invalid JSON body' } }, { status: 400 });
-    }
-
+    if (!decoded) return unauthorized();
+    const body: Record<string, unknown> = await request.json() as Record<string, unknown>;
     const { id: storyId } = await params;
-    const result = await storyRepo.upsertProgress({
+    const result = await storyService.upsertProgress({
       id: (body.id as string) ?? crypto.randomUUID(),
       studentId: decoded.uid,
       storyId,
-      status: (body.status as import('@el-bannawy/lib').IStoryProgress['status']) ?? 'in_progress',
+      status: (body.status as import("@el-bannawy/lib").IStoryProgress["status"]) ?? "in_progress",
       progressPercent: (body.progressPercent as number) ?? 0,
       lastActiveAt: new Date().toISOString(),
       contentVersion: 1,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     });
-
-    if (!result.ok) {
-      return NextResponse.json({ success: false, error: result.error }, { status: 500 });
-    }
-    return NextResponse.json({ success: true, data: result.value });
-  } catch (error) {
-    return NextResponse.json({ success: false, error: { code: 'INTERNAL', message: error instanceof Error ? error.message : 'Unknown error' } }, { status: 500 });
-  }
+    return handleRepoResult(result);
+  } catch (error) { return internalError(error); }
 }

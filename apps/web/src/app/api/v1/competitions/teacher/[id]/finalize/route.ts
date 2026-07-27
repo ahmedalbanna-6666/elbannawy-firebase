@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { authenticateRequest } from '@/lib/firebase/auth-helper';
 import { CompetitionRepository, UserService, WalletRepository, XpAccountRepository } from '@el-bannawy/lib';
-import { getAdminDb } from '@/lib/firebase/admin';
 
 const competitionRepo = new CompetitionRepository();
 const userService = new UserService();
@@ -51,6 +50,7 @@ export async function POST(
 
     for (let i = 0; i < top.length; i++) {
       const p = top[i];
+      if (!p) continue;
       const multiplier = topCount - i;
       const awardXp = Math.round((xpReward * multiplier) / topCount);
       const awardCoins = Math.round((coinReward * multiplier) / topCount);

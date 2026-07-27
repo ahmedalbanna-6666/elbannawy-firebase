@@ -41,7 +41,7 @@ const TableRow = forwardRef<
   <tr
     ref={ref}
     className={cn(
-      "h-14 transition-colors hover:bg-neutral-100/50 dark:hover:bg-neutral-800/50",
+      "min-h-[44px] transition-colors hover:bg-neutral-100/50 dark:hover:bg-neutral-800/50",
       className,
     )}
     {...props}
@@ -56,7 +56,7 @@ const TableHead = forwardRef<
   <th
     ref={ref}
     className={cn(
-      "h-14 px-4 text-start text-sm font-medium text-neutral-500 dark:text-neutral-400",
+      "min-h-[44px] px-3 sm:px-4 text-start text-sm font-medium text-neutral-500 dark:text-neutral-400",
       className,
     )}
     {...props}
@@ -70,7 +70,7 @@ const TableCell = forwardRef<
 >(({ className, ...props }, ref) => (
   <td
     ref={ref}
-    className={cn("h-14 px-4 text-neutral-900 dark:text-neutral-100", className)}
+    className={cn("min-h-[44px] px-3 sm:px-4 text-neutral-900 dark:text-neutral-100", className)}
     {...props}
   />
 ));

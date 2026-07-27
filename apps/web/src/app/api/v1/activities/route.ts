@@ -1,5 +1,5 @@
 ﻿import { NextRequest, NextResponse } from 'next/server';
-import { ActivityService, ActivityRepository, StudentAttemptRepository, LessonProgressRepository, LessonRepository } from '@el-bannawy/lib';
+import { ActivityService, ActivityRepository, StudentAttemptRepository, LessonProgressRepository } from '@el-bannawy/lib';
 
 const service = new ActivityService(
   new ActivityRepository(),

@@ -14,7 +14,6 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const scope = searchParams.get('scope') ?? 'all';
     const source = searchParams.get('source');
     const unitIds = searchParams.getAll('unitIds');
-    const search = searchParams.get('search');
     const page = parseInt(searchParams.get('page') ?? '1', 10);
     const limit = parseInt(searchParams.get('limit') ?? '20', 10);
 

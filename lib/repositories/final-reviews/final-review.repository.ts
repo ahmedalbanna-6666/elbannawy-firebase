@@ -6,6 +6,7 @@ import { RepositoryResult } from '../../shared/types/repository.types';
 import type {
   IFinalReviewRepository, IFinalReview, IFinalReviewUnit, IFinalReviewLesson,
   IFinalReviewQuestion, IFinalReviewAttempt, IFinalReviewAnswer, IFinalReviewFilter,
+  IFinalReviewProgress,
 } from '../contracts';
 
 const REVIEWS = 'finalReviews';
@@ -14,6 +15,7 @@ const LESSONS = 'finalReviewLessons';
 const QUESTIONS = 'finalReviewQuestions';
 const ATTEMPTS = 'finalReviewAttempts';
 const ANSWERS = 'finalReviewAnswers';
+const PROGRESS = 'finalReviewProgress';
 
 function formatDoc(snap: FirebaseFirestore.DocumentSnapshot): Record<string, unknown> | null {
   if (!snap.exists) return null;
@@ -84,6 +86,20 @@ export class FinalReviewRepository implements IFinalReviewRepository {
       return { ok: true, value: undefined };
     } catch (error) {
       return { ok: false, error: { ...toRepositoryError(error) } };
+    }
+  }
+
+  async restore(id: string, requestId: string): Promise<RepositoryResult<void>> {
+    try {
+      const db = this.getDb();
+      const docRef = db.collection(REVIEWS).doc(id);
+      const snap = await docRef.get();
+      if (!snap.exists) return { ok: false, error: { code: 'NOT_FOUND', message: `Final review not found: ${id}`, retryable: false, requestId } };
+      await docRef.update({ deletedAt: null, updatedAt: Timestamp.now() });
+      return { ok: true, value: undefined };
+    } catch (error) {
+      const err = toRepositoryError(error);
+      return { ok: false, error: { ...err, requestId } };
     }
   }
 
@@ -367,6 +383,55 @@ export class FinalReviewRepository implements IFinalReviewRepository {
       return { ok: true, value: result.value.items as unknown as IFinalReviewAnswer[] };
     } catch (error) {
       return { ok: false, error: { ...toRepositoryError(error) } } as unknown as RepositoryResult<IFinalReviewAnswer[]>;
+    }
+  }
+
+  async getProgress(studentId: string, finalReviewId: string): Promise<RepositoryResult<IFinalReviewProgress | null>> {
+    try {
+      const query = new QueryBuilder<Record<string, unknown>>(this.transactionManager);
+      query.withFilter('studentId', 'eq', studentId);
+      query.withFilter('finalReviewId', 'eq', finalReviewId);
+      query.withLimit(1);
+      const result = await query.execute(PROGRESS);
+      if (!result.ok) return result as unknown as RepositoryResult<IFinalReviewProgress | null>;
+      const item = result.value.items[0];
+      if (!item) return { ok: true, value: null };
+      return { ok: true, value: item as unknown as IFinalReviewProgress };
+    } catch (error) {
+      return { ok: false, error: { ...toRepositoryError(error) } } as unknown as RepositoryResult<IFinalReviewProgress | null>;
+    }
+  }
+
+  async upsertProgress(input: IFinalReviewProgress): Promise<RepositoryResult<IFinalReviewProgress>> {
+    try {
+      const db = this.getDb();
+      const now = Timestamp.now();
+      if (input.id) {
+        const existing = await db.collection(PROGRESS).doc(input.id).get();
+        if (existing.exists) {
+          await existing.ref.update({ ...input, updatedAt: now } as Record<string, unknown>);
+          const saved = await existing.ref.get();
+          return { ok: true, value: { ...saved.data(), id: saved.id } as unknown as IFinalReviewProgress };
+        }
+      }
+      const docRef = input.id ? db.collection(PROGRESS).doc(input.id) : db.collection(PROGRESS).doc();
+      const doc = { ...input, id: docRef.id, createdAt: now, updatedAt: now };
+      await docRef.set(doc);
+      return { ok: true, value: doc as unknown as IFinalReviewProgress };
+    } catch (error) {
+      return { ok: false, error: { ...toRepositoryError(error) } };
+    }
+  }
+
+  async listStudentProgress(studentId: string): Promise<RepositoryResult<IFinalReviewProgress[]>> {
+    try {
+      const query = new QueryBuilder<Record<string, unknown>>(this.transactionManager);
+      query.withFilter('studentId', 'eq', studentId);
+      const result = await query.execute(PROGRESS);
+      if (!result.ok) return result as unknown as RepositoryResult<IFinalReviewProgress[]>;
+      return { ok: true, value: result.value.items as unknown as IFinalReviewProgress[] };
+    } catch (error) {
+      return { ok: false, error: { ...toRepositoryError(error) } } as unknown as RepositoryResult<IFinalReviewProgress[]>;
     }
   }
 }

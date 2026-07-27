@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAdminDb } from '@/lib/firebase/admin';
+import { getAdminDb, getUserContext } from '@/lib/firebase/admin';
 import { authenticateRequest } from '@/lib/firebase/auth-helper';
 
 export async function GET(request: NextRequest): Promise<NextResponse> {
@@ -17,26 +17,26 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json({ success: true, data: { lessons: [], units: [], vocabulary: [] } });
     }
 
+    const context = await getUserContext(decoded.uid);
+    const gradeId = context?.gradeId;
+    if (!gradeId) {
+      return NextResponse.json({ success: true, data: { lessons: [], units: [], vocabulary: [] } });
+    }
+
     const db = getAdminDb();
     const term = q.trim();
 
-    const [userDoc, lessonsSnap, unitsSnap, vocabSnap] = await Promise.all([
-      db.collection('users').doc(decoded.uid).get(),
-      db.collection('lessons').where('isPublished', '==', true).select('title', 'titleAr', 'gradeId').limit(200).get(),
-      db.collection('units').where('published', '==', true).select('name', 'nameAr', 'title', 'titleAr', 'gradeId').limit(100).get(),
-      db.collection('vocabularyItems').select('word', 'translation', 'lessonId').limit(500).get(),
+    const [lessonsSnap, unitsSnap, vocabSnap] = await Promise.all([
+      db.collection('lessons').where('isPublished', '==', true).where('gradeId', '==', gradeId).select('title', 'titleAr').limit(50).get(),
+      db.collection('units').where('published', '==', true).where('gradeId', '==', gradeId).select('name', 'nameAr', 'title', 'titleAr').limit(30).get(),
+      db.collection('vocabularyItems').select('word', 'translation', 'lessonId').limit(200).get(),
     ]);
-
-    const userData = userDoc.data();
-    const gradeId = userData?.gradeId;
 
     const filteredLessons = lessonsSnap.docs
       .filter((d) => {
         const data = d.data();
-        return data.gradeId === gradeId && (
-          (data.title as string)?.toLowerCase().includes(term.toLowerCase()) ||
-          (data.titleAr as string)?.includes(term)
-        );
+        return (data.title as string)?.toLowerCase().includes(term.toLowerCase()) ||
+               (data.titleAr as string)?.includes(term);
       })
       .slice(0, 10)
       .map((d) => ({ id: d.id, title: d.data().title, type: 'lesson' as const }));
@@ -44,12 +44,10 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const filteredUnits = unitsSnap.docs
       .filter((d) => {
         const data = d.data();
-        return data.gradeId === gradeId && (
-          (data.name as string)?.toLowerCase().includes(term.toLowerCase()) ||
-          (data.nameAr as string)?.includes(term) ||
-          (data.title as string)?.toLowerCase().includes(term.toLowerCase()) ||
-          (data.titleAr as string)?.includes(term)
-        );
+        return (data.name as string)?.toLowerCase().includes(term.toLowerCase()) ||
+               (data.nameAr as string)?.includes(term) ||
+               (data.title as string)?.toLowerCase().includes(term.toLowerCase()) ||
+               (data.titleAr as string)?.includes(term);
       })
       .slice(0, 10)
       .map((d) => ({ id: d.id, title: d.data().nameAr ?? d.data().name ?? d.data().title, type: 'unit' as const }));

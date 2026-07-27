@@ -12,7 +12,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
-import { ErrorState } from "@/components/ui/error-state";
 import {
   Dialog,
   DialogContent,
@@ -47,12 +46,13 @@ interface FinalReviewDetailManagement {
   readonly description: string | null;
   readonly displayOrder: number;
   readonly published: boolean;
-  readonly grade: {
+  readonly gradeId?: string;
+  readonly stageId?: string;
+  readonly grade?: {
     readonly id: string;
     readonly name: string;
     readonly stage: { readonly id: string; readonly name: string };
   };
-  readonly sections: readonly SectionManagement[];
 }
 
 export default function FinalReviewDetailPage(): ReactNode {
@@ -73,13 +73,22 @@ export default function FinalReviewDetailPage(): ReactNode {
 
   const hydrated = typeof rawRole === "string";
 
-  const { data: review, isLoading, isError, error } = useQuery({
+  const { data: review, isLoading: reviewLoading } = useQuery({
     queryKey: ["management-final-review", reviewId],
     queryFn: async () => {
-      const res = await api.get<FinalReviewDetailManagement>(
-        `/final-reviews/management/${reviewId}`,
-      );
+      const res = await api.get<FinalReviewDetailManagement>(`/final-reviews/${reviewId}`);
       return res.data ?? null;
+    },
+    staleTime: 30_000,
+    enabled: hydrated && isManagement,
+  });
+
+  const { data: sections, isLoading: sectionsLoading } = useQuery({
+    queryKey: ["management-final-review-units", reviewId],
+    queryFn: async () => {
+      const res = await api.get<SectionManagement[] | { items: SectionManagement[]; nextCursor?: string | null }>(`/final-reviews/${reviewId}/units`);
+      const raw = res.data ?? [];
+      return Array.isArray(raw) ? raw : raw.items ?? [];
     },
     staleTime: 30_000,
     enabled: hydrated && isManagement,
@@ -87,10 +96,10 @@ export default function FinalReviewDetailPage(): ReactNode {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) =>
-      api.delete(`/final-reviews/${reviewId}/sections/${id}`),
+      api.delete(`/final-reviews/${reviewId}/units/${id}`),
     onSuccess: () => {
       void queryClient.invalidateQueries({
-        queryKey: ["management-final-review", reviewId],
+        queryKey: ["management-final-review-units", reviewId],
       });
       setDeleteTarget(null);
     },
@@ -98,24 +107,17 @@ export default function FinalReviewDetailPage(): ReactNode {
 
   const sortedSections = useMemo(
     () =>
-      [...(review?.sections ?? [])].sort((a, b) => a.displayOrder - b.displayOrder),
-    [review],
+      [...(sections ?? [])].sort((a, b) => a.displayOrder - b.displayOrder),
+    [sections],
   );
+
+  const isLoading = reviewLoading || sectionsLoading;
 
   if (!hydrated || !isManagement) {
     return null;
   }
 
   if (isLoading) return <FinalReviewDetailSkeleton />;
-
-  if (isError) {
-    return (
-      <ErrorState
-        title="فشل تحميل المراجعة"
-        description={error instanceof Error ? error.message : "حدث خطأ غير متوقع"}
-      />
-    );
-  }
 
   if (!review) {
     return (
@@ -153,7 +155,7 @@ export default function FinalReviewDetailPage(): ReactNode {
         <div className="min-w-0">
           <div className="flex items-center gap-2">
             <span className="text-xs font-semibold text-primary-500">
-              Review #{String(review.displayOrder)}
+              Review #{String(review.displayOrder ?? 0)}
             </span>
             <Badge
               variant={review.published ? "success" : "warning"}
@@ -166,7 +168,7 @@ export default function FinalReviewDetailPage(): ReactNode {
             {review.title}
           </h1>
           <p className="mt-1 text-sm text-neutral-500">
-            {review.grade?.stage?.name ?? ""} — {review.grade?.name ?? ""}
+            {review.grade?.name ?? review.gradeId ?? ""}
           </p>
           {review.description && (
             <p className="mt-2 text-sm text-neutral-600 dark:text-neutral-400">
@@ -217,12 +219,14 @@ export default function FinalReviewDetailPage(): ReactNode {
                     <div className="mt-1 flex flex-wrap items-center gap-3 text-[11px] text-neutral-400">
                       <span className="flex items-center gap-1">
                         <HelpCircle className="h-3 w-3" />
-                        {String(section.questionCount)} سؤال
+                        {String(section.questionCount ?? 0)} سؤال
                       </span>
-                      <span className="flex items-center gap-1">
-                        <Clock className="h-3 w-3" />
-                        {String(section.durationMinutes)} دقيقة
-                      </span>
+                      {!!section.durationMinutes && (
+                        <span className="flex items-center gap-1">
+                          <Clock className="h-3 w-3" />
+                          {String(section.durationMinutes)} دقيقة
+                        </span>
+                      )}
                     </div>
                     {section.description && (
                       <p className="mt-1 text-xs text-neutral-500 line-clamp-1">

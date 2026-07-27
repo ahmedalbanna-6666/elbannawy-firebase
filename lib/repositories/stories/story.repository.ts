@@ -84,6 +84,20 @@ export class StoryRepository implements IStoryRepository {
     }
   }
 
+  async restore(id: string, requestId: string): Promise<RepositoryResult<void>> {
+    try {
+      const db = this.getDb();
+      const docRef = db.collection(STORIES).doc(id);
+      const snap = await docRef.get();
+      if (!snap.exists) return { ok: false, error: { code: 'NOT_FOUND', message: `Story not found: ${id}`, retryable: false, requestId } };
+      await docRef.update({ deletedAt: null, updatedAt: Timestamp.now() });
+      return { ok: true, value: undefined };
+    } catch (error) {
+      const err = toRepositoryError(error);
+      return { ok: false, error: { ...err, requestId } };
+    }
+  }
+
   async list(filter: IStoryFilter): Promise<RepositoryResult<IStory[]>> {
     try {
       const query = new QueryBuilder<Record<string, unknown>>(this.transactionManager);

@@ -64,10 +64,13 @@ export function CardSkeleton({ className }: { className?: string }): ReactNode {
   );
 }
 
-export function StatsGridSkeleton(): ReactNode {
+export function StatsGridSkeleton({ columns = 4 }: { columns?: number }): ReactNode {
+  const cols = columns <= 4
+    ? "grid-cols-2 sm:grid-cols-3 md:grid-cols-4"
+    : "grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6";
   return (
-    <div className="grid grid-cols-2 gap-4 md:grid-cols-4" aria-hidden="true">
-      {Array.from({ length: 4 }, (_, i) => (
+    <div className={cn("grid gap-4", cols)} aria-hidden="true">
+      {Array.from({ length: columns }, (_, i) => (
         <div key={i} className="flex flex-col gap-3 rounded-xl border border-neutral-100 p-4 dark:border-neutral-800">
           <Skeleton className="h-8 w-8 rounded-lg" />
           <Skeleton className="h-6 w-16" />

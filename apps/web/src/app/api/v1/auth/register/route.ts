@@ -1,10 +1,9 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { getAdminAuth } from '@/lib/firebase/admin';
-import { UserService, UserApplicationService, CreateUserInputSchema } from '@el-bannawy/lib';
+import { UserService, CreateUserInputSchema } from '@el-bannawy/lib';
 import { checkRateLimit } from '@/lib/rate-limiter';
 
 const userService = new UserService();
-const applicationService = new UserApplicationService(userService);
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
   try {

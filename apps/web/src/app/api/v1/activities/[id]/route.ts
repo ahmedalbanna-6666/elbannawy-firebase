@@ -6,7 +6,7 @@ const service = new ActivityService(
   new LessonProgressRepository(),
 );
 
-export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
     const result = await service.getActivity(id);

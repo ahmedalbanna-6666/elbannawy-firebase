@@ -28,7 +28,8 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
     const students = [];
     for (let i = 0; i < xpSnap.docs.length; i++) {
-      const xpDoc = xpSnap.docs[i];
+      const xpDoc = xpSnap.docs.at(i);
+      if (!xpDoc) continue;
       const xp = xpDoc.data() as { totalXp: number; level: number };
       const userDoc = userDocs[i];
       if (!userDoc?.exists) continue;

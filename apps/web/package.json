@@ -11,13 +11,23 @@
     "clean": "rimraf .next dist",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:chromium": "playwright test --project=chromium",
+    "test:e2e:firefox": "playwright test --project=firefox",
+    "test:e2e:webkit": "playwright test --project=webkit",
+    "test:e2e:mobile": "playwright test --project=mobile-chrome --project=mobile-safari",
+    "test:visual": "playwright test --grep @visual",
+    "test:visual:update": "playwright test --grep @visual --update-snapshots",
+    "bundle:analyze": "ANALYZE=true next build",
+    "lhci": "lhci autorun"
   },
   "dependencies": {
     "@el-bannawy/lib": "workspace:*",
     "@el-bannawy/shared": "workspace:*",
-    "@tanstack/query-sync-storage-persister": "^5.0.0",
     "@tanstack/query-core": "^5.101.4",
+    "@tanstack/query-sync-storage-persister": "^5.0.0",
     "@tanstack/react-query": "^5.101.4",
     "@tanstack/react-query-persist-client": "^5.0.0",
     "class-variance-authority": "^0.7.0",
@@ -37,6 +47,7 @@
     "zustand": "^4.5.0"
   },
   "devDependencies": {
+    "@next/bundle-analyzer": "^16.2.12",
     "@tailwindcss/postcss": "^4.0.0",
     "@types/node": "^20.0.0",
     "@types/react": "^19.0.0",

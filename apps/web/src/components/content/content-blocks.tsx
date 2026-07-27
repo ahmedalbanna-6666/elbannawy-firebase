@@ -4,7 +4,6 @@ import { useState, type ReactNode } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api-client";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ContentBlock } from "@/components/units/content-block";
@@ -15,7 +14,7 @@ import { usePermissions } from "@/lib/use-permissions";
 import { Switch } from "@/components/ui/switch";
 import {
   MonitorPlay, Languages, FileText, GraduationCap, ClipboardList,
-  Plus, Trash2, Film, Pencil, Eye, FileQuestion,
+  Plus, Trash2, Film, Pencil, Eye,
   type LucideIcon,
 } from "lucide-react";
 

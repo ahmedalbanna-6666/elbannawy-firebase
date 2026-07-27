@@ -34,6 +34,7 @@ export function EmptyState({
   variant = "default",
 }: EmptyStateProps): ReactNode {
   const Illus = ILLUSTRATIONS[variant] ?? ILLUSTRATIONS.default;
+  if (!Illus) return null;
 
   return (
     <div

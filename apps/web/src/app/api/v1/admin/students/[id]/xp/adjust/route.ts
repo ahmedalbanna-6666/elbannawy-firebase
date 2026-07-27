@@ -9,7 +9,6 @@ export async function POST(
   try {
     const body = await request.json() as { amount?: number; reason?: string };
     const amount = Number(body.amount) || 0;
-    const reason = (body.reason as string) ?? 'Administrator adjustment';
     const db = getAdminDb();
     const docRef = db.collection('users').doc(id);
     const now = new Date().toISOString();

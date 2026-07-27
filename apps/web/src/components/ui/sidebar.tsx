@@ -210,7 +210,7 @@ function InstallButton({ collapsed }: { collapsed?: boolean }): ReactNode {
 
 /* ── Main Sidebar ─────────────────────────────────────────── */
 
-export function Sidebar({ items, className, onClose, onToggle, onProfileClick, profileGrade, closeOnCollapse, children }: SidebarProps): ReactNode {
+export function Sidebar({ items, className, onClose, onToggle: _onToggle, onProfileClick, profileGrade, closeOnCollapse, children }: SidebarProps): ReactNode {
   const [collapsed, setCollapsed] = useState(false);
   const { user } = useAuthStore();
 
@@ -229,7 +229,7 @@ export function Sidebar({ items, className, onClose, onToggle, onProfileClick, p
   return (
     <motion.aside
       initial={false}
-      animate={{ width: collapsed ? 60 : 230 }}
+      animate={{ width: collapsed ? 64 : 280 }}
       transition={{ type: "spring", stiffness: 260, damping: 28, mass: 0.8 }}
       className={cn(
         "flex h-screen flex-col overflow-hidden border-l border-white/8 bg-gradient-to-b from-neutral-950 to-neutral-950/95 backdrop-blur-2xl dark:from-neutral-950 dark:to-neutral-950/98 light:border-neutral-200 light:from-white light:to-neutral-50/95 will-change-[width]",

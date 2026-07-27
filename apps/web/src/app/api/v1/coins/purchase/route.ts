@@ -1,12 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { authenticateRequest } from '@/lib/firebase/auth-helper';
-import { PaymentRepository, CoinPackageRepository, WalletRepository, CoinTransactionRepository, ContentEntitlementRepository } from '@el-bannawy/lib';
+import { PaymentRepository, CoinPackageRepository, WalletRepository, CoinTransactionRepository } from '@el-bannawy/lib';
 
 const paymentRepo = new PaymentRepository();
 const coinPackageRepo = new CoinPackageRepository();
 const walletRepo = new WalletRepository();
 const coinTxRepo = new CoinTransactionRepository();
-const entitlementRepo = new ContentEntitlementRepository();
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
   try {

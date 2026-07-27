@@ -10,7 +10,8 @@ export async function DELETE(
     const db = getAdminDb();
     const existing = await db.collection('quizzes').where('lessonId', '==', id).limit(1).get();
     if (!existing.empty) {
-      await existing.docs[0].ref.delete();
+      const doc = existing.docs.at(0);
+      if (doc) await doc.ref.delete();
     }
     return NextResponse.json({ success: true, data: null, timestamp: new Date().toISOString() });
   } catch (error) {
@@ -32,7 +33,9 @@ export async function GET(
     if (snap.empty) {
       return NextResponse.json({ success: true, data: null });
     }
-    const doc = { id: snap.docs[0].id, ...snap.docs[0].data() };
+    const first = snap.docs.at(0);
+    if (!first) return NextResponse.json({ success: true, data: null });
+    const doc = { id: first.id, ...first.data() };
     return NextResponse.json({ success: true, data: doc });
   } catch (error) {
     return NextResponse.json(

@@ -4,6 +4,10 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
 
+function formDataGet(fd: unknown, name: string): string | File | null {
+  return (fd as { get: (n: string) => string | File | null }).get(name) ?? null;
+}
+
 const quizRepo = new QuizRepository();
 const questionRepo = new QuizQuestionRepository();
 
@@ -47,11 +51,11 @@ export async function POST(
   const { id } = await params;
   try {
     const formData = await request.formData();
-    const file = formData.get('file') as File | null;
-    const title = formData.get('title') as string | null;
-    const instructions = formData.get('instructions') as string | null;
-    const passingScore = formData.get('passingScore') as string | null;
-    const maxAttempts = formData.get('maxAttempts') as string | null;
+    const file = formDataGet(formData, 'file') as File | null;
+    const title = formDataGet(formData, 'title') as string | null;
+    const instructions = formDataGet(formData, 'instructions') as string | null;
+    const passingScore = formDataGet(formData, 'passingScore') as string | null;
+    const maxAttempts = formDataGet(formData, 'maxAttempts') as string | null;
 
     if (!file) {
       return NextResponse.json({ success: false, error: { code: 'INVALID_INPUT', message: 'No file provided' } }, { status: 400 });
@@ -81,7 +85,6 @@ export async function POST(
     } catch { /* if parsing fails, still create quiz with 0 questions */ }
 
     const existing = await quizRepo.getByLessonId(id);
-    const now = new Date().toISOString();
     let quizId: string;
 
     if (existing.ok && existing.value) {
@@ -113,6 +116,7 @@ export async function POST(
     const savedQuestions: string[] = [];
     for (let i = 0; i < questions.length; i++) {
       const q = questions[i];
+      if (!q) continue;
       const qResult = await questionRepo.create({
         id: `qq-${quizId}-${String(i)}`,
         quizId,

@@ -611,11 +611,15 @@ export default function SupportPage(): ReactNode {
 
   const contact: { email: string; phone: string; whatsapp: string } | null =
     contacts && contacts.length > 0
-      ? {
-          email: contacts[0].supportEmail ?? process.env.NEXT_PUBLIC_SUPPORT_EMAIL ?? "support@el-bannawy.com",
-          phone: contacts[0].supportPhone ?? process.env.NEXT_PUBLIC_SUPPORT_PHONE ?? "+201000000000",
-          whatsapp: contacts[0].supportWhatsapp ?? process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "201000000000",
-        }
+      ? (() => {
+          const c = contacts.at(0);
+          if (!c) return null;
+          return {
+            email: c.supportEmail ?? process.env.NEXT_PUBLIC_SUPPORT_EMAIL ?? "support@el-bannawy.com",
+            phone: c.supportPhone ?? process.env.NEXT_PUBLIC_SUPPORT_PHONE ?? "+201000000000",
+            whatsapp: c.supportWhatsapp ?? process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "201000000000",
+          };
+        })()
       : null;
 
   return (

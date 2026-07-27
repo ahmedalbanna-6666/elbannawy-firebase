@@ -15,7 +15,6 @@ import {
   DialogHeader,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { EmptyState } from "@/components/ui/empty-state";
 import { ErrorState } from "@/components/ui/error-state";
 import { usePermissions } from "@/lib/use-permissions";
 import { api } from "@/lib/api-client";
@@ -31,10 +30,8 @@ import {
   Copy,
   CheckCircle2,
   ArrowLeft,
-  QrCode,
   Target,
   Coins,
-  Trash2,
 } from "lucide-react";
 
 // ── Unit type for dropdown ──────────────────────────────────────
@@ -249,7 +246,6 @@ export default function AdminUnlockCodesPage(): ReactNode {
   const { mutateAsync: toggleActive } = useToggleCodeActive();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
-  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const handleCopy = useCallback(async (code: string, id: string) => {
     try {

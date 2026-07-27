@@ -98,7 +98,7 @@ export default function LessonPdfPage(): ReactNode {
   }
 
   return (
-    <div className="mx-auto flex h-[calc(100vh-2rem)] max-w-5xl flex-col gap-3 p-4">
+    <div className="mx-auto flex min-h-[calc(100dvh-var(--header-height)-var(--bottom-nav-height)-env(safe-area-inset-bottom)-1rem)] max-w-5xl flex-col gap-3 p-4">
       <div className="flex items-center justify-between">
         <Link
           href={`/dashboard/lessons/detail/${lessonId}`}

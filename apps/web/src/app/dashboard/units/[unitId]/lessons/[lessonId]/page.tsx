@@ -147,7 +147,7 @@ export default function LessonContentPage(): ReactNode {
       </div>
 
       <LessonContentBlocks
-        lessonId={lessonId}
+        lessonId={lessonId ?? ''}
         videos={lesson.videos}
         vocabulary={lesson.vocabulary.groups}
         document={lesson.document}

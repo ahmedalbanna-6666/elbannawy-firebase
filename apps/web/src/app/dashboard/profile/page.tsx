@@ -8,6 +8,7 @@ import { useAuthStore } from "@/lib/auth-store";
 import { useAuth } from "@/providers/auth-provider";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/components/toast";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { GovernorateSelect } from "@/components/ui/governorate-select";
@@ -180,6 +181,8 @@ export default function ProfilePage(): ReactNode {
 
   const { data: profile, isLoading, isError, error, refetch } = useProfile(authUser?.id);
 
+  const { success: toastSuccess, error: toastError } = useToast();
+
   const updateMutation = useMutation({
     mutationFn: async (payload: Record<string, string>) => {
       const res = await api.patch<UserProfileResponse>("/profile", payload);
@@ -196,7 +199,11 @@ export default function ProfilePage(): ReactNode {
           role: (data.role ?? "").toUpperCase(),
           status: data.status,
         });
+        toastSuccess("تم حفظ التغييرات بنجاح");
       }
+    },
+    onError: () => {
+      toastError("فشل حفظ التغييرات");
     },
   });
 

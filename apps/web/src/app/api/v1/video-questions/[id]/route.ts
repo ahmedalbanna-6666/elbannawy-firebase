@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { authenticateRequest } from '@/lib/firebase/auth-helper';
-import { ActivityRepository, TimelineEventRepository } from '@el-bannawy/lib';
+import { ActivityRepository } from '@el-bannawy/lib';
 
 const activityRepository = new ActivityRepository();
-const eventRepository = new TimelineEventRepository();
 
 export async function PUT(
   request: NextRequest,

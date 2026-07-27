@@ -1,6 +1,11 @@
-// lib/shared/index.ts
-
 export * from "./types/repository.types";
 export * from "./types/pagination.types";
 export * from "./types/cursor.types";
 export * from "./types/filter.types";
+export * from "./pagination/cursor-pagination";
+export * from "./concurrency/optimistic-lock";
+export * from "./cache/cache-manager";
+export * from "./observability/logger";
+export * from "./observability/monitoring";
+export * from "./observability/audit";
+export * from "./queue/queue-worker";

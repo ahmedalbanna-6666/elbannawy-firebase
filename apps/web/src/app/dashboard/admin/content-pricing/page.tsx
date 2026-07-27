@@ -4,12 +4,12 @@ import { useState, useEffect, type ReactNode } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api-client";
 import { usePermissions } from "@/lib/use-permissions";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorState } from "@/components/ui/error-state";
-import { ArrowLeft, Save, Coins, ShoppingBag, CreditCard } from "lucide-react";
+import { ArrowLeft, Save, ShoppingBag, CreditCard } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 function PriceCard({

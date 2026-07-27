@@ -31,13 +31,11 @@ export async function GET(
   const prev = searchParams.get('prev');
   const next = searchParams.get('next');
 
-  let decoded: { uid: string };
   try {
     const result = await authenticateRequest(_request);
     if (!result) {
       return NextResponse.json({ success: false, error: { code: 'UNAUTHORIZED', message: 'Unauthorized' } }, { status: 401 });
     }
-    decoded = result;
   } catch {
     return NextResponse.json({ success: false, error: { code: 'UNAUTHORIZED', message: 'Unauthorized' } }, { status: 401 });
   }
@@ -131,13 +129,11 @@ export async function PATCH(
 ): Promise<NextResponse> {
   const { id } = await params;
 
-  let decoded: { uid: string };
   try {
     const result = await authenticateRequest(request);
     if (!result) {
       return NextResponse.json({ success: false, error: { code: 'UNAUTHORIZED', message: 'Unauthorized' } }, { status: 401 });
     }
-    decoded = result;
   } catch {
     return NextResponse.json({ success: false, error: { code: 'UNAUTHORIZED', message: 'Unauthorized' } }, { status: 401 });
   }
@@ -169,13 +165,11 @@ export async function DELETE(
   const { id } = await params;
   const requestId = `delete-${id}-${String(Date.now())}`;
 
-  let decoded: { uid: string };
   try {
     const result = await authenticateRequest(_request);
     if (!result) {
       return NextResponse.json({ success: false, error: { code: 'UNAUTHORIZED', message: 'Unauthorized' } }, { status: 401 });
     }
-    decoded = result;
   } catch {
     return NextResponse.json({ success: false, error: { code: 'UNAUTHORIZED', message: 'Unauthorized' } }, { status: 401 });
   }

@@ -241,7 +241,6 @@ export default function RegisterPage(): ReactNode {
         });
       } else {
         const normalizedMobile = normalizeEgyptMobile(mobile);
-        const submitEmail = email || `${normalizedMobile.replace(/[+\s]/g, '')}@el-bannawy.app`;
         const payload: RegisterPayload = {
           fullName,
           englishName: englishName || undefined,

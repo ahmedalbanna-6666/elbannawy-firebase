@@ -18,6 +18,7 @@ export function CardEdge({ variant, className }: CardEdgeProps): ReactNode {
   if (variant === "hidden") return null;
 
   const style = STYLES[variant];
+  if (!style) return null;
 
   return (
     <div

@@ -13,7 +13,6 @@ import { ErrorState } from "@/components/ui/error-state";
 import { TeacherContextBanner } from "@/components/ui/teacher-context-banner";
 import {
   ClipboardList,
-  GraduationCap,
   Clock,
   CheckCircle2,
   Repeat,

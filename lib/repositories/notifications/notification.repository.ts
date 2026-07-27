@@ -29,7 +29,7 @@ export class NotificationRepository implements INotificationRepository {
       if (filter.userId) query = query.where('userId', '==', filter.userId);
       if (filter.read !== undefined) query = query.where('read', '==', filter.read);
       if (filter.type) query = query.where('type', '==', filter.type);
-      query = query.orderBy('createdAt', 'desc');
+      query = query.orderBy('createdAt', 'desc').limit(50);
       const snap = await query.get();
       return { ok: true, value: snap.docs.map((d) => d.data() as INotification) };
     } catch (error) { return { ok: false, error: { ...toRepositoryError(error) } } as unknown as RepositoryResult<INotification[]>; }

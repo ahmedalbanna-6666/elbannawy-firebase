@@ -12,7 +12,6 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { ErrorState } from "@/components/ui/error-state";
 import { TeacherContextBanner } from "@/components/ui/teacher-context-banner";
 import {
-  GraduationCap,
   Clock,
   CheckCircle2,
   Repeat,

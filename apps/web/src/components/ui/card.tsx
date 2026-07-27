@@ -22,10 +22,10 @@ const cardVariants = cva(
       },
       padding: {
         none: "p-0",
-        sm: "p-4",
-        md: "p-5",
-        lg: "p-6",
-        xl: "p-8",
+        sm: "p-3 sm:p-4",
+        md: "p-4 sm:p-5",
+        lg: "p-5 sm:p-6",
+        xl: "p-6 sm:p-8",
       },
       interactive: {
         true: [

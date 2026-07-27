@@ -257,12 +257,17 @@ export class LessonRepository implements ILessonRepository {
 
   async getPreviousLesson(unitId: string, currentDisplayOrder: number): Promise<RepositoryResult<ILesson | null>> {
     try {
-      const lessons = await this.getLessonsByUnit(unitId);
-      if (!lessons.ok) return lessons;
-      const previous = lessons.value
-        .filter((l) => l.displayOrder < currentDisplayOrder)
-        .sort((a, b) => b.displayOrder - a.displayOrder)[0] ?? null;
-      return { ok: true, value: previous };
+      const db = this.getDb();
+      const snap = await db.collection('lessons')
+        .where('unitId', '==', unitId)
+        .where('deletedAt', '==', null)
+        .where('displayOrder', '<', currentDisplayOrder)
+        .orderBy('displayOrder', 'desc')
+        .limit(1)
+        .get();
+      if (snap.empty) return { ok: true, value: null };
+      const doc = { ...snap.docs[0]!.data(), id: snap.docs[0]!.id } as ILesson;
+      return { ok: true, value: doc };
     } catch (error) {
       const err = toRepositoryError(error);
       return { ok: false, error: { ...err } };
@@ -271,12 +276,17 @@ export class LessonRepository implements ILessonRepository {
 
   async getNextLesson(unitId: string, currentDisplayOrder: number): Promise<RepositoryResult<ILesson | null>> {
     try {
-      const lessons = await this.getLessonsByUnit(unitId);
-      if (!lessons.ok) return lessons;
-      const next = lessons.value
-        .filter((l) => l.displayOrder > currentDisplayOrder)
-        .sort((a, b) => a.displayOrder - b.displayOrder)[0] ?? null;
-      return { ok: true, value: next };
+      const db = this.getDb();
+      const snap = await db.collection('lessons')
+        .where('unitId', '==', unitId)
+        .where('deletedAt', '==', null)
+        .where('displayOrder', '>', currentDisplayOrder)
+        .orderBy('displayOrder', 'asc')
+        .limit(1)
+        .get();
+      if (snap.empty) return { ok: true, value: null };
+      const doc = { ...snap.docs[0]!.data(), id: snap.docs[0]!.id } as ILesson;
+      return { ok: true, value: doc };
     } catch (error) {
       const err = toRepositoryError(error);
       return { ok: false, error: { ...err } };

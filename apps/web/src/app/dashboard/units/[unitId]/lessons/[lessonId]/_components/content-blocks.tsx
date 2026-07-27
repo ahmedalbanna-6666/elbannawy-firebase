@@ -168,8 +168,6 @@ export const CONTENT_BLOCKS: readonly ContentBlockDefinition[] = [
 function VideoBlock({
   lessonId,
   videos,
-  isOpen,
-  onToggle,
 }: {
   lessonId: string;
   videos: readonly LessonVideo[];
@@ -842,8 +840,6 @@ function VocabularyBlock({
 function PdfBlock({
   lessonId,
   document,
-  isOpen,
-  onToggle,
 }: {
   lessonId: string;
   document: LessonDocument | null;
@@ -932,8 +928,6 @@ function PdfBlock({
 function QuizBlock({
   lessonId,
   quiz,
-  isOpen,
-  onToggle,
 }: {
   lessonId: string;
   quiz: QuizData | null;
@@ -985,8 +979,6 @@ function QuizBlock({
 function HomeworkBlock({
   lessonId,
   homework,
-  isOpen,
-  onToggle,
 }: {
   lessonId: string;
   homework: HomeworkData | null;
@@ -1044,8 +1036,8 @@ function parseTimestamp(input: string): number | null {
   if (/^\d+$/.test(trimmed)) return parseInt(trimmed, 10);
   const parts = trimmed.split(":");
   if (parts.length === 2) {
-    const m = parseInt(parts[0], 10);
-    const s = parseInt(parts[1], 10);
+    const m = parseInt(parts[0] ?? '', 10);
+    const s = parseInt(parts[1] ?? '', 10);
     if (!isNaN(m) && !isNaN(s)) return m * 60 + s;
   }
   return null;
@@ -1408,8 +1400,6 @@ function VideoQuestionBlock({
 
 function QuestionBlock({
   lessonId,
-  isOpen,
-  onToggle,
 }: {
   lessonId: string;
   isOpen?: boolean;

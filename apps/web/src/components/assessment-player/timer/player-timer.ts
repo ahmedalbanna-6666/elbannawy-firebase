@@ -16,7 +16,6 @@ export class PlayerTimer {
   private _isExpired = false;
   private _elapsedSeconds = 0;
   private _intervalId: ReturnType<typeof setInterval> | null = null;
-  private _startTimestamp: number | null = null;
   private _pausedRemainingSeconds: number | null = null;
   private readonly _eventEmitter: PlayerEventEmitter;
   private _warningEmitted = false;
@@ -65,7 +64,6 @@ export class PlayerTimer {
   start(): void {
     if (this._remainingSeconds === null) {
       this._isRunning = true;
-      this._startTimestamp = Date.now();
       this._intervalId = setInterval(() => {
         this.tickUnlimited();
       }, TIMER_TICK_INTERVAL_MS);
@@ -79,7 +77,6 @@ export class PlayerTimer {
 
     this._isRunning = true;
     this._isPaused = false;
-    this._startTimestamp = Date.now();
 
     this._intervalId = setInterval(() => {
       this.tickLimited();
@@ -109,8 +106,6 @@ export class PlayerTimer {
       this._pausedRemainingSeconds = null;
       this._remainingSeconds = pausedAt;
     }
-    this._startTimestamp = Date.now();
-
     this._intervalId = setInterval(() => {
       if (this._remainingSeconds === null) {
         this.tickUnlimited();
