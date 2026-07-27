@@ -252,7 +252,7 @@ export function StudentUnitsView(): ReactNode {
               >
                 {status === "current" && (
                   <span className="mb-1.5 rounded-full bg-success-500 px-2.5 py-0.5 text-[10px] font-bold text-white shadow-[0_0_8px_rgba(16,185,129,0.35)]">
-                    ╪ث┘╪ز ┘ç┘╪د ≡اّç
+                    أنت هنا 👇
                   </span>
                 )}
 

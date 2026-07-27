@@ -1,4 +1,5 @@
 import { getFirebaseIdToken } from "./auth-store";
+import { recordApiCall } from "./performance/metrics";
 
 const API_BASE_URL = "/api/v1";
 
@@ -36,24 +37,34 @@ async function request<T>(
     }
   }
 
+  const method = (options.method ?? "GET") as string;
   const url = endpoint.startsWith("http") ? endpoint : `${API_BASE_URL}${endpoint}`;
+  const startTime = performance.now();
   const response = await fetch(url, { ...options, headers });
+  const durationMs = performance.now() - startTime;
 
   if (response.status === 204) {
+    recordApiCall(endpoint, method, durationMs, 0, 204);
     return { success: true };
   }
 
   let data: unknown;
+  let payloadSizeBytes = 0;
   try {
-    data = await response.json();
+    const text = await response.text();
+    payloadSizeBytes = new Blob([text]).size;
+    data = JSON.parse(text);
   } catch {
     if (!response.ok) {
+      recordApiCall(endpoint, method, durationMs, payloadSizeBytes, response.status);
       throw new ApiError("Request failed", response.status);
     }
+    recordApiCall(endpoint, method, durationMs, payloadSizeBytes, response.status);
     return { success: true };
   }
 
   if (!response.ok) {
+    recordApiCall(endpoint, method, durationMs, payloadSizeBytes, response.status);
     const body = data as Record<string, unknown> | null;
     const message =
       body?.error && typeof body.error === "object"
@@ -65,6 +76,7 @@ async function request<T>(
   }
 
   if (typeof data !== "object" || data === null) {
+    recordApiCall(endpoint, method, durationMs, payloadSizeBytes, response.status);
     throw new ApiError("Invalid response format: expected object", response.status);
   }
 
@@ -73,6 +85,7 @@ async function request<T>(
     safe.success = response.ok;
   }
 
+  recordApiCall(endpoint, method, durationMs, payloadSizeBytes, response.status);
   return data as ApiResponse<T>;
 }
 

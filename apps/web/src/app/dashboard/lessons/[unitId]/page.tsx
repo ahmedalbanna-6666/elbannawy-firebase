@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback, type ReactNode } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api-client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -54,6 +55,7 @@ interface Stage {
 export default function LessonListPage(): ReactNode {
   const params = useParams();
   const router = useRouter();
+  const queryClient = useQueryClient();
   const unitId = params.unitId as string;
   const { isAdmin, isTeacher } = usePermissions();
   const isManagement = isAdmin || isTeacher;
@@ -143,6 +145,30 @@ export default function LessonListPage(): ReactNode {
               onClick={(): void => {
                 if (isLocked) return;
                 router.push(`/dashboard/lessons/detail/${lesson.id}`);
+              }}
+              onPointerEnter={(): void => {
+                if (!isLocked) {
+                  queryClient.prefetchQuery({
+                    queryKey: ["lesson-summary", lesson.id],
+                    queryFn: async () => {
+                      const res = await api.get(`/lessons/${lesson.id}/summary`);
+                      return res.data ?? null;
+                    },
+                    staleTime: 30_000,
+                  });
+                }
+              }}
+              onTouchStart={(): void => {
+                if (!isLocked) {
+                  queryClient.prefetchQuery({
+                    queryKey: ["lesson-summary", lesson.id],
+                    queryFn: async () => {
+                      const res = await api.get(`/lessons/${lesson.id}/summary`);
+                      return res.data ?? null;
+                    },
+                    staleTime: 30_000,
+                  });
+                }
               }}
               onKeyDown={(e): void => {
                 if (isLocked) return;

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAdminDb } from '@/lib/firebase/admin';
+import { getAdminDb, getUserContext } from '@/lib/firebase/admin';
 import { authenticateRequest } from '@/lib/firebase/auth-helper';
 import { CurriculumService, CurriculumApplicationService, UnitRepository, LessonRepository, type ILesson } from '@el-bannawy/lib';
 
@@ -22,12 +22,11 @@ async function handleCurriculumTree(request: NextRequest): Promise<NextResponse>
 
   try {
     const db = getAdminDb();
-    const userDoc = await db.collection('users').doc(decoded.uid).get();
-    if (!userDoc.exists) return NextResponse.json({ success: true, data: [] });
-    const userData = userDoc.data() as Record<string, unknown>;
-    const stageId = userData.stageId as string | undefined;
-    const gradeId = userData.gradeId as string | undefined;
-    let termId = userData.termId as string | undefined;
+    const context = await getUserContext(decoded.uid);
+    if (!context) return NextResponse.json({ success: true, data: [] });
+    const stageId = context.stageId ?? undefined;
+    const gradeId = context.gradeId ?? undefined;
+    let termId = context.academicTermId ?? undefined;
 
     if (!termId) {
       const sysDoc = await db.collection('systemSettings').doc('system-settings').get();

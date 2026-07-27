@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, useMemo, useCallback, type ReactNode } from "react";
-import { createPortal } from "react-dom";
 import dynamic from "next/dynamic";
 import { useRouter, usePathname } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
@@ -10,7 +9,7 @@ import { api } from "@/lib/api-client";
 import { useAuthStore } from "@/lib/auth-store";
 import { useAuth } from "@/providers/auth-provider";
 import { usePermissions } from "@/lib/use-permissions";
-import { getSidebarModules, type NavModule } from "@/lib/nav-registry";
+import { getSidebarModules } from "@/lib/nav-registry";
 import {
   LogOut,
   ScrollText,
@@ -23,7 +22,6 @@ import {
   Video,
   Gamepad2,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { type SidebarContent } from "@/components/ui/sidebar";
 import { type BottomNavItem } from "@/components/ui/bottom-nav";
 
@@ -48,19 +46,10 @@ interface DashboardLayoutProps {
 
 export default function DashboardLayout({ children }: DashboardLayoutProps): ReactNode {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [isDesktop, setIsDesktop] = useState<boolean | null>(null);
   const router = useRouter();
   const { isAuthenticated, hasHydrated, authReady } = useAuthStore();
   const userId = useAuthStore((s) => s.user?.id);
   const { logout } = useAuth();
-
-  useEffect(() => {
-    const mq = window.matchMedia("(min-width: 1024px)");
-    setIsDesktop(mq.matches);
-    const handler = (e: MediaQueryListEvent): void => { setIsDesktop(e.matches); };
-    mq.addEventListener("change", handler);
-    return (): void => mq.removeEventListener("change", handler);
-  }, []);
 
   const { data: profile } = useQuery<{
     role: string;
@@ -124,22 +113,17 @@ export default function DashboardLayout({ children }: DashboardLayoutProps): Rea
   }, [logout]);
 
   const { can } = usePermissions();
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => { setMounted(true); }, []);
 
   const sidebarItems: SidebarContent = useMemo(
     () => {
       const raw = getSidebarModules(can);
       const modules = Array.isArray(raw) ? raw : [];
       const items: SidebarContent = [];
-      let lastCategory: NavModule["category"] = null;
-      let dividerCount = 0;
 
       for (const m of modules) {
         if (!m || typeof m !== "object") continue;
         if (m.id === "home") {
           items.push({ id: m.id, label: m.title, icon: m.icon, onClick: (): void => { router.push(m.route); } });
-          lastCategory = null;
           continue;
         }
 
@@ -147,31 +131,14 @@ export default function DashboardLayout({ children }: DashboardLayoutProps): Rea
           continue;
         }
 
-        if (m.category === "student" && lastCategory !== "student") {
-          dividerCount += 1;
-          items.push({ id: `div-student-${String(dividerCount)}`, label: "", icon: ScrollText, divider: true });
-        } else if (m.category === "management" && lastCategory !== "management" && lastCategory !== "content") {
-          dividerCount += 1;
-          items.push({ id: `div-management-${String(dividerCount)}`, label: "", icon: ScrollText, divider: true });
-        } else if (m.category === "settings" && lastCategory !== "settings") {
-          dividerCount += 1;
-          items.push({ id: `div-settings-${String(dividerCount)}`, label: "", icon: ScrollText, divider: true });
-        }
-
-        const label = m.title;
-
         items.push({
           id: m.id,
-          label,
+          label: m.title,
           icon: m.icon,
           onClick: m.route ? (): void => { router.push(m.route); } : undefined,
         });
-
-        lastCategory = m.category;
       }
 
-      dividerCount += 1;
-      items.push({ id: `div-logout-${String(dividerCount)}`, label: "", icon: ScrollText, divider: true });
       items.push({ id: "logout", label: "تسجيل الخروج", icon: LogOut, onClick: handleLogout, danger: true });
 
       return items;
@@ -232,7 +199,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps): Rea
     return (): void => { fn(); closeSidebar(); };
   }, [closeSidebar]);
 
-  const mobileSidebar = (
+  const sidebarContent = (
     <Sidebar
       items={sidebarItems}
       onClose={closeSidebar}
@@ -246,106 +213,79 @@ export default function DashboardLayout({ children }: DashboardLayoutProps): Rea
     </Sidebar>
   );
 
-  const desktopSidebar = (
-    <Sidebar
-      items={sidebarItems}
-      onClose={(): void => {}}
-      onToggle={(): void => {}}
-      onProfileClick={(): void => { router.push("/dashboard/profile"); }}
-      profileGrade={profileGrade}
-    >
-      {isTeacherOrStaff && <AcademicSettings />}
-    </Sidebar>
-  );
-
-  const SIDEBAR_WIDTH = 280;
+  const SIDEBAR_WIDTH = 230;
   const CONTENT_SCALE = 0.88;
   const CONTENT_RADIUS = 20;
-  const contentAnimate = !isDesktop && sidebarOpen ? {
-    scale: CONTENT_SCALE,
-    x: `-${SIDEBAR_WIDTH * 0.45}px`,
-    borderRadius: `${CONTENT_RADIUS}px`,
-    boxShadow: "0 30px 80px rgba(0,0,0,0.35)",
-    rotateY: "-2deg",
-    overflow: "hidden",
-    marginTop: "10px",
-    marginBottom: "10px",
-    height: "calc(100vh - 20px)",
-  } : {
-    scale: 1,
-    x: "0px",
-    borderRadius: "0px",
-    rotateY: "0deg",
-    boxShadow: "0 0 0 rgba(0,0,0,0)",
-    marginTop: "0px",
-    marginBottom: "0px",
-    height: "auto",
-    overflow: "visible",
-  };
 
   return (
-    <div className="flex min-h-screen overflow-hidden">
-      {/* Desktop persistent sidebar */}
-      {isDesktop && (
-        <div className="hidden lg:flex lg:shrink-0">
-          {desktopSidebar}
-        </div>
-      )}
-
-      {/* Mobile drawer + 3D animation */}
-      <div className="flex flex-1 flex-col" style={{ perspective: !isDesktop ? "1400px" : undefined }}>
-        {!isDesktop && (
-          <>
-            <AnimatePresence>
-              {sidebarOpen && (
-                <motion.div
-                  key="sidebar-backdrop"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 0.65 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.25 }}
-                  className="fixed inset-0 z-40 bg-black"
-                  onClick={closeSidebar}
-                />
-              )}
-            </AnimatePresence>
-            <AnimatePresence>
-              {sidebarOpen && (
-                <motion.aside
-                  key="sidebar-drawer"
-                  initial={{ x: "100%" }}
-                  animate={{ x: 0 }}
-                  exit={{ x: "100%" }}
-                  transition={{ type: "spring", stiffness: 260, damping: 30, mass: 0.9 }}
-                  className="fixed inset-y-0 right-0 z-40 shadow-2xl"
-                  style={{ width: `${SIDEBAR_WIDTH}px` }}
-                >
-                  {mobileSidebar}
-                </motion.aside>
-              )}
-            </AnimatePresence>
-          </>
-        )}
-
-        <motion.div
-          animate={contentAnimate}
-          transition={{ type: "spring", stiffness: 260, damping: 28, mass: 0.8 }}
-          style={{ originX: 1, originY: 0.5 }}
-          className="relative z-30 flex flex-1 flex-col bg-neutral-50 dark:bg-neutral-950"
-        >
-          <Header
-            title="لوحة التحكم"
-            onMenuClick={toggleSidebar}
-            onNotificationClick={(): void => { router.push("/dashboard/notifications"); }}
+    <div className="flex min-h-screen overflow-hidden" style={{ perspective: "1400px" }}>
+      <AnimatePresence>
+        {sidebarOpen && (
+          <motion.div
+            key="sidebar-backdrop"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 0.65 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.25 }}
+            className="fixed inset-0 z-40 bg-black"
+            onClick={closeSidebar}
           />
+        )}
+      </AnimatePresence>
 
-          <main className="flex-1 overflow-y-auto p-4 pb-[88px]">
-            {children}
-          </main>
-        </motion.div>
-      </div>
+      <AnimatePresence>
+        {sidebarOpen && (
+          <motion.aside
+            key="sidebar-drawer"
+            initial={{ x: "100%" }}
+            animate={{ x: 0 }}
+            exit={{ x: "100%" }}
+            transition={{ type: "spring", stiffness: 260, damping: 30, mass: 0.9 }}
+            className="fixed inset-y-0 right-0 z-50 shadow-2xl"
+            style={{ width: `${SIDEBAR_WIDTH}px` }}
+          >
+            {sidebarContent}
+          </motion.aside>
+        )}
+      </AnimatePresence>
 
-      {mounted && createPortal(<BottomNav items={bottomNavItems} centerId="home" className="z-50" />, document.body)}
+      <motion.div
+        animate={sidebarOpen ? {
+          scale: CONTENT_SCALE,
+          x: `-${SIDEBAR_WIDTH * 0.45}px`,
+          borderRadius: `${CONTENT_RADIUS}px`,
+          boxShadow: "0 30px 80px rgba(0,0,0,0.35)",
+          rotateY: "-2deg",
+          marginTop: "10px",
+          marginBottom: "10px",
+          height: "calc(100vh - 20px)",
+        } : {
+          scale: 1,
+          x: "0px",
+          borderRadius: "0px",
+          rotateY: "0deg",
+          boxShadow: "0 0 0 rgba(0,0,0,0)",
+          marginTop: "0px",
+          marginBottom: "0px",
+          height: "100vh",
+        }}
+        transition={{ type: "spring", stiffness: 260, damping: 28, mass: 0.8 }}
+        style={{ originX: 1, originY: 0.5, transformStyle: "preserve-3d" }}
+        className="relative z-30 flex flex-col bg-neutral-50 dark:bg-neutral-950 will-change-transform overflow-hidden"
+      >
+        <Header
+          title="لوحة التحكم"
+          onMenuClick={toggleSidebar}
+          onNotificationClick={(): void => { router.push("/dashboard/notifications"); }}
+        />
+
+        <main className="flex-1 overflow-y-auto p-4">
+          {children}
+        </main>
+
+        <BottomNav items={bottomNavItems} centerId="home" />
+      </motion.div>
+
       <PwaInstallPrompt />
       <NotificationPrompt />
       <ToastContainer />

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { authenticateRequest } from '@/lib/firebase/auth-helper';
-import { getAdminDb } from '@/lib/firebase/admin';
+import { getAdminDb, getUserContext } from '@/lib/firebase/admin';
 
 export async function GET(request: NextRequest): Promise<NextResponse> {
   try {
@@ -17,8 +17,8 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     }
     const studentId = decoded.uid;
 
-    const [userDoc, progressSnap, xpSnap, walletSnap, statsSnap, achievementsSnap, bookingsSnap, pendingHomeworkSnap] = await Promise.all([
-      db.collection('users').doc(studentId).get(),
+    const [ctx, progressSnap, xpSnap, walletSnap, statsSnap, achievementsSnap, bookingsSnap, pendingHomeworkSnap] = await Promise.all([
+      getUserContext(studentId),
       db.collection('lessonProgress').where('studentId', '==', studentId).select('lessonId', 'status', 'percentage', 'unitId', 'completedAt', 'updatedAt').get(),
       db.collection('xpAccounts').doc(studentId).get(),
       db.collection('wallets').doc(studentId).get(),
@@ -28,7 +28,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       db.collection('homeworkAttempts').where('studentId', '==', studentId).where('status', '==', 'in_progress').select().get(),
     ]);
 
-    const userData = userDoc.data() ?? { fullName: 'User', role: 'student' };
+    const userData = ctx ? { fullName: ctx.fullName, role: ctx.role } : { fullName: 'User', role: 'student' };
     const xpData = xpSnap.exists ? (xpSnap.data() as { totalXp: number; level: number }) : null;
     const walletData = walletSnap.exists ? (walletSnap.data() as { balance: number }) : null;
     const statsData = statsSnap.exists ? (statsSnap.data() as { completedLessons: number; homeworkCompletionRate: number; averageQuizScore: number; attendanceRate: number; streakDays: number }) : null;

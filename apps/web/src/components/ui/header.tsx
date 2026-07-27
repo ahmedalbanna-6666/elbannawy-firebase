@@ -59,7 +59,6 @@ export function Header({
             variant="ghost"
             size="icon-sm"
             onClick={onMenuClick}
-            className="lg:hidden"
             aria-label="Toggle menu"
           >
             <Menu className="h-5 w-5" />

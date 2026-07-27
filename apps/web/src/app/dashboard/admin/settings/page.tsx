@@ -84,7 +84,7 @@ function useAcademicYears(): UseQueryResult<AcademicYear[]> {
       const res = await api.get<AcademicYear[]>("/admin/academic-years");
       return res.data ?? [];
     },
-    staleTime: 30_000,
+    staleTime: 30 * 60 * 1000,
   });
 }
 

@@ -78,4 +78,33 @@ export function getAdminStorage(): Storage {
   return adminStorageInstance;
 }
 
+export interface UserContext {
+  userId: string;
+  role: string | null;
+  fullName: string | null;
+  gradeId: string | null;
+  stageId: string | null;
+  academicYearId: string | null;
+  academicTermId: string | null;
+  educationalSystemId: string | null;
+}
+
+export async function getUserContext(uid: string): Promise<UserContext | null> {
+  const db = getAdminDb();
+  const doc = await db.collection('users').doc(uid).get();
+  if (!doc.exists) return null;
+  const data = doc.data() as Record<string, unknown>;
+  const role = data.role as { role?: string } | string | undefined;
+  return {
+    userId: doc.id,
+    role: typeof role === 'object' ? (role.role ?? null) : (role ?? null),
+    fullName: (data.fullName as string | null) ?? null,
+    gradeId: (data.gradeId as string | null) ?? null,
+    stageId: (data.stageId as string | null) ?? null,
+    academicYearId: (data.academicYearId as string | null) ?? null,
+    academicTermId: (data.termId as string | null) ?? null,
+    educationalSystemId: (data.educationalSystemId as string | null) ?? null,
+  };
+}
+
 export { adminAuthInstance as adminAuth, adminDbInstance as adminDb, adminStorageInstance as adminStorage };

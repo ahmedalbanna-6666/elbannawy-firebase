@@ -15,6 +15,7 @@ import {
 import { getClientAuth } from "@/lib/firebase/client-auth";
 import { useAuthStore } from "@/lib/auth-store";
 import { api } from "@/lib/api-client";
+import { clearPersistedCache } from "@/lib/query-persister";
 import { normalizeEgyptMobile } from "@/lib/phone";
 import type { Permission } from "@el-bannawy/shared";
 
@@ -321,6 +322,7 @@ export function AuthProvider({ children }: { children: ReactNode }): ReactNode {
       }
       clearStore();
       clearAuthCookie();
+      clearPersistedCache();
       queryClient.clear();
       window.location.href = "/login";
     }

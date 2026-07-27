@@ -81,10 +81,10 @@ function isDivider(item: SidebarItem): boolean {
 /* ── Constants ────────────────────────────────────────────── */
 
 const SOCIAL_LINKS = [
-  { icon: Youtube, href: "#", label: "YouTube", color: "hover:text-[#FF0000]" },
-  { icon: Facebook, href: "#", label: "Facebook", color: "hover:text-[#1877F2]" },
-  { icon: InstagramIcon, href: "#", label: "Instagram", color: "hover:text-[#E4405F]" },
-  { icon: WhatsAppIcon, href: "#", label: "WhatsApp", color: "hover:text-[#25D366]" },
+  { icon: Youtube, href: "https://www.youtube.com/@mr.ahmedelbanna9397", label: "YouTube", color: "text-[#FF0000]" },
+  { icon: Facebook, href: "https://www.facebook.com/share/1MERhSv3Pd/", label: "Facebook", color: "text-[#1877F2]" },
+  { icon: InstagramIcon, href: "https://www.instagram.com/mrahmedelbanna?igsh=ZjVic3h1dmhkNmw4", label: "Instagram", color: "text-[#E4405F]" },
+  { icon: WhatsAppIcon, href: "https://wa.me/201229894049", label: "WhatsApp", color: "text-[#25D366]" },
 ] as const;
 
 const SPRING_FAST = { type: "spring" as const, stiffness: 400, damping: 25 };
@@ -163,7 +163,7 @@ function SocialDock({ collapsed }: { collapsed?: boolean }): ReactNode {
               whileTap={{ scale: 0.9 }}
               transition={SPRING_FAST}
               className={cn(
-                "flex h-9 w-9 items-center justify-center rounded-xl text-neutral-500 transition-all duration-200 hover:bg-white/10 light:text-neutral-500 light:hover:bg-neutral-100",
+                "flex h-9 w-9 items-center justify-center rounded-xl transition-all duration-200 hover:bg-white/10 light:hover:bg-neutral-100",
                 social.color,
               )}
             >
@@ -229,7 +229,7 @@ export function Sidebar({ items, className, onClose, onToggle, onProfileClick, p
   return (
     <motion.aside
       initial={false}
-      animate={{ width: collapsed ? 68 : 280 }}
+      animate={{ width: collapsed ? 60 : 230 }}
       transition={{ type: "spring", stiffness: 260, damping: 28, mass: 0.8 }}
       className={cn(
         "flex h-screen flex-col overflow-hidden border-l border-white/8 bg-gradient-to-b from-neutral-950 to-neutral-950/95 backdrop-blur-2xl dark:from-neutral-950 dark:to-neutral-950/98 light:border-neutral-200 light:from-white light:to-neutral-50/95 will-change-[width]",
@@ -246,9 +246,10 @@ export function Sidebar({ items, className, onClose, onToggle, onProfileClick, p
           <motion.span
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="text-[10px] font-bold uppercase tracking-[0.15em] text-neutral-500 light:text-neutral-600"
+            className="text-fuchsia-500"
+            style={{ fontFamily: "'Noto Naskh Arabic', 'Traditional Arabic', 'Cairo', serif", fontSize: "17px", fontWeight: 900, letterSpacing: "0.02em" }}
           >
-            القائمة
+            منصة البناوي
           </motion.span>
         )}
         <motion.button
@@ -256,7 +257,12 @@ export function Sidebar({ items, className, onClose, onToggle, onProfileClick, p
           whileHover={{ scale: 1.06 }}
           whileTap={{ scale: 0.92 }}
           transition={SPRING_FAST}
-          className="flex h-7 w-7 items-center justify-center rounded-lg text-neutral-500 light:text-neutral-600 transition-colors hover:bg-white/10 hover:text-white light:hover:bg-neutral-100 light:hover:text-neutral-700"
+          className={cn(
+            "flex h-7 w-7 items-center justify-center rounded-full transition-colors",
+            closeOnCollapse
+              ? "bg-danger-500 text-white shadow-[0_0_8px_rgba(239,68,68,0.4)] hover:bg-danger-400"
+              : "rounded-lg text-neutral-500 light:text-neutral-600 hover:bg-white/10 hover:text-white light:hover:bg-neutral-100 light:hover:text-neutral-700",
+          )}
           aria-label={closeOnCollapse ? "Close" : collapsed ? "Expand" : "Collapse"}
         >
           {closeOnCollapse ? <X className="h-3.5 w-3.5" /> : collapsed ? <ChevronRight className="h-3.5 w-3.5" /> : <ChevronLeft className="h-3.5 w-3.5" />}

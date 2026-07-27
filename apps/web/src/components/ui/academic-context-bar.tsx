@@ -54,7 +54,7 @@ export function AcademicContextBar({ className }: AcademicContextBarProps): Reac
       const res = await api.get<{ academicYear: { id: string; name: string } | null; term: { id: string; name: string } | null; termManagementMode: string }>("/academic-context");
       return res.data ?? null;
     },
-    staleTime: 120_000,
+    staleTime: 30 * 60 * 1000,
   });
 
   useEffect(() => {
@@ -75,7 +75,7 @@ export function AcademicContextBar({ className }: AcademicContextBarProps): Reac
       return res.data ?? [];
     },
     enabled: isAdmin,
-    staleTime: 60_000,
+    staleTime: Infinity,
   });
 
   const gradeToId = useMemo(() => {

@@ -1,9 +1,10 @@
 "use client";
 
-import { type ReactNode } from "react";
+import { useEffect, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api-client";
+import { startPageLoad, endPageLoad, printSummary } from "@/lib/performance/metrics";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { CardEdge } from "@/components/ui/card-edge";
@@ -41,6 +42,8 @@ export interface DashboardData {
 
 export function StudentDashboard(): ReactNode {
   const router = useRouter();
+  const queryClient = useQueryClient();
+  useEffect(() => { startPageLoad("dashboard"); }, []);
   const { data: liveBookings } = useMyBookings();
   const { data, isLoading, error } = useQuery<DashboardData>({
     queryKey: ["home-dashboard"],
@@ -51,6 +54,21 @@ export function StudentDashboard(): ReactNode {
     },
     staleTime: 60_000,
   });
+
+  useEffect(() => {
+    if (!isLoading && data) {
+      endPageLoad("dashboard");
+      printSummary();
+      queryClient.prefetchQuery({
+        queryKey: ["curriculum"],
+        queryFn: async () => {
+          const res = await api.get("/curriculum");
+          return res.data ?? [];
+        },
+        staleTime: 300_000,
+      });
+    }
+  }, [isLoading, data, queryClient]);
 
   if (isLoading) {
     return <DashboardSkeleton />;

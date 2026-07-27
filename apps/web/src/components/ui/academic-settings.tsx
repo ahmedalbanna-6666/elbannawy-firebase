@@ -42,7 +42,7 @@ export function AcademicSettings(): ReactNode {
       const res = await api.get<ActiveContext>("/academic-context");
       return res.data ?? null;
     },
-    staleTime: 120_000,
+    staleTime: 30 * 60 * 1000,
   });
 
   useEffect(() => {

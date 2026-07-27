@@ -1,10 +1,11 @@
 "use client";
 
-import { useCallback, type ReactNode } from "react";
+import { useCallback, useEffect, type ReactNode } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { useQuery, useQueryClient, type UseQueryResult } from "@tanstack/react-query";
 import { api } from "@/lib/api-client";
+import { startPageLoad, endPageLoad, printSummary } from "@/lib/performance/metrics";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -596,12 +597,29 @@ export default function LessonDetailPage(): ReactNode {
   const queryClient = useQueryClient();
   const lessonId = params.lessonId as string;
 
+  useEffect(() => { startPageLoad("lesson"); }, []);
+
   const {
     data: lesson,
     isLoading: lessonLoading,
     isError: lessonError,
     error: lessonErr,
   } = useLesson(lessonId);
+
+  useEffect(() => {
+    if (!lessonLoading && lesson) {
+      endPageLoad("lesson");
+      printSummary();
+      queryClient.prefetchQuery({
+        queryKey: ["lesson-vocabulary", lessonId],
+        queryFn: async () => {
+          const res = await api.get<{ groups: readonly unknown[] }>(`/lessons/${lessonId}/vocabulary`);
+          return res.data?.groups ?? [];
+        },
+        staleTime: 300_000,
+      });
+    }
+  }, [lessonLoading, lesson, queryClient, lessonId]);
 
   const firstVideoId: string | null =
     lesson && lesson.videos.length > 0 ? lesson.videos[0].id : null;

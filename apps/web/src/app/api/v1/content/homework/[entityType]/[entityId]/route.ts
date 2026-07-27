@@ -39,7 +39,9 @@ export async function GET(
     const hw = snap.docs
       .map(d => ({ id: d.id, ...d.data() }))
       .find(d => (d as Record<string, unknown>).entityType === entityType.toUpperCase()) ?? null;
-    return NextResponse.json({ success: true, data: hw });
+    const response = NextResponse.json({ success: true, data: hw });
+    response.headers.set('Cache-Control', 'public, max-age=300');
+    return response;
   } catch (error) {
     return NextResponse.json({ success: false, error: { code: 'INTERNAL', message: error instanceof Error ? error.message : 'Unknown error' } }, { status: 500 });
   }

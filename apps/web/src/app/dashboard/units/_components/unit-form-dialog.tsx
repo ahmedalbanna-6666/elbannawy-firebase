@@ -114,7 +114,7 @@ export function UnitFormDialog({
       return res.data ?? [];
     },
     enabled: open && !isEdit,
-    staleTime: 300_000,
+    staleTime: 30 * 60 * 1000,
   });
 
   const { data: myGrades } = useQuery({

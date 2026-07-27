@@ -40,7 +40,9 @@ export async function GET(
       .map(d => ({ id: d.id, ...d.data() } as Record<string, unknown>))
       .filter(d => (d.entityType as string) === entityType.toUpperCase())
       .sort((a, b) => ((b.createdAt as string) ?? '').localeCompare((a.createdAt as string) ?? ''));
-    return NextResponse.json({ success: true, data: docs.length > 0 ? docs[0] : null });
+    const response = NextResponse.json({ success: true, data: docs.length > 0 ? docs[0] : null });
+    response.headers.set('Cache-Control', 'public, max-age=300');
+    return response;
   } catch (error) {
     return NextResponse.json({ success: false, error: { code: 'INTERNAL', message: error instanceof Error ? error.message : 'Unknown error' } }, { status: 500 });
   }

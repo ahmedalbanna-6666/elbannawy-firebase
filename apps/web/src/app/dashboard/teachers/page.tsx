@@ -109,7 +109,7 @@ function useStages(): UseQueryResult<StageItem[]> {
       const res = await api.get<StageItem[]>("/admin/stages");
       return res.data ?? [];
     },
-    staleTime: 300_000,
+    staleTime: Infinity,
   });
 }
 
