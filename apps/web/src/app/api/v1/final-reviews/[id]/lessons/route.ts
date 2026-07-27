@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAdminDb } from '@/lib/firebase/admin';
-import { authenticateRequest } from '@/lib/firebase/auth-helper';
+import { authenticateRequest, normalizeRole } from '@/lib/firebase/auth-helper';
 import { FinalReviewRepository } from '@el-bannawy/lib';
 
 const reviewRepo = new FinalReviewRepository();
@@ -43,10 +43,18 @@ export async function POST(
 
     const db = getAdminDb();
     const userDoc = await db.collection('users').doc(decoded.uid).get();
-    const userData = userDoc.data() as Record<string, unknown> | undefined;
-    const role = userData?.role as string | undefined;
-
-    if (role !== 'admin' && role !== 'teacher') {
+    if (userDoc.exists) {
+      const data = userDoc.data()!;
+      const roleVal = (data as Record<string, unknown>).role;
+      let rawRole: string;
+      if (typeof roleVal === 'string') rawRole = roleVal;
+      else if (roleVal && typeof roleVal === 'object') rawRole = (roleVal as Record<string, unknown>).role as string || '';
+      else return NextResponse.json({ success: false, error: { code: 'FORBIDDEN', message: 'Insufficient permissions' } }, { status: 403 });
+      const normalized = normalizeRole(rawRole);
+      if (normalized !== 'administrator' && normalized !== 'teacher') {
+        return NextResponse.json({ success: false, error: { code: 'FORBIDDEN', message: 'Insufficient permissions' } }, { status: 403 });
+      }
+    } else {
       return NextResponse.json({ success: false, error: { code: 'FORBIDDEN', message: 'Insufficient permissions' } }, { status: 403 });
     }
 

@@ -240,6 +240,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps): Rea
       onProfileClick={closeAndNavigate((): void => { router.push("/dashboard/profile"); })}
       profileGrade={profileGrade}
       closeOnCollapse
+      className="pb-[72px]"
     >
       {isTeacherOrStaff && <AcademicSettings />}
     </Sidebar>
@@ -257,19 +258,19 @@ export default function DashboardLayout({ children }: DashboardLayoutProps): Rea
     </Sidebar>
   );
 
-  const SIDEBAR_WIDTH = 300;
-  const CONTENT_SCALE = 0.85;
+  const SIDEBAR_WIDTH = 280;
+  const CONTENT_SCALE = 0.88;
   const CONTENT_RADIUS = 20;
   const contentAnimate = !isDesktop && sidebarOpen ? {
     scale: CONTENT_SCALE,
-    x: `-${SIDEBAR_WIDTH * 0.15}px`,
+    x: `-${SIDEBAR_WIDTH * 0.45}px`,
     borderRadius: `${CONTENT_RADIUS}px`,
-    boxShadow: "0 25px 70px rgba(0,0,0,0.3)",
-    rotateY: "-3deg",
+    boxShadow: "0 30px 80px rgba(0,0,0,0.35)",
+    rotateY: "-2deg",
     overflow: "hidden",
-    marginTop: "12px",
-    marginBottom: "12px",
-    height: "calc(100vh - 24px)",
+    marginTop: "10px",
+    marginBottom: "10px",
+    height: "calc(100vh - 20px)",
   } : {
     scale: 1,
     x: "0px",
@@ -300,7 +301,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps): Rea
                 <motion.div
                   key="sidebar-backdrop"
                   initial={{ opacity: 0 }}
-                  animate={{ opacity: 0.5 }}
+                  animate={{ opacity: 0.65 }}
                   exit={{ opacity: 0 }}
                   transition={{ duration: 0.25 }}
                   className="fixed inset-0 z-40 bg-black"
@@ -316,7 +317,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps): Rea
                   animate={{ x: 0 }}
                   exit={{ x: "100%" }}
                   transition={{ type: "spring", stiffness: 260, damping: 30, mass: 0.9 }}
-                  className="fixed inset-y-0 right-0 z-50 shadow-2xl"
+                  className="fixed inset-y-0 right-0 z-40 shadow-2xl"
                   style={{ width: `${SIDEBAR_WIDTH}px` }}
                 >
                   {mobileSidebar}
@@ -344,7 +345,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps): Rea
         </motion.div>
       </div>
 
-      {mounted && createPortal(<BottomNav items={bottomNavItems} centerId="home" />, document.body)}
+      {mounted && createPortal(<BottomNav items={bottomNavItems} centerId="home" className="z-50" />, document.body)}
       <PwaInstallPrompt />
       <NotificationPrompt />
       <ToastContainer />

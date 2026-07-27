@@ -186,9 +186,9 @@ export function StudentUnitsView(): ReactNode {
     <div className="flex flex-col gap-6">
       <div>
         <h1 className="text-2xl font-bold text-neutral-900 dark:text-neutral-100">
-          ╪د┘┘ê╪ص╪»╪د╪ز ╪د┘╪»╪▒╪د╪│┘è╪ر
+          الوحدات الدراسية
         </h1>
-        <p className="mt-1 text-sm text-neutral-500">╪د╪«╪ز╪▒ ╪د┘┘ê╪ص╪»╪ر ╪د┘╪ز┘è ╪ز╪▒┘è╪» ╪»╪▒╪د╪│╪ز┘ç╪د</p>
+        <p className="mt-1 text-sm text-neutral-500">اختر الوحدة التي تريد دراستها</p>
       </div>
 
       <div ref={wrapperRef} className="relative mx-auto max-w-md pb-4">
