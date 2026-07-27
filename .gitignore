@@ -65,3 +65,6 @@ ui-debug.log
 # Firebase export
 auth-export.json
 stdin.txt
+
+# Generated DOCX test fixtures
+lib/**/fixtures/*.docx
