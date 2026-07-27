@@ -24,4 +24,18 @@ export type {
   TrueFalseContent,
   TrueFalseQuestion,
   WritingContent,
+  Severity,
+  ValidationIssue,
+  ValidationReport,
+  UnknownMarkerRecovery,
+  WordBankValidation,
+  AnswerKeyValidation,
+  ReadingValidation,
+  McqValidation,
+  DialogueValidation,
+  DocumentValidation,
+  RecoveryAction,
 } from './types';
+export { validateAll, detectUnknownMarkers, validateAnswerKeys, validateWordBank, validateReading, validateDialogue, validateMcq, validateDocument } from './validation-engine';
+export { generateImportReport } from './import-report';
+export type { ImportSummary, FormattedReport } from './import-report';

@@ -27,6 +27,7 @@ import {
   ALLOWED_EXTENSIONS,
 } from './constants';
 import { parseQuestionDocumentBlocks, buildQuestionSectionsFromBlocks } from './question-document-parser';
+import { validateAll } from './validation-engine';
 
 const MARKERS: Record<string, ActivityType> = {
   '@@MCQ@@': 'MCQ',
@@ -251,6 +252,16 @@ export async function importQuestionsFromDocx(options: ImportOptions): Promise<I
 
   result.documentTitle = blockSections.header || result.documentTitle;
 
+  const { report } = validateAll(rawText, result.activities, blockSections.sections);
+  result.validationReport = report;
+
+  const errorIssues = report.issues.filter((i) => i.severity === 'ERROR' || i.severity === 'CRITICAL');
+  for (const ei of errorIssues) {
+    if (!result.errors.some((e) => e.message === ei.message)) {
+      result.errors.push(error(ei.code, ei.message));
+    }
+  }
+
   return result;
 }
 
@@ -269,10 +280,15 @@ export function parseQuestionText(rawText: string): ImportResult {
   const integrityWarnings = validateContentIntegrity(activities);
   warnings.push(...integrityWarnings);
 
-  return {
+  const result: ImportResult = {
     documentTitle: header.split('\n')[0]?.trim() || 'Untitled Document',
     activities,
     errors,
     warnings,
   };
+
+  const { report } = validateAll(rawText, activities, sections);
+  result.validationReport = report;
+
+  return result;
 }

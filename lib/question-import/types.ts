@@ -1,5 +1,7 @@
 export type ActivityType = 'MCQ' | 'DRAG_DROP' | 'READING' | 'REWRITE' | 'CORRECT' | 'DIALOGUE' | 'TRUE_FALSE' | 'WRITING';
 
+export type Severity = 'INFO' | 'WARNING' | 'ERROR' | 'CRITICAL';
+
 export type ErrorCode =
   | 'NO_ANSWER_KEY'
   | 'EMPTY_ANSWER_KEY'
@@ -12,7 +14,32 @@ export type ErrorCode =
   | 'WRITING_EMPTY_TOPIC'
   | 'DRAG_DROP_MISSING_WORD_BANK'
   | 'TRUE_FALSE_INVALID_BOOLEAN'
-  | 'MISSING_ANSWER_ENTRY';
+  | 'MISSING_ANSWER_ENTRY'
+  | 'UNKNOWN_MARKER'
+  | 'RECOVERED_SECTION'
+  | 'ORPHAN_ANSWER_KEY'
+  | 'ORPHAN_QUESTION'
+  | 'DUPLICATE_ANSWER'
+  | 'INVALID_ANSWER_LABEL'
+  | 'EXTRA_ANSWER'
+  | 'UNUSED_WORD_BANK_ENTRY'
+  | 'MISSING_WORD_BANK_ENTRY'
+  | 'DUPLICATE_WORD_BANK_ENTRY'
+  | 'BROKEN_WORD_BANK_REFERENCE'
+  | 'EMPTY_WORD_BANK'
+  | 'MISSING_END_WORD_BANK'
+  | 'MISSING_READING_ANSWER'
+  | 'BROKEN_READING_STRUCTURE'
+  | 'DUPLICATE_OPTION_LABEL'
+  | 'EMPTY_OPTION'
+  | 'INVALID_CORRECT_ANSWER'
+  | 'NESTED_MARKER'
+  | 'BROKEN_MARKER'
+  | 'UNKNOWN_MARKER_DETECTED'
+  | 'ORPHAN_PARAGRAPH'
+  | 'UNEXPECTED_TEXT'
+  | 'DUPLICATE_DIALOGUE_BLANK'
+  | 'MISSING_DIALOGUE_ANSWER';
 
 export interface McqOption {
   label: string;
@@ -127,6 +154,11 @@ export type ActivityContent =
   | TrueFalseContent
   | WritingContent;
 
+export interface ImportError {
+  code: ErrorCode;
+  message: string;
+}
+
 export interface ImportedActivity {
   type: ActivityType;
   order: number;
@@ -135,9 +167,87 @@ export interface ImportedActivity {
   warnings: ImportError[];
 }
 
-export interface ImportError {
+export interface ValidationIssue {
+  severity: Severity;
   code: ErrorCode;
   message: string;
+  activityType?: ActivityType;
+  questionNumber?: number;
+  section?: string;
+  suggestedFix?: string;
+  recoveryStatus?: 'RECOVERED' | 'NOT_RECOVERED' | 'FATAL';
+  location?: string;
+}
+
+export interface UnknownMarkerRecovery {
+  markerName: string;
+  line: number;
+  recoveredText: string;
+  suggestedReplacement: string;
+}
+
+export interface WordBankValidation {
+  duplicateWords: string[];
+  unusedWords: string[];
+  missingWords: string[];
+  brokenReferences: string[];
+}
+
+export interface AnswerKeyValidation {
+  missingAnswers: number[];
+  duplicateAnswers: number[];
+  extraAnswers: number[];
+  invalidLabels: string[];
+}
+
+export interface ReadingValidation {
+  emptyPassage: boolean;
+  orphanQuestions: number[];
+  missingAnswers: number[];
+  duplicateNumbers: number[];
+}
+
+export interface McqValidation {
+  emptyQuestions: number[];
+  tooFewOptions: number[];
+  duplicateLabels: number[];
+  invalidCorrectAnswers: number[];
+}
+
+export interface DialogueValidation {
+  missingLines: number;
+  duplicateBlanks: number[];
+  missingAnswers: number[];
+}
+
+export interface DocumentValidation {
+  duplicateMarkers: string[];
+  nestedMarkers: string[];
+  brokenMarkers: string[];
+  orphanParagraphs: number;
+  orphanTables: number;
+  emptySections: string[];
+}
+
+export interface RecoveryAction {
+  type: string;
+  description: string;
+  success: boolean;
+  recoveredContent?: string;
+}
+
+export interface ValidationReport {
+  unknownMarkers: UnknownMarkerRecovery[];
+  answerKeys: AnswerKeyValidation | null;
+  wordBank: WordBankValidation | null;
+  reading: ReadingValidation | null;
+  mcq: McqValidation | null;
+  dialogue: DialogueValidation | null;
+  document: DocumentValidation;
+  recoveryActions: RecoveryAction[];
+  issues: ValidationIssue[];
+  importSafetyScore: number;
+  validationScore: number;
 }
 
 export interface ImportResult {
@@ -145,4 +255,5 @@ export interface ImportResult {
   activities: ImportedActivity[];
   errors: ImportError[];
   warnings: ImportError[];
+  validationReport?: ValidationReport;
 }
