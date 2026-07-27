@@ -78,16 +78,37 @@ export interface RepositoryErrorShape {
   requestId: string;
 }
 
+const isServerDev = typeof process !== 'undefined' && process.env?.NODE_ENV === 'development';
+
+function safeLogger(level: 'warn' | 'error', code: string, message: string, metadata?: Record<string, unknown>): void {
+  if (level === 'error' || isServerDev) {
+    const prefix = `[Firestore:${code}]`;
+    if (level === 'error') {
+      console.error(prefix, message, metadata ?? '');
+    } else {
+      console.warn(prefix, message, metadata ?? '');
+    }
+  }
+}
+
 export function toRepositoryError(error: unknown): RepositoryErrorShape {
   const message = (error as Error)?.message ?? 'Unknown error';
   if (message.includes('NOT_FOUND') || message.includes('no entity') || message.includes('not found')) {
+    safeLogger('warn', 'NOT_FOUND', message);
     return { code: 'NOT_FOUND', message, retryable: false, requestId: '' };
   }
   if (message.includes('ALREADY_EXISTS') || message.includes('already exists')) {
+    safeLogger('warn', 'ALREADY_EXISTS', message);
     return { code: 'ALREADY_EXISTS', message, retryable: false, requestId: '' };
   }
   if (message.includes('UNAVAILABLE') || message.includes('deadline')) {
+    safeLogger('error', 'UNAVAILABLE', message);
     return { code: 'UNAVAILABLE', message, retryable: true, requestId: '' };
   }
+  if (message.includes('permission')) {
+    safeLogger('error', 'PERMISSION_DENIED', message);
+    return { code: 'INTERNAL', message: 'Access denied', retryable: false, requestId: '' };
+  }
+  safeLogger('error', 'INTERNAL', message, { stack: (error as Error)?.stack });
   return { code: 'INTERNAL', message, retryable: false, requestId: '' };
 }

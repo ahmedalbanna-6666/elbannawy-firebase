@@ -9,15 +9,6 @@ const nextConfig: NextConfig = {
   experimental: {
     optimizePackageImports: ["lucide-react", "firebase/auth", "firebase/firestore"],
   },
-  async redirects() {
-    return [
-      {
-        source: "/logo.png",
-        destination: "/logo.svg",
-        permanent: true,
-      },
-    ];
-  },
   webpack: (config) => {
     config.resolve.extensionAlias = {
       ...config.resolve.extensionAlias,

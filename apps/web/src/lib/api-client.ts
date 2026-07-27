@@ -1,5 +1,6 @@
 import { getFirebaseIdToken } from "./auth-store";
 import { recordApiCall } from "./performance/metrics";
+import { logger } from "./observability/logger";
 
 const API_BASE_URL = "/api/v1";
 
@@ -40,10 +41,25 @@ async function request<T>(
   const method = (options.method ?? "GET") as string;
   const url = endpoint.startsWith("http") ? endpoint : `${API_BASE_URL}${endpoint}`;
   const startTime = performance.now();
-  const response = await fetch(url, { ...options, headers });
+  let response: Response;
+  try {
+    response = await fetch(url, { ...options, headers });
+  } catch (err) {
+    const durationMs = performance.now() - startTime;
+    logger.error("api", `${method} ${endpoint} network failure`, {
+      durationMs,
+      error: err instanceof Error ? err.message : String(err),
+    });
+    recordApiCall(endpoint, method, durationMs, 0, 0);
+    throw new ApiError(
+      err instanceof Error ? err.message : "Network request failed",
+      0,
+    );
+  }
   const durationMs = performance.now() - startTime;
 
   if (response.status === 204) {
+    logger.info("api", `${method} ${endpoint} 204`, { durationMs });
     recordApiCall(endpoint, method, durationMs, 0, 204);
     return { success: true };
   }
@@ -56,14 +72,17 @@ async function request<T>(
     data = JSON.parse(text);
   } catch {
     if (!response.ok) {
+      logger.error("api", `${method} ${endpoint} ${response.status} parse failed`, { durationMs, status: response.status });
       recordApiCall(endpoint, method, durationMs, payloadSizeBytes, response.status);
       throw new ApiError("Request failed", response.status);
     }
+    logger.warn("api", `${method} ${endpoint} empty/parse success`, { durationMs });
     recordApiCall(endpoint, method, durationMs, payloadSizeBytes, response.status);
     return { success: true };
   }
 
   if (!response.ok) {
+    logger.warn("api", `${method} ${endpoint} ${response.status}`, { durationMs, status: response.status });
     recordApiCall(endpoint, method, durationMs, payloadSizeBytes, response.status);
     const body = data as Record<string, unknown> | null;
     const message =
@@ -76,6 +95,7 @@ async function request<T>(
   }
 
   if (typeof data !== "object" || data === null) {
+    logger.error("api", `${method} ${endpoint} invalid JSON response`, { durationMs });
     recordApiCall(endpoint, method, durationMs, payloadSizeBytes, response.status);
     throw new ApiError("Invalid response format: expected object", response.status);
   }
@@ -85,6 +105,7 @@ async function request<T>(
     safe.success = response.ok;
   }
 
+  logger.info("api", `${method} ${endpoint} ${response.status}`, { durationMs, sizeBytes: payloadSizeBytes });
   recordApiCall(endpoint, method, durationMs, payloadSizeBytes, response.status);
   return data as ApiResponse<T>;
 }

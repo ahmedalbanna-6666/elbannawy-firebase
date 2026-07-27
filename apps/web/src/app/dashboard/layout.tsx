@@ -22,6 +22,7 @@ import {
   Video,
   Gamepad2,
 } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { type SidebarContent } from "@/components/ui/sidebar";
 import { type BottomNavItem } from "@/components/ui/bottom-nav";
 
@@ -207,7 +208,6 @@ export default function DashboardLayout({ children }: DashboardLayoutProps): Rea
       onProfileClick={closeAndNavigate((): void => { router.push("/dashboard/profile"); })}
       profileGrade={profileGrade}
       closeOnCollapse
-      className="pb-[72px]"
     >
       {isTeacherOrStaff && <AcademicSettings />}
     </Sidebar>
@@ -267,11 +267,14 @@ export default function DashboardLayout({ children }: DashboardLayoutProps): Rea
           boxShadow: "0 0 0 rgba(0,0,0,0)",
           marginTop: "0px",
           marginBottom: "0px",
-          height: "100vh",
+          height: "auto",
         }}
         transition={{ type: "spring", stiffness: 260, damping: 28, mass: 0.8 }}
         style={{ originX: 1, originY: 0.5, transformStyle: "preserve-3d" }}
-        className="relative z-30 flex flex-col bg-neutral-50 dark:bg-neutral-950 will-change-transform overflow-hidden"
+        className={cn(
+          "relative z-30 flex min-h-screen flex-col bg-neutral-50 dark:bg-neutral-950 will-change-transform",
+          sidebarOpen && "overflow-hidden",
+        )}
       >
         <Header
           title="لوحة التحكم"
