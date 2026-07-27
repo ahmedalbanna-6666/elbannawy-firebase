@@ -36,11 +36,12 @@ export async function GET(
     const { entityType, entityId } = await params;
     const db = getAdminDb();
     const snap = await db.collection(COLLECTION)
-      .where('entityType', '==', entityType.toUpperCase())
       .where('entityId', '==', entityId)
-      .orderBy('displayOrder', 'asc')
       .get();
-    const videos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    const videos = snap.docs
+      .map(d => ({ id: d.id, ...d.data() } as Record<string, unknown>))
+      .filter(v => (v.entityType as string) === entityType.toUpperCase())
+      .sort((a, b) => ((a.displayOrder as number) ?? 0) - ((b.displayOrder as number) ?? 0));
     return NextResponse.json({ success: true, data: videos });
   } catch (error) {
     return NextResponse.json({ success: false, error: { code: 'INTERNAL', message: error instanceof Error ? error.message : 'Unknown error' } }, { status: 500 });
@@ -68,35 +69,26 @@ export async function POST(
     if (!youtubeId) return NextResponse.json({ success: false, error: { code: 'INVALID_INPUT', message: 'Invalid YouTube URL' } }, { status: 400 });
     const db = getAdminDb();
     const existingSnap = await db.collection(COLLECTION)
-      .where('entityType', '==', entityType.toUpperCase())
       .where('entityId', '==', entityId)
-      .where('providerVideoId', '==', youtubeId)
-      .limit(1)
       .get();
-    if (!existingSnap.empty) return NextResponse.json({ success: false, error: { code: 'CONFLICT', message: 'Video already exists' } }, { status: 409 });
-    const maxOrderSnap = await db.collection(COLLECTION)
-      .where('entityType', '==', entityType.toUpperCase())
-      .where('entityId', '==', entityId)
-      .orderBy('displayOrder', 'desc')
-      .limit(1)
-      .get();
-    const maxOrder = maxOrderSnap.empty ? 0 : (maxOrderSnap.docs[0]?.data()?.displayOrder as number ?? 0);
+    const existing = existingSnap.docs.find(d => {
+      const data = d.data();
+      return data.entityType === entityType.toUpperCase() && data.providerVideoId === youtubeId;
+    });
+    if (existing) return NextResponse.json({ success: false, error: { code: 'CONFLICT', message: 'Video already exists' } }, { status: 409 });
+    const sameEntityVids = existingSnap.docs
+      .filter(d => d.data().entityType === entityType.toUpperCase())
+      .map(d => d.data().displayOrder as number ?? 0);
+    const maxOrder = sameEntityVids.length > 0 ? Math.max(...sameEntityVids) : 0;
     const now = new Date().toISOString();
     const id = `cvid_${Date.now()}`;
     const doc = {
-      id,
-      entityType: entityType.toUpperCase(),
-      entityId,
+      id, entityType: entityType.toUpperCase(), entityId,
       title: body.title ?? `Video ${maxOrder + 1}`,
-      youtubeUrl,
-      youtubeId,
-      providerName: 'youtube',
-      providerVideoId: youtubeId,
-      providerUrl: youtubeUrl,
-      duration: 0,
-      displayOrder: maxOrder + 1,
-      createdAt: now,
-      updatedAt: now,
+      youtubeUrl, youtubeId,
+      providerName: 'youtube', providerVideoId: youtubeId, providerUrl: youtubeUrl,
+      duration: 0, displayOrder: maxOrder + 1,
+      createdAt: now, updatedAt: now,
     };
     await db.collection(COLLECTION).doc(id).set(doc);
     return NextResponse.json({ success: true, data: doc }, { status: 201 });

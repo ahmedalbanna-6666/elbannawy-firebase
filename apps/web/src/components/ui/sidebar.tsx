@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import {
   ChevronLeft,
   ChevronRight,
+  X,
   User,
   Facebook,
   MessageCircle,
@@ -45,6 +46,7 @@ interface SidebarProps {
   onToggle?: () => void;
   onProfileClick?: () => void;
   profileGrade?: string;
+  closeOnCollapse?: boolean;
   children?: ReactNode;
 }
 
@@ -217,7 +219,7 @@ function InstallButton({ collapsed }: { collapsed?: boolean }): ReactNode {
 
 /* ── Main Sidebar ─────────────────────────────────────────── */
 
-export function Sidebar({ items, className, onClose, onToggle, onProfileClick, profileGrade, children }: SidebarProps): ReactNode {
+export function Sidebar({ items, className, onClose, onToggle, onProfileClick, profileGrade, closeOnCollapse, children }: SidebarProps): ReactNode {
   const [collapsed, setCollapsed] = useState(false);
   const { user } = useAuthStore();
 
@@ -259,14 +261,14 @@ export function Sidebar({ items, className, onClose, onToggle, onProfileClick, p
           </motion.span>
         )}
         <motion.button
-          onClick={collapsed ? (): void => { setCollapsed(false); } : (): void => { setCollapsed(true); }}
+          onClick={closeOnCollapse ? onClose : (collapsed ? (): void => { setCollapsed(false); } : (): void => { setCollapsed(true); })}
           whileHover={{ scale: 1.06 }}
           whileTap={{ scale: 0.92 }}
           transition={SPRING_FAST}
           className="flex h-7 w-7 items-center justify-center rounded-lg text-neutral-500 light:text-neutral-600 transition-colors hover:bg-white/10 hover:text-white light:hover:bg-neutral-100 light:hover:text-neutral-700"
-          aria-label={collapsed ? "Expand" : "Collapse"}
+          aria-label={closeOnCollapse ? "Close" : collapsed ? "Expand" : "Collapse"}
         >
-          {collapsed ? <ChevronRight className="h-3.5 w-3.5" /> : <ChevronLeft className="h-3.5 w-3.5" />}
+          {closeOnCollapse ? <X className="h-3.5 w-3.5" /> : collapsed ? <ChevronRight className="h-3.5 w-3.5" /> : <ChevronLeft className="h-3.5 w-3.5" />}
         </motion.button>
       </div>
 

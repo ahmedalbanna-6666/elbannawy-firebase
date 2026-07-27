@@ -35,13 +35,10 @@ export async function GET(
     if (!decoded) return NextResponse.json({ success: false, error: { code: 'UNAUTHORIZED', message: 'Not authenticated' } }, { status: 401 });
     const { entityType, entityId } = await params;
     const db = getAdminDb();
-    const snap = await db.collection(COLLECTION)
-      .where('entityType', '==', entityType.toUpperCase())
-      .where('entityId', '==', entityId)
-      .limit(1)
-      .get();
-    if (snap.empty) return NextResponse.json({ success: true, data: null });
-    const quiz = { id: snap.docs[0].id, ...snap.docs[0].data() };
+    const snap = await db.collection(COLLECTION).where('entityId', '==', entityId).get();
+    const quiz = snap.docs
+      .map(d => ({ id: d.id, ...d.data() }))
+      .find(d => (d as Record<string, unknown>).entityType === entityType.toUpperCase()) ?? null;
     return NextResponse.json({ success: true, data: quiz });
   } catch (error) {
     return NextResponse.json({ success: false, error: { code: 'INTERNAL', message: error instanceof Error ? error.message : 'Unknown error' } }, { status: 500 });
@@ -63,23 +60,15 @@ export async function POST(
       return NextResponse.json({ success: false, error: { code: 'INVALID_INPUT', message: 'Invalid JSON' } }, { status: 400 });
     }
     const db = getAdminDb();
-    const existingSnap = await db.collection(COLLECTION)
-      .where('entityType', '==', entityType.toUpperCase())
-      .where('entityId', '==', entityId)
-      .limit(1)
-      .get();
-    const batch = db.batch();
-    if (!existingSnap.empty) batch.delete(existingSnap.docs[0].ref);
-    const id = `cquiz_${Date.now()}`;
     const now = new Date().toISOString();
+    const id = `cquiz_${Date.now()}`;
     const doc = {
       id, entityType: entityType.toUpperCase(), entityId,
-      title: body.title ?? 'Untitled Quiz',
+      title: body.title ?? 'Quiz',
       questionCount: body.questionCount ?? 0,
       createdAt: now, updatedAt: now,
     };
-    batch.set(db.collection(COLLECTION).doc(id), doc);
-    await batch.commit();
+    await db.collection(COLLECTION).doc(id).set(doc);
     return NextResponse.json({ success: true, data: doc }, { status: 201 });
   } catch (error) {
     return NextResponse.json({ success: false, error: { code: 'INTERNAL', message: error instanceof Error ? error.message : 'Unknown error' } }, { status: 500 });
@@ -97,13 +86,10 @@ export async function DELETE(
     if (role !== 'administrator' && role !== 'teacher') return NextResponse.json({ success: false, error: { code: 'FORBIDDEN', message: 'Admin or teacher only' } }, { status: 403 });
     const { entityType, entityId } = await params;
     const db = getAdminDb();
-    const snap = await db.collection(COLLECTION)
-      .where('entityType', '==', entityType.toUpperCase())
-      .where('entityId', '==', entityId)
-      .limit(1)
-      .get();
-    if (snap.empty) return NextResponse.json({ success: false, error: { code: 'NOT_FOUND', message: 'Quiz not found' } }, { status: 404 });
-    await snap.docs[0].ref.delete();
+    const snap = await db.collection(COLLECTION).where('entityId', '==', entityId).get();
+    const existing = snap.docs.find(d => d.data().entityType === entityType.toUpperCase());
+    if (!existing) return NextResponse.json({ success: false, error: { code: 'NOT_FOUND', message: 'Quiz not found' } }, { status: 404 });
+    await existing.ref.delete();
     return NextResponse.json({ success: true, data: null });
   } catch (error) {
     return NextResponse.json({ success: false, error: { code: 'INTERNAL', message: error instanceof Error ? error.message : 'Unknown error' } }, { status: 500 });

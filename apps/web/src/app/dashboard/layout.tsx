@@ -48,10 +48,19 @@ interface DashboardLayoutProps {
 
 export default function DashboardLayout({ children }: DashboardLayoutProps): ReactNode {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isDesktop, setIsDesktop] = useState<boolean | null>(null);
   const router = useRouter();
   const { isAuthenticated, hasHydrated, authReady } = useAuthStore();
   const userId = useAuthStore((s) => s.user?.id);
   const { logout } = useAuth();
+
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 1024px)");
+    setIsDesktop(mq.matches);
+    const handler = (e: MediaQueryListEvent): void => { setIsDesktop(e.matches); };
+    mq.addEventListener("change", handler);
+    return (): void => mq.removeEventListener("change", handler);
+  }, []);
 
   const { data: profile } = useQuery<{
     role: string;
@@ -223,12 +232,25 @@ export default function DashboardLayout({ children }: DashboardLayoutProps): Rea
     return (): void => { fn(); closeSidebar(); };
   }, [closeSidebar]);
 
-  const sidebarContent = (
+  const mobileSidebar = (
     <Sidebar
       items={sidebarItems}
       onClose={closeSidebar}
       onToggle={toggleSidebar}
       onProfileClick={closeAndNavigate((): void => { router.push("/dashboard/profile"); })}
+      profileGrade={profileGrade}
+      closeOnCollapse
+    >
+      {isTeacherOrStaff && <AcademicSettings />}
+    </Sidebar>
+  );
+
+  const desktopSidebar = (
+    <Sidebar
+      items={sidebarItems}
+      onClose={(): void => {}}
+      onToggle={(): void => {}}
+      onProfileClick={(): void => { router.push("/dashboard/profile"); }}
       profileGrade={profileGrade}
     >
       {isTeacherOrStaff && <AcademicSettings />}
@@ -238,75 +260,89 @@ export default function DashboardLayout({ children }: DashboardLayoutProps): Rea
   const SIDEBAR_WIDTH = 300;
   const CONTENT_SCALE = 0.85;
   const CONTENT_RADIUS = 20;
+  const contentAnimate = !isDesktop && sidebarOpen ? {
+    scale: CONTENT_SCALE,
+    x: `-${SIDEBAR_WIDTH * 0.15}px`,
+    borderRadius: `${CONTENT_RADIUS}px`,
+    boxShadow: "0 25px 70px rgba(0,0,0,0.3)",
+    rotateY: "-3deg",
+    overflow: "hidden",
+    marginTop: "12px",
+    marginBottom: "12px",
+    height: "calc(100vh - 24px)",
+  } : {
+    scale: 1,
+    x: "0px",
+    borderRadius: "0px",
+    rotateY: "0deg",
+    boxShadow: "0 0 0 rgba(0,0,0,0)",
+    marginTop: "0px",
+    marginBottom: "0px",
+    height: "auto",
+    overflow: "visible",
+  };
 
   return (
-    <div className="flex min-h-screen overflow-hidden" style={{ perspective: "1400px" }}>
-      <AnimatePresence>
-        {sidebarOpen && (
-          <motion.div
-            key="sidebar-backdrop"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 0.5 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.25 }}
-            className="fixed inset-0 z-40 bg-black"
-            onClick={closeSidebar}
+    <div className="flex min-h-screen overflow-hidden">
+      {/* Desktop persistent sidebar */}
+      {isDesktop && (
+        <div className="hidden lg:flex lg:shrink-0">
+          {desktopSidebar}
+        </div>
+      )}
+
+      {/* Mobile drawer + 3D animation */}
+      <div className="flex flex-1 flex-col" style={{ perspective: !isDesktop ? "1400px" : undefined }}>
+        {!isDesktop && (
+          <>
+            <AnimatePresence>
+              {sidebarOpen && (
+                <motion.div
+                  key="sidebar-backdrop"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 0.5 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.25 }}
+                  className="fixed inset-0 z-40 bg-black"
+                  onClick={closeSidebar}
+                />
+              )}
+            </AnimatePresence>
+            <AnimatePresence>
+              {sidebarOpen && (
+                <motion.aside
+                  key="sidebar-drawer"
+                  initial={{ x: "100%" }}
+                  animate={{ x: 0 }}
+                  exit={{ x: "100%" }}
+                  transition={{ type: "spring", stiffness: 260, damping: 30, mass: 0.9 }}
+                  className="fixed inset-y-0 right-0 z-50 shadow-2xl"
+                  style={{ width: `${SIDEBAR_WIDTH}px` }}
+                >
+                  {mobileSidebar}
+                </motion.aside>
+              )}
+            </AnimatePresence>
+          </>
+        )}
+
+        <motion.div
+          animate={contentAnimate}
+          transition={{ type: "spring", stiffness: 260, damping: 28, mass: 0.8 }}
+          style={{ originX: 1, originY: 0.5 }}
+          className="relative z-30 flex flex-1 flex-col bg-neutral-50 dark:bg-neutral-950"
+        >
+          <Header
+            title="لوحة التحكم"
+            onMenuClick={toggleSidebar}
+            onNotificationClick={(): void => { router.push("/dashboard/notifications"); }}
           />
-        )}
-      </AnimatePresence>
 
-      <AnimatePresence>
-        {sidebarOpen && (
-          <motion.aside
-            key="sidebar-drawer"
-            initial={{ x: "100%" }}
-            animate={{ x: 0 }}
-            exit={{ x: "100%" }}
-            transition={{ type: "spring", stiffness: 260, damping: 30, mass: 0.9 }}
-            className="fixed inset-y-0 right-0 z-50 shadow-2xl"
-            style={{ width: `${SIDEBAR_WIDTH}px` }}
-          >
-            {sidebarContent}
-          </motion.aside>
-        )}
-      </AnimatePresence>
-
-      <motion.div
-        animate={sidebarOpen ? {
-          scale: CONTENT_SCALE,
-          x: `-${SIDEBAR_WIDTH * 0.15}px`,
-          borderRadius: `${CONTENT_RADIUS}px`,
-          boxShadow: "0 25px 70px rgba(0,0,0,0.3)",
-          rotateY: "-3deg",
-          overflow: "hidden",
-          marginTop: "12px",
-          marginBottom: "12px",
-          height: "calc(100vh - 24px)",
-        } : {
-          scale: 1,
-          x: "0px",
-          borderRadius: "0px",
-          rotateY: "0deg",
-          boxShadow: "0 0 0 rgba(0,0,0,0)",
-          marginTop: "0px",
-          marginBottom: "0px",
-          height: "auto",
-          overflow: "visible",
-        }}
-        transition={{ type: "spring", stiffness: 260, damping: 28, mass: 0.8 }}
-        style={{ originX: 1, originY: 0.5, transformStyle: "preserve-3d" }}
-        className="relative z-30 flex flex-1 flex-col bg-neutral-50 dark:bg-neutral-950 will-change-transform"
-      >
-        <Header
-          title="لوحة التحكم"
-          onMenuClick={toggleSidebar}
-          onNotificationClick={(): void => { router.push("/dashboard/notifications"); }}
-        />
-
-        <main className="flex-1 overflow-y-auto p-4 pb-[88px]">
-          {children}
-        </main>
-      </motion.div>
+          <main className="flex-1 overflow-y-auto p-4 pb-[88px]">
+            {children}
+          </main>
+        </motion.div>
+      </div>
 
       {mounted && createPortal(<BottomNav items={bottomNavItems} centerId="home" />, document.body)}
       <PwaInstallPrompt />

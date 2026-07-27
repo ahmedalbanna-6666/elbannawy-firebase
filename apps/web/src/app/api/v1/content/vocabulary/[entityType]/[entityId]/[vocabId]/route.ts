@@ -2,8 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { authenticateRequest, normalizeRole } from '@/lib/firebase/auth-helper';
 import { getAdminAuth, getAdminDb } from '@/lib/firebase/admin';
 
-const COLLECTION = 'contentVocabulary';
-
 async function getEffectiveUserRole(uid: string): Promise<string> {
   try {
     const db = getAdminDb();
@@ -36,22 +34,22 @@ export async function PATCH(
     const role = await getEffectiveUserRole(decoded.uid);
     if (role !== 'administrator' && role !== 'teacher') return NextResponse.json({ success: false, error: { code: 'FORBIDDEN', message: 'Admin or teacher only' } }, { status: 403 });
     const { vocabId } = await params;
+    const db = getAdminDb();
+    const doc = await db.collection('contentVocabulary').doc(vocabId).get();
+    if (!doc.exists) return NextResponse.json({ success: false, error: { code: 'NOT_FOUND', message: 'Vocabulary not found' } }, { status: 404 });
     let body: Record<string, unknown>;
     try { body = await request.json() as Record<string, unknown>; } catch {
       return NextResponse.json({ success: false, error: { code: 'INVALID_INPUT', message: 'Invalid JSON' } }, { status: 400 });
     }
-    const db = getAdminDb();
-    const doc = await db.collection(COLLECTION).doc(vocabId).get();
-    if (!doc.exists) return NextResponse.json({ success: false, error: { code: 'NOT_FOUND', message: 'Vocabulary item not found' } }, { status: 404 });
-    const allowedFields = ['word', 'translation', 'definition', 'example', 'partOfSpeech', 'displayOrder'];
+    const allowed = ['word', 'translation', 'definition', 'example', 'partOfSpeech', 'displayOrder'];
     const updates: Record<string, unknown> = {};
-    for (const key of allowedFields) {
+    for (const key of allowed) {
       if (body[key] !== undefined) updates[key] = body[key];
     }
     if (Object.keys(updates).length === 0) return NextResponse.json({ success: false, error: { code: 'INVALID_INPUT', message: 'No valid fields to update' } }, { status: 400 });
-    await db.collection(COLLECTION).doc(vocabId).update(updates);
-    const updated = await db.collection(COLLECTION).doc(vocabId).get();
-    return NextResponse.json({ success: true, data: { id: updated.id, ...updated.data() } });
+    updates.updatedAt = new Date().toISOString();
+    await doc.ref.update(updates);
+    return NextResponse.json({ success: true, data: { id: vocabId, ...updates } });
   } catch (error) {
     return NextResponse.json({ success: false, error: { code: 'INTERNAL', message: error instanceof Error ? error.message : 'Unknown error' } }, { status: 500 });
   }
@@ -68,9 +66,9 @@ export async function DELETE(
     if (role !== 'administrator' && role !== 'teacher') return NextResponse.json({ success: false, error: { code: 'FORBIDDEN', message: 'Admin or teacher only' } }, { status: 403 });
     const { vocabId } = await params;
     const db = getAdminDb();
-    const doc = await db.collection(COLLECTION).doc(vocabId).get();
-    if (!doc.exists) return NextResponse.json({ success: false, error: { code: 'NOT_FOUND', message: 'Vocabulary item not found' } }, { status: 404 });
-    await db.collection(COLLECTION).doc(vocabId).delete();
+    const doc = await db.collection('contentVocabulary').doc(vocabId).get();
+    if (!doc.exists) return NextResponse.json({ success: false, error: { code: 'NOT_FOUND', message: 'Vocabulary not found' } }, { status: 404 });
+    await doc.ref.delete();
     return NextResponse.json({ success: true, data: null });
   } catch (error) {
     return NextResponse.json({ success: false, error: { code: 'INTERNAL', message: error instanceof Error ? error.message : 'Unknown error' } }, { status: 500 });

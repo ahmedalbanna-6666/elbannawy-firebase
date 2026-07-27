@@ -35,12 +35,11 @@ export async function GET(
     if (!decoded) return NextResponse.json({ success: false, error: { code: 'UNAUTHORIZED', message: 'Not authenticated' } }, { status: 401 });
     const { entityType, entityId } = await params;
     const db = getAdminDb();
-    const snap = await db.collection(COLLECTION)
-      .where('entityType', '==', entityType.toUpperCase())
-      .where('entityId', '==', entityId)
-      .orderBy('displayOrder', 'asc')
-      .get();
-    const items = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    const snap = await db.collection(COLLECTION).where('entityId', '==', entityId).get();
+    const items = snap.docs
+      .map(d => ({ id: d.id, ...d.data() } as Record<string, unknown>))
+      .filter(v => (v.entityType as string) === entityType.toUpperCase())
+      .sort((a, b) => ((a.displayOrder as number) ?? 0) - ((b.displayOrder as number) ?? 0));
     return NextResponse.json({ success: true, data: items });
   } catch (error) {
     return NextResponse.json({ success: false, error: { code: 'INTERNAL', message: error instanceof Error ? error.message : 'Unknown error' } }, { status: 500 });
@@ -66,20 +65,13 @@ export async function POST(
     if (!word) return NextResponse.json({ success: false, error: { code: 'INVALID_INPUT', message: 'word is required' } }, { status: 400 });
     if (!translation) return NextResponse.json({ success: false, error: { code: 'INVALID_INPUT', message: 'translation is required' } }, { status: 400 });
     const db = getAdminDb();
-    const maxOrderSnap = await db.collection(COLLECTION)
-      .where('entityType', '==', entityType.toUpperCase())
-      .where('entityId', '==', entityId)
-      .orderBy('displayOrder', 'desc')
-      .limit(1)
-      .get();
-    const maxOrder = maxOrderSnap.empty ? 0 : (maxOrderSnap.docs[0]?.data()?.displayOrder as number ?? 0);
+    const existingSnap = await db.collection(COLLECTION).where('entityId', '==', entityId).get();
+    const sameEntityItems = existingSnap.docs.filter(d => d.data().entityType === entityType.toUpperCase());
+    const maxOrder = sameEntityItems.length > 0 ? Math.max(...sameEntityItems.map(d => d.data().displayOrder as number ?? 0)) : 0;
     const id = `cvoc_${Date.now()}`;
     const doc = {
-      id,
-      entityType: entityType.toUpperCase(),
-      entityId,
-      word,
-      translation,
+      id, entityType: entityType.toUpperCase(), entityId,
+      word, translation,
       definition: body.definition ?? null,
       example: body.example ?? null,
       partOfSpeech: body.partOfSpeech ?? null,
@@ -103,12 +95,10 @@ export async function DELETE(
     if (role !== 'administrator' && role !== 'teacher') return NextResponse.json({ success: false, error: { code: 'FORBIDDEN', message: 'Admin or teacher only' } }, { status: 403 });
     const { entityType, entityId } = await params;
     const db = getAdminDb();
-    const snap = await db.collection(COLLECTION)
-      .where('entityType', '==', entityType.toUpperCase())
-      .where('entityId', '==', entityId)
-      .get();
+    const snap = await db.collection(COLLECTION).where('entityId', '==', entityId).get();
+    const toDelete = snap.docs.filter(d => d.data().entityType === entityType.toUpperCase());
     const batch = db.batch();
-    snap.docs.forEach(d => batch.delete(d.ref));
+    toDelete.forEach(d => batch.delete(d.ref));
     await batch.commit();
     return NextResponse.json({ success: true, data: null });
   } catch (error) {
